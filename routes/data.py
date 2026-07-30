@@ -1,9 +1,15 @@
 # routes/data.py
 import os
+import tempfile
+
 from flask import Blueprint, request, jsonify, session, current_app
+from werkzeug.utils import secure_filename
+
 from extensions import db
 from models import Table, Project
 from engine.dataframe import DataFrame
+from services.schema_service import build_project_schema
+from services.storage_service import DatasetStorageError, get_dataset_storage
 
 data_bp = Blueprint('data', __name__)
 
@@ -15,36 +21,77 @@ def upload_files():
     active_project_id = session.get('active_project_id')
     if not active_project_id:
         return jsonify({'success': False, 'error': 'No database selected'}), 400
+    project = Project.query.filter_by(
+        id=active_project_id,
+        user_id=session["user_id"],
+    ).first()
+    if not project:
+        return jsonify({"success": False, "error": "Database not found"}), 404
 
     if 'files' not in request.files:
         return jsonify({'success': False, 'error': 'No files part'}), 400
 
     files = request.files.getlist('files')
     schema_cache = session.get('db_schema', {})
+    storage = get_dataset_storage()
+    stored_references = []
+    temporary_paths = []
 
-    for file in files:
-        try:
-            filename = file.filename
-            filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
-            file.save(filepath)
-            
-            df = DataFrame(source=filepath)
+    try:
+        for file in files:
+            filename = secure_filename(file.filename or "")
+            if not filename or os.path.splitext(filename)[1].lower() != ".csv":
+                raise DatasetStorageError(
+                    "Each uploaded dataset must be a CSV file with a valid filename."
+                )
+
+            temp_handle = tempfile.NamedTemporaryFile(
+                prefix="aistora-upload-",
+                suffix=".csv",
+                dir=current_app.config.get(
+                    "DATASET_CACHE_DIR",
+                    current_app.config["UPLOAD_FOLDER"],
+                ),
+                delete=False,
+            )
+            temp_path = temp_handle.name
+            temp_handle.close()
+            temporary_paths.append(temp_path)
+            file.save(temp_path)
+
+            df = DataFrame(source=temp_path)
             column_types = df.get_column_types()
             row_count = len(df)
-            
-            table_name = os.path.splitext(filename)[0]
-            
+            table_base = secure_filename(os.path.splitext(filename)[0]) or "table"
+            table_name = table_base
+            suffix = 2
+            while (
+                table_name in schema_cache
+                or Table.query.filter_by(
+                    project_id=active_project_id,
+                    name=table_name,
+                ).first()
+            ):
+                table_name = f"{table_base}_{suffix}"
+                suffix += 1
+
+            storage_reference = storage.put_file(
+                temp_path,
+                active_project_id,
+                filename,
+            )
+            stored_references.append(storage_reference)
             new_table = Table(
                 name=table_name,
                 filename=filename,
-                filepath=filepath,
+                filepath=storage_reference,
                 columns_schema=column_types,
                 row_count=row_count,
                 project_id=active_project_id
             )
             db.session.add(new_table)
-            db.session.commit()
-            
+            db.session.flush()
+
             schema_cache[table_name] = {
                 'id': new_table.id,
                 'filename': filename,
@@ -52,8 +99,45 @@ def upload_files():
                 'row_count': row_count
             }
 
-        except Exception as e:
-            return jsonify({'success': False, 'error': str(e)}), 500
+        db.session.commit()
+    except DatasetStorageError as exc:
+        db.session.rollback()
+        for reference in stored_references:
+            try:
+                storage.delete(reference)
+            except DatasetStorageError:
+                pass
+        return jsonify({"success": False, "error": str(exc)}), 400
+    except Exception as exc:
+        db.session.rollback()
+        for reference in stored_references:
+            try:
+                storage.delete(reference)
+            except DatasetStorageError:
+                pass
+        return jsonify({
+            "success": False,
+            "error": f"Dataset upload failed: {str(exc)[:240]}",
+        }), 500
+    finally:
+        for temp_path in temporary_paths:
+            if os.path.exists(temp_path):
+                os.remove(temp_path)
 
     session['db_schema'] = schema_cache
     return jsonify({'success': True, 'schema': schema_cache})
+
+
+@data_bp.route("/api/schema", methods=["GET"])
+def get_schema():
+    if "user_id" not in session:
+        return jsonify({"success": False, "error": "Unauthorized"}), 401
+    project_id = session.get("active_project_id")
+    if not project_id:
+        return jsonify({"success": False, "error": "No database selected"}), 400
+    project = Project.query.filter_by(id=project_id, user_id=session["user_id"]).first()
+    if not project:
+        return jsonify({"success": False, "error": "Database not found"}), 404
+    schema = build_project_schema(project_id)
+    session["db_schema"] = schema
+    return jsonify({"success": True, "schema": schema})

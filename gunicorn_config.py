@@ -1,18 +1,16 @@
 # gunicorn_config.py
-import multiprocessing
+import os
 
 # Bind to all interfaces on port 5000
 bind = "0.0.0.0:5000"
 
-# Number of worker processes. 
-# Formula: (2 x CPUs) + 1. Good standard starting point.
-workers = multiprocessing.cpu_count() * 2 + 1
+workers = int(os.environ.get("WEB_CONCURRENCY", "2"))
 
 # Threads per worker (good for handling I/O like AI requests)
-threads = 2
+threads = int(os.environ.get("GUNICORN_THREADS", "2"))
 
 # Timeout for requests (120s gives the AI time to "think" if needed)
-timeout = 120
+timeout = int(os.environ.get("GUNICORN_TIMEOUT", "120"))
 
 # Logging
 accesslog = "-"  # Log to stdout

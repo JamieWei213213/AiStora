@@ -2,6 +2,7 @@
 from flask import Blueprint, request, jsonify, session
 from extensions import db
 from models import Project, Table
+from services.storage_service import DatasetStorageError, get_dataset_storage
 
 databases_bp = Blueprint('databases', __name__)
 
@@ -56,11 +57,22 @@ def delete_database(id):
     if not project:
         return jsonify({'success': False, 'error': 'Database not found'}), 404
 
-    # The `cascade` in models.py will auto-delete all tables
+    storage_references = [table.filepath for table in project.tables]
     db.session.delete(project)
     db.session.commit()
-    
-    return jsonify({'success': True})
+
+    cleanup_failures = 0
+    storage = get_dataset_storage()
+    for reference in storage_references:
+        try:
+            storage.delete(reference)
+        except DatasetStorageError:
+            cleanup_failures += 1
+
+    return jsonify({
+        "success": True,
+        "storage_cleanup_failures": cleanup_failures,
+    })
 
 @databases_bp.route('/api/databases/select', methods=['POST'])
 def select_database():

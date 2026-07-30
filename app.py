@@ -1,11 +1,13 @@
 # app.py
 import os
 import time # <-- ADD THIS
-from flask import Flask
+from flask import Flask, jsonify
+from sqlalchemy import text
+from werkzeug.middleware.proxy_fix import ProxyFix
 from config import Config
 from extensions import db
 from services.llm_service import configure_llm
-from models import User, Project, Table
+from models import AgentRun, User, Project, Table
 
 
 from routes.pages import pages_bp
@@ -18,19 +20,33 @@ from routes.tables import tables_bp
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
+    app.wsgi_app = ProxyFix(
+        app.wsgi_app,
+        x_for=1,
+        x_proto=1,
+        x_host=1,
+    )
 
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+    os.makedirs(app.config["DATASET_CACHE_DIR"], exist_ok=True)
 
     # Init DB
     db.init_app(app)
 
     # Import models AFTER db.init_app(app)
     with app.app_context():
-        from models import User, Project, Table
+        from models import AgentRun, User, Project, Table
         db.create_all()
 
     configure_llm()
 
+    @app.get("/health")
+    def health():
+        try:
+            db.session.execute(text("SELECT 1"))
+            return jsonify({"status": "ok", "database": "connected"})
+        except Exception:
+            return jsonify({"status": "unhealthy", "database": "unavailable"}), 503
 
     @app.context_processor
     def inject_version():

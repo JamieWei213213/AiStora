@@ -9,9 +9,21 @@ services:
       - ./uploads:/app/uploads
     environment:
       - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - GEMINI_MODEL=${GEMINI_MODEL:-gemini-3.6-flash}
+      - GEMINI_ADVANCED_MODEL=${GEMINI_ADVANCED_MODEL:-gemini-3.6-flash}
       - DATABASE_URL=postgresql://user:password@db:5432/aistora
+      - DATASET_STORAGE_BACKEND=local
+      - DATASET_CACHE_DIR=/tmp/aistora-cache
       - FLASK_ENV=production
-      - SECRET_KEY=super-secret-key-for-production-fix
+      - SECRET_KEY=${SECRET_KEY}
+      - AGENT_MAX_TURNS=${AGENT_MAX_TURNS:-8}
+      - AGENT_MAX_TOOL_CALLS=${AGENT_MAX_TOOL_CALLS:-12}
+      - AGENT_TIMEOUT_SECONDS=${AGENT_TIMEOUT_SECONDS:-45}
+      - AGENT_MODEL_ROUTING=${AGENT_MODEL_ROUTING:-true}
+      - AGENT_LLM_MAX_RETRIES=${AGENT_LLM_MAX_RETRIES:-2}
+      - AGENT_LLM_RETRY_BASE_SECONDS=${AGENT_LLM_RETRY_BASE_SECONDS:-0.5}
+      - AGENT_HISTORY_EXAMPLES=${AGENT_HISTORY_EXAMPLES:-3}
+      - CLEANING_MAX_ROWS=${CLEANING_MAX_ROWS:-250000}
     depends_on:
       - db
     restart: always

@@ -2,6 +2,7 @@
 from flask import session
 from engine.dataframe import DataFrame
 from models import Table
+from services.storage_service import get_dataset_storage
 
 def get_dataframe(table_name):
     """
@@ -17,8 +18,8 @@ def get_dataframe(table_name):
     
     if table_record:
         try:
-            # Re-create the DataFrame object from the stored path
-            df = DataFrame(source=table_record.filepath)
+            local_path = get_dataset_storage().materialize(table_record.filepath)
+            df = DataFrame(source=local_path)
             return df
         except Exception as e:
             print(f"Error initializing DataFrame for {table_name}: {e}")
