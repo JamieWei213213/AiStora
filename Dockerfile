@@ -14,8 +14,8 @@ RUN python -m pip install --no-cache-dir -r requirements.txt
 
 COPY --chown=aistora:aistora . .
 RUN chmod 0555 /app/entrypoint.sh \
-    && mkdir -p /app/uploads /tmp/aistora-cache \
-    && chown -R aistora:aistora /app/uploads /tmp/aistora-cache
+    && mkdir -p /app/instance /app/uploads /tmp/aistora-cache \
+    && chown -R aistora:aistora /app/instance /app/uploads /tmp/aistora-cache
 
 USER 10001:10001
 

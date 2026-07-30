@@ -60,9 +60,39 @@ jobs:
         working-directory: infra/terraform
         run: terraform validate
 
+  container:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Build the production container
+        run: docker build --tag aistora-ci:${{ github.sha }} .
+
+      - name: Boot and health-check the container
+        shell: bash
+        run: |
+          docker run --detach \
+            --name aistora-ci \
+            --publish 127.0.0.1:5000:5000 \
+            --env SECRET_KEY=ci-only-not-a-production-secret \
+            aistora-ci:${{ github.sha }}
+          for attempt in {1..12}; do
+            if curl --fail --silent --show-error http://127.0.0.1:5000/health; then
+              exit 0
+            fi
+            sleep 5
+          done
+          docker logs aistora-ci
+          exit 1
+
+      - name: Stop the test container
+        if: always()
+        run: docker rm --force aistora-ci || true
+
   deploy:
     if: github.event_name != 'pull_request'
-    needs: [test, terraform]
+    needs: [test, terraform, container]
     runs-on: ubuntu-latest
     permissions:
       contents: read
