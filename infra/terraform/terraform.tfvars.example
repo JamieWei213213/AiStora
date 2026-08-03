@@ -12,6 +12,7 @@ desired_count = 0
 # deletion protection, final snapshots, and HTTPS with an ACM certificate.
 database_instance_class        = "db.t4g.micro"
 database_multi_az              = false
+database_backup_retention_days = 1
 database_deletion_protection   = false
 database_skip_final_snapshot   = true
 dataset_force_destroy          = false

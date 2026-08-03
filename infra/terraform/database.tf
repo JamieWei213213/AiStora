@@ -10,8 +10,9 @@ resource "aws_db_parameter_group" "main" {
   family = "postgres16"
 
   parameter {
-    name  = "rds.force_ssl"
-    value = "1"
+    name         = "rds.force_ssl"
+    value        = "1"
+    apply_method = "pending-reboot"
   }
 
   tags = { Name = "${local.name}-postgres16" }
@@ -41,7 +42,7 @@ resource "aws_db_instance" "main" {
   publicly_accessible    = false
   multi_az               = var.database_multi_az
 
-  backup_retention_period    = 7
+  backup_retention_period    = var.database_backup_retention_days
   backup_window              = "09:00-10:00"
   maintenance_window         = "sun:10:00-sun:11:00"
   auto_minor_version_upgrade = true

@@ -86,6 +86,17 @@ variable "database_multi_az" {
   default     = false
 }
 
+variable "database_backup_retention_days" {
+  description = "Number of days RDS retains automated backups. New AWS free-tier accounts may require 1."
+  type        = number
+  default     = 7
+
+  validation {
+    condition     = var.database_backup_retention_days >= 0 && var.database_backup_retention_days <= 35
+    error_message = "database_backup_retention_days must be between 0 and 35."
+  }
+}
+
 variable "database_deletion_protection" {
   description = "Protect the RDS instance from deletion."
   type        = bool

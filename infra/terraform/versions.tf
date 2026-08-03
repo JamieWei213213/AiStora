@@ -1,6 +1,10 @@
 terraform {
   required_version = ">= 1.8.0"
 
+  # Deployment environments supply the bucket, key, and region through
+  # backend.hcl so Terraform state is encrypted and shared in S3.
+  backend "s3" {}
+
   required_providers {
     aws = {
       source  = "hashicorp/aws"
