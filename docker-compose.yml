@@ -9,7 +9,7 @@ services:
       - ./uploads:/app/uploads
     environment:
       - GEMINI_API_KEY=${GEMINI_API_KEY}
-      - GEMINI_MODEL=${GEMINI_MODEL:-gemini-3.6-flash}
+      - GEMINI_MODEL=${GEMINI_MODEL:-gemini-3.1-flash-lite}
       - GEMINI_ADVANCED_MODEL=${GEMINI_ADVANCED_MODEL:-gemini-3.6-flash}
       - DATABASE_URL=postgresql://user:password@db:5432/aistora
       - DATASET_STORAGE_BACKEND=local

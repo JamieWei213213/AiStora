@@ -125,7 +125,7 @@ variable "certificate_arn" {
 variable "gemini_model" {
   description = "Standard Gemini model used by the agent."
   type        = string
-  default     = "gemini-2.5-flash-lite"
+  default     = "gemini-3.1-flash-lite"
 }
 
 variable "gemini_advanced_model" {

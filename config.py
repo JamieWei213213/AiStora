@@ -36,7 +36,7 @@ class Config:
         os.environ.get("MAX_UPLOAD_BYTES", str(50 * 1024 * 1024))
     )
     GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
-    GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.6-flash")
+    GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.1-flash-lite")
     GEMINI_ADVANCED_MODEL = os.environ.get(
         "GEMINI_ADVANCED_MODEL",
         "gemini-3.6-flash",

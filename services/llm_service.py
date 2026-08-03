@@ -132,7 +132,7 @@ class GeminiModel:
     def __init__(
         self,
         api_key,
-        model_name="gemini-3.6-flash",
+        model_name="gemini-3.1-flash-lite",
         max_retries=None,
         retry_base_seconds=None,
     ):

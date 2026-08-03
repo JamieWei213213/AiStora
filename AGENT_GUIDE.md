@@ -802,7 +802,7 @@ Set at minimum:
 
 ```dotenv
 GEMINI_API_KEY=your-key
-GEMINI_MODEL=gemini-3.6-flash
+GEMINI_MODEL=gemini-3.1-flash-lite
 GEMINI_ADVANCED_MODEL=gemini-3.6-flash
 SECRET_KEY=a-long-random-secret
 ```
@@ -995,11 +995,11 @@ Set `GEMINI_API_KEY` in `.env`, then restart the application.
 
 ### Model returns `404 NOT_FOUND`
 
-Use a model currently available to your Gemini account. The default is
-`gemini-3.6-flash` and can be changed without editing code:
+Use a model currently available to your Gemini account. The low-cost standard
+default is `gemini-3.1-flash-lite` and can be changed without editing code:
 
 ```dotenv
-GEMINI_MODEL=gemini-3.6-flash
+GEMINI_MODEL=gemini-3.1-flash-lite
 ```
 
 Restart AIStora after changing `.env`.
