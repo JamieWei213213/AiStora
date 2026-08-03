@@ -114,3 +114,16 @@ def test_skip_malformed_rows():
 def test_file_not_found():
     with pytest.raises(FileNotFoundError):
         CsvParser("missing_file.csv")
+
+
+def test_quoted_commas_are_parsed_as_one_field(tmp_path):
+    path = tmp_path / "quoted.csv"
+    path.write_text(
+        'id,description,amount\n1,"hello, world",10\n',
+        encoding="utf-8",
+    )
+
+    parser = CsvParser(str(path))
+    rows = list(parser.parse())
+
+    assert rows == [{"id": 1, "description": "hello, world", "amount": 10}]

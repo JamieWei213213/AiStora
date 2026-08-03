@@ -1,6 +1,8 @@
 # Python virtual environment
 venv/
 .venv/
+.venv-win/
+.tools/
 
 # Python cache
 __pycache__/
@@ -12,7 +14,21 @@ __pycache__/
 # Uploaded data files (ignore all content in uploads, *except* the .gitkeep)
 uploads/*
 !uploads/.gitkeep
+instance/agent_audit.jsonl
+instance/agent_cancellations/
+instance/*.db
+
+# Terraform runtime and sensitive local configuration
+**/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+terraform.tfvars
+backend.hcl
+crash.log
+crash.*.log
 
 # Secrets and environment variables
 .env
 *.json
+!tests/fixtures/*.json

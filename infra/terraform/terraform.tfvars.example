@@ -1,0 +1,19 @@
+aws_region        = "us-west-2"
+project_name      = "aistora"
+environment       = "dev"
+github_repository = "JamieWei213213/AiStora"
+github_branch     = "main"
+
+# Start at zero so Terraform can create the service before the first image exists.
+# GitHub Actions scales the service to one after it pushes the first image.
+desired_count = 0
+
+# Cost-aware development defaults. For production, enable Multi-AZ,
+# deletion protection, final snapshots, and HTTPS with an ACM certificate.
+database_instance_class        = "db.t4g.micro"
+database_multi_az              = false
+database_backup_retention_days = 1
+database_deletion_protection   = false
+database_skip_final_snapshot   = true
+dataset_force_destroy          = false
+certificate_arn                = null

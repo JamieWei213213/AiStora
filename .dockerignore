@@ -1,0 +1,15 @@
+.env
+.git
+.github
+.pytest_cache
+.pytest-tmp-*
+.terraform
+.venv
+.venv-win
+__pycache__
+*.pyc
+*.tex
+instance
+tests
+uploads
+terraform.tfstate*

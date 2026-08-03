@@ -1,29 +1,27 @@
-# Dockerfile
-FROM python:3.10-slim
+FROM python:3.12-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1
 
 WORKDIR /app
 
-# Install dependencies
+RUN groupadd --gid 10001 aistora \
+    && useradd --uid 10001 --gid 10001 --create-home --shell /usr/sbin/nologin aistora
+
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-RUN pip install gunicorn
+RUN python -m pip install --no-cache-dir -r requirements.txt
 
-# Copy application code
-COPY . .
+COPY --chown=aistora:aistora . .
+RUN chmod 0555 /app/entrypoint.sh \
+    && mkdir -p /app/instance /app/uploads /tmp/aistora-cache \
+    && chown -R aistora:aistora /app/instance /app/uploads /tmp/aistora-cache
 
-# Create uploads directory
-RUN mkdir -p uploads
-
-# Create a startup script to run DB init ONCE, then start Gunicorn
-RUN echo '#!/bin/bash\n\
-# Initialize DB (This runs in a single process)\n\
-python -c "from app import app, db; app.app_context().push(); db.create_all()"\n\
-\n\
-# Start Gunicorn\n\
-exec gunicorn -c gunicorn_config.py app:app\n\
-' > /app/entrypoint.sh && chmod +x /app/entrypoint.sh
+USER 10001:10001
 
 EXPOSE 5000
 
-# Use the new entrypoint script
-CMD ["/app/entrypoint.sh"]
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/health', timeout=3)"
+
+ENTRYPOINT ["/app/entrypoint.sh"]

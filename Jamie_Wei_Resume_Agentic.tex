@@ -1,0 +1,233 @@
+\documentclass[10pt, letterpaper]{article}
+
+\usepackage[
+    ignoreheadfoot,
+    top=1.45cm,
+    bottom=1.45cm,
+    left=1.65cm,
+    right=1.65cm,
+    footskip=0.8cm
+]{geometry}
+
+\usepackage{titlesec}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage[dvipsnames]{xcolor}
+\definecolor{primaryColor}{RGB}{0,0,0}
+\usepackage{enumitem}
+\usepackage{amsmath}
+\usepackage[
+    pdftitle={Jamie Wei Resume},
+    pdfauthor={Jamie Wei},
+    pdfcreator={LaTeX},
+    colorlinks=true,
+    urlcolor=primaryColor
+]{hyperref}
+\usepackage{bookmark}
+\usepackage{changepage}
+\usepackage{needspace}
+\usepackage{iftex}
+
+\ifPDFTeX
+    \input{glyphtounicode}
+    \pdfgentounicode=1
+    \usepackage[T1]{fontenc}
+    \usepackage[utf8]{inputenc}
+\fi
+
+\usepackage{charter}
+
+\raggedright
+\pagestyle{empty}
+\setcounter{secnumdepth}{0}
+\setlength{\parindent}{0pt}
+\setlength{\topskip}{0pt}
+\pagenumbering{gobble}
+
+\titleformat{\section}
+    {\needspace{3\baselineskip}\bfseries\large}
+    {}
+    {0pt}
+    {}
+    [\vspace{1pt}\titlerule]
+
+\titlespacing{\section}{0pt}{0.20cm}{0.12cm}
+
+\renewcommand\labelitemi{$\vcenter{\hbox{\small$\bullet$}}$}
+
+\newenvironment{highlights}{
+    \begin{itemize}[
+        topsep=0.04cm,
+        parsep=0.02cm,
+        partopsep=0pt,
+        itemsep=0.03cm,
+        leftmargin=12pt
+    ]
+}{
+    \end{itemize}
+}
+
+\newenvironment{onecolentry}{
+    \begin{adjustwidth}{0cm}{0cm}
+}{
+    \end{adjustwidth}
+}
+
+\begin{document}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% HEADER
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{center}
+    {\Huge\textbf{Jamie Wei}}\\[4pt]
+    U.S. Citizen
+    \quad|\quad
+    \href{tel:+16787620657}{(678) 762-0657}
+    \quad|\quad
+    \href{mailto:Jamiejwei@gmail.com}{Jamiejwei@gmail.com}\\[3pt]
+    \href{https://www.linkedin.com/in/jamie-wei-5a4a31378/}
+        {linkedin.com/in/jamie-wei-5a4a31378}
+    \quad|\quad
+    \href{https://github.com/JamieWei213213}
+        {github.com/JamieWei213213}
+\end{center}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% EDUCATION
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Education}
+
+\begin{tabularx}{\textwidth}{Xr}
+    \textbf{University of Southern California}
+        & \textit{Jan 2025 -- Dec 2026 (Expected)}\\
+    Master of Science in Applied Data Science & \\
+\end{tabularx}
+
+\vspace{0.08cm}
+
+\begin{tabularx}{\textwidth}{Xr}
+    \textbf{University of California San Diego}
+        & \textit{Sep 2019 -- Mar 2023}\\
+    Bachelor of Science in Cognitive Science,
+    Machine Learning Specialization & \\
+\end{tabularx}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% EXPERIENCE
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Experience}
+
+\begin{tabularx}{\textwidth}{Xr}
+    \textbf{Greenpoint Global} -- Data Engineering Intern
+        & \textit{Jun 2026 -- Jul 2026}
+\end{tabularx}
+
+\begin{onecolentry}
+\begin{highlights}
+    \item Built ETL workflows to extract, clean, normalize, and load financial
+    datasets into analytics-ready relational structures using Python and SQL.
+    \item Created data-quality checks and transformation logic to improve
+    consistency and reliability for downstream reporting and analysis.
+    \item Developed relational data models and Power BI dashboards supporting
+    financial, operational, and engineering decision-making.
+\end{highlights}
+\end{onecolentry}
+
+\vspace{0.10cm}
+
+\begin{tabularx}{\textwidth}{Xr}
+    \textbf{Eveoy} -- Software Engineering Intern
+        & \textit{Sep 2025 -- Nov 2025}
+\end{tabularx}
+
+\begin{onecolentry}
+\begin{highlights}
+    \item Developed backend features and integrated REST APIs supporting
+    internal applications and data workflows.
+    \item Diagnosed issues across application logic, SQL queries, and API
+    request-response flows to improve backend reliability.
+    \item Implemented SQL-based validation checks to identify inconsistent
+    records and strengthen application data integrity.
+\end{highlights}
+\end{onecolentry}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% PROJECTS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Projects}
+
+\begin{tabularx}{\textwidth}{Xr}
+    \textbf{AIStora -- Agentic Data Analytics Platform}
+        & \href{https://github.com/JamieWei213213/AiStora}{GitHub}\\
+    \textit{Python, Flask, Gemini API, JavaScript, SQLAlchemy, Docker, Pytest}
+        & \\
+\end{tabularx}
+
+\begin{onecolentry}
+\begin{highlights}
+    \item Engineered a bounded agentic analytics system that converts
+    natural-language goals into multi-step plans and orchestrates 11 typed
+    tools for filtering, joining, aggregating, ranking, and result selection.
+    \item Replaced LLM-generated executable code with validated function calls
+    and server-owned local operations; exposed only schemas and privacy-safe
+    metadata to the model rather than raw dataset rows.
+    \item Added model routing, transient-error retries, deterministic result
+    verification with bounded self-repair, privacy-limited successful-plan
+    retrieval, user feedback, and project-level quality metrics.
+    \item Developed an approval-gated cleaning workflow that detects malformed
+    headers, null markers, duplicates, whitespace, and inconsistent rows while
+    preserving the source dataset; verified the system with 47 automated tests.
+\end{highlights}
+\end{onecolentry}
+
+\vspace{0.10cm}
+
+\begin{tabularx}{\textwidth}{Xr}
+    \textbf{Cartoonify Image Translation -- CycleGAN}
+        & \href{https://github.com/JamieWei213213/Cartoonify}{GitHub}\\
+    \textit{Python, PyTorch, Deep Learning, Computer Vision}
+        & \\
+\end{tabularx}
+
+\begin{onecolentry}
+\begin{highlights}
+    \item Developed a CycleGAN image-to-image translation system in PyTorch for
+    unpaired photo-to-cartoon domain adaptation.
+    \item Built preprocessing and training pipelines for more than 20,000
+    images to improve input quality and model-training stability.
+\end{highlights}
+\end{onecolentry}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% SKILLS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Technical Skills}
+
+\begin{onecolentry}
+    \textbf{Languages:} Python, SQL, C\#, JavaScript
+
+    \vspace{1pt}
+
+    \textbf{Backend \& Software Engineering:}
+    Flask, SQLAlchemy, REST APIs, Object-Oriented Programming, Git, Docker,
+    Pytest, Debugging, Data Structures, Algorithms
+
+    \vspace{1pt}
+
+    \textbf{Machine Learning \& Agentic AI:}
+    Gemini API, LLM Function Calling, Agentic Workflows, Prompt Engineering,
+    PyTorch, Scikit-learn
+
+    \vspace{1pt}
+
+    \textbf{Data Engineering \& Analytics:}
+    PostgreSQL, Spark, Pandas, NumPy, ETL, Data Cleaning, Data Modeling,
+    Power BI, Tableau
+\end{onecolentry}
+
+\end{document}
