@@ -108,6 +108,37 @@ document.addEventListener("DOMContentLoaded", () => {
       button.innerHTML = button.dataset.originalContent;
     }
   }
+  function createRequestId() {
+    const cryptoApi = window.crypto;
+    if (cryptoApi && typeof cryptoApi.randomUUID === "function") {
+      return cryptoApi.randomUUID();
+    }
+
+    // randomUUID() requires HTTPS in browsers. Keep cancellation and feedback
+    // working on the HTTP development endpoint with an RFC 4122 UUID v4.
+    const bytes = new Uint8Array(16);
+    if (cryptoApi && typeof cryptoApi.getRandomValues === "function") {
+      cryptoApi.getRandomValues(bytes);
+    } else {
+      for (let index = 0; index < bytes.length; index += 1) {
+        bytes[index] = Math.floor(Math.random() * 256);
+      }
+      let timestamp = Date.now();
+      for (let index = 0; index < 6; index += 1) {
+        bytes[index] ^= timestamp & 0xff;
+        timestamp = Math.floor(timestamp / 256);
+      }
+    }
+    bytes[6] = (bytes[6] & 0x0f) | 0x40;
+    bytes[8] = (bytes[8] & 0x3f) | 0x80;
+    const hex = Array.from(bytes, (byte) =>
+      byte.toString(16).padStart(2, "0")
+    ).join("");
+    return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(
+      12,
+      16
+    )}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+  }
   async function apiFetch(url, options = {}) {
     const response = await fetch(url, options);
     if (response.status === 401) {
@@ -960,10 +991,7 @@ document.addEventListener("DOMContentLoaded", () => {
     chatInput.value = "";
     setButtonLoading(chatSend, true);
     chatCancel.classList.remove("hidden");
-    activeRequestId =
-      window.crypto && window.crypto.randomUUID
-        ? window.crypto.randomUUID()
-        : `${Date.now()}-${Math.random()}`;
+    activeRequestId = createRequestId();
     activeController = new AbortController();
     if (agentActivity) {
       agentActivity.innerHTML =
