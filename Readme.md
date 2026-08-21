@@ -41,13 +41,19 @@ Your data is stored on your own server. When you ask a question, the LLM only se
 - Privacy-safe run evaluation, user feedback, and successful-plan retrieval improve later requests
 - Per-project success, verification, feedback, latency, and tool-usage metrics
 
-See [AGENT_GUIDE.md](./AGENT_GUIDE.md) for the complete architecture, tool and
+See [AGENT_GUIDE.md](./docs/agent/AGENT_GUIDE.md) for the complete architecture, tool and
 API reference, privacy model, configuration, operating guide, troubleshooting,
 testing instructions, and file inventory.
 
-See [AWS_DEPLOYMENT_GUIDE.md](./AWS_DEPLOYMENT_GUIDE.md) for the S3-backed
+See [AWS_DEPLOYMENT_GUIDE.md](./docs/deployment/AWS_DEPLOYMENT_GUIDE.md) for the S3-backed
 dataset layer, private RDS PostgreSQL, ECS/Fargate deployment, Terraform,
 GitHub OIDC CI/CD, and least-privilege IAM design.
+
+See [AIStora_INTERVIEW_GUIDE.md](./docs/interview/AIStora_INTERVIEW_GUIDE.md) for the complete
+project explanation, technology choices, agent and AWS walkthroughs, honest
+limitations, interview questions, STAR story, demo script, and resume wording.
+
+All project guides are indexed in [docs/README.md](./docs/README.md).
 
 ---
 
@@ -66,7 +72,7 @@ GitHub OIDC CI/CD, and least-privilege IAM design.
 
 ## Run it locally
 ```bash
-git clone https://github.com/naga251602/AIStora.git
+git clone https://github.com/JamieWei213213/AiStora.git
 cd AIStora
 cp .env.example .env   # add your Gemini API key
 docker-compose up --build

@@ -802,7 +802,7 @@ Set at minimum:
 
 ```dotenv
 GEMINI_API_KEY=your-key
-GEMINI_MODEL=gemini-3.1-flash-lite
+GEMINI_MODEL=gemini-3.6-flash
 GEMINI_ADVANCED_MODEL=gemini-3.6-flash
 SECRET_KEY=a-long-random-secret
 ```
@@ -843,7 +843,7 @@ The local analytics engine materializes an S3 object only into bounded
 ephemeral storage while it is being analyzed. S3 remains the durable source of
 truth, and cleaned outputs are new S3 objects.
 
-See [`AWS_DEPLOYMENT_GUIDE.md`](./AWS_DEPLOYMENT_GUIDE.md) before provisioning
+See [`AWS_DEPLOYMENT_GUIDE.md`](../deployment/AWS_DEPLOYMENT_GUIDE.md) before provisioning
 anything. It includes the cost warning, bootstrap sequence, IAM explanation,
 CI/CD variables, verification checklist, and honest development limitations.
 
@@ -995,11 +995,11 @@ Set `GEMINI_API_KEY` in `.env`, then restart the application.
 
 ### Model returns `404 NOT_FOUND`
 
-Use a model currently available to your Gemini account. The low-cost standard
-default is `gemini-3.1-flash-lite` and can be changed without editing code:
+Use a model currently available to your Gemini account. The default is
+`gemini-3.6-flash` and can be changed without editing code:
 
 ```dotenv
-GEMINI_MODEL=gemini-3.1-flash-lite
+GEMINI_MODEL=gemini-3.6-flash
 ```
 
 Restart AIStora after changing `.env`.

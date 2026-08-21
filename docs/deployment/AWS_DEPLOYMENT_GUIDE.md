@@ -116,23 +116,21 @@ From `infra/terraform`:
 
 ```powershell
 Copy-Item terraform.tfvars.example terraform.tfvars
+Copy-Item backend.hcl.example backend.hcl
 terraform fmt -recursive
-terraform init
+terraform init -reconfigure -backend-config=backend.hcl
 terraform validate
 terraform plan -out aistora.tfplan
 terraform apply aistora.tfplan
 ```
 
-For team use, first create a dedicated Terraform-state S3 bucket with
-versioning and encryption, copy `backend.hcl.example` to `backend.hcl`, and
-initialize with:
+First create the dedicated Terraform-state S3 bucket with versioning,
+encryption, public-access blocking, and a TLS-only policy. Configure its exact
+name, key, and region in `backend.hcl`. The backend uses native S3 lockfiles,
+so DynamoDB locking is not required for modern Terraform.
 
-```powershell
-terraform init -backend-config=backend.hcl
-```
-
-The backend uses S3 lockfiles. DynamoDB locking is not needed for modern
-Terraform.
+Do not apply the stack after a `Missing backend configuration` warning. Confirm
+Terraform reports `Successfully configured the backend "s3"` first.
 
 ## Configure the Gemini secret
 
