@@ -1,0 +1,12 @@
+{
+  "name": "aistora-frontend",
+  "private": true,
+  "description": "Builds static/css/tailwind.css. The compiled CSS is committed, so Node is only needed when templates or scripts change.",
+  "scripts": {
+    "build:css": "tailwindcss -i ./static/css/tailwind.input.css -o ./static/css/tailwind.css --minify",
+    "watch:css": "tailwindcss -i ./static/css/tailwind.input.css -o ./static/css/tailwind.css --watch"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.0"
+  }
+}

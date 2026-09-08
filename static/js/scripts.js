@@ -59,6 +59,12 @@ document.addEventListener("DOMContentLoaded", () => {
   let chatSend = document.getElementById("chat-send");
   const chatCancel = document.getElementById("chat-cancel");
   const autoAnalyze = document.getElementById("auto-analyze");
+  const edaReportButton = document.getElementById("eda-report");
+  const edaReportModal = document.getElementById("eda-report-modal");
+  const edaReportContent = document.getElementById("eda-report-content");
+  const edaReportSubtitle = document.getElementById("eda-report-subtitle");
+  const edaReportClose = document.getElementById("eda-report-close");
+  const edaReportDownload = document.getElementById("eda-report-download");
   const clearAgentMemory = document.getElementById("clear-agent-memory");
   const clearAgentLearning = document.getElementById("clear-agent-learning");
   const agentSuggestions = document.getElementById("agent-suggestions");
@@ -67,6 +73,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const agentMetrics = document.getElementById("agent-metrics");
   let activeRequestId = null;
   let activeController = null;
+  let lastEdaReport = null;
 
   const backToUpload = document.getElementById("back-to-upload");
 
@@ -97,6 +104,16 @@ document.addEventListener("DOMContentLoaded", () => {
     setTimeout(() => {
       if (element) element.classList.add("hidden");
     }, 3000);
+  }
+  function showAuthNotice(message) {
+    if (!authError) return;
+    authError.textContent = message;
+    authError.classList.remove("hidden", "bg-red-50", "text-red-600", "border-red-100");
+    authError.classList.add("bg-emerald-50", "text-emerald-700", "border-emerald-100");
+    setTimeout(() => {
+      authError.classList.add("hidden", "bg-red-50", "text-red-600", "border-red-100");
+      authError.classList.remove("bg-emerald-50", "text-emerald-700", "border-emerald-100");
+    }, 4000);
   }
   function setButtonLoading(button, isLoading) {
     if (!button) return;
@@ -154,6 +171,7 @@ document.addEventListener("DOMContentLoaded", () => {
     detectRelationshipsBtn,
     goChat,
     chatSend,
+    edaReportButton,
     logoutBtn,
     createDbBtn,
     confirmDbBtn,
@@ -182,8 +200,12 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   }
-  if (authSubmitBtn) {
-    authSubmitBtn.addEventListener("click", async () => {
+  const authForm = document.getElementById("auth-form");
+  if (authSubmitBtn && authForm) {
+    // A real <form> so that Enter submits and password managers fill it.
+    authForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      if (authSubmitBtn.disabled) return;
       const email = authEmail.value;
       const password = authPassword.value;
       if (!email || !password) {
@@ -201,8 +223,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const data = await res.json();
         if (data.success) {
           if (!isLoginMode) {
-            alert("Account created! Please login.");
             authToggleMode.click();
+            showAuthNotice("Account created. Please log in.");
           } else {
             await loadDatabases();
           }
@@ -232,16 +254,16 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         data.databases.forEach((db) => {
           dbList.innerHTML += `
-            <div class="bg-white p-5 rounded-xl border border-slate-200 hover:shadow-md transition cursor-pointer group relative db-item-btn" data-db-id="${db.id}">
+            <div class="bg-white p-5 rounded-xl border border-slate-200 hover:shadow-md transition cursor-pointer group relative db-item-btn" data-db-id="${escapeHtml(db.id)}">
               <div class="flex justify-between items-start mb-2">
                 <div class="p-2 bg-sky-50 rounded-lg text-sky-600"><i data-lucide="database"></i></div>
                 <div class="flex gap-1">
-                  <button class="text-slate-300 hover:text-slate-700 p-1 rename-db-btn" data-db-id="${db.id}" data-db-name="${db.name}"><i data-lucide="edit-2" class="w-3 h-3"></i></button>
-                  <button class="text-slate-300 hover:text-red-500 p-1 delete-db-btn" data-db-id="${db.id}" data-db-name="${db.name}"><i data-lucide="trash-2" class="w-3 h-3"></i></button>
+                  <button class="text-slate-300 hover:text-slate-700 p-1 rename-db-btn" data-db-id="${escapeHtml(db.id)}" data-db-name="${escapeHtml(db.name)}"><i data-lucide="edit-2" class="w-3 h-3"></i></button>
+                  <button class="text-slate-300 hover:text-red-500 p-1 delete-db-btn" data-db-id="${escapeHtml(db.id)}" data-db-name="${escapeHtml(db.name)}"><i data-lucide="trash-2" class="w-3 h-3"></i></button>
                 </div>
               </div>
-              <h3 class="font-semibold text-slate-800">${db.name}</h3>
-              <p class="text-xs text-slate-500">${db.table_count} tables</p>
+              <h3 class="font-semibold text-slate-800">${escapeHtml(db.name)}</h3>
+              <p class="text-xs text-slate-500">${escapeHtml(db.table_count)} tables</p>
             </div>
           `;
         });
@@ -291,6 +313,10 @@ document.addEventListener("DOMContentLoaded", () => {
         renderSchema(data.schema);
         const schemaSize = data.schema ? Object.keys(data.schema).length : 0;
         if (goChat) goChat.disabled = schemaSize === 0;
+        // Relationships are per database; switching must not carry the
+        // previous database's suggestions across.
+        if (detectRelationshipsBtn) detectRelationshipsBtn.disabled = schemaSize < 2;
+        if (relationshipList) relationshipList.innerHTML = "";
         showScreen(screens.upload);
       } else {
         showError(data.error);
@@ -302,18 +328,39 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  // Mutations used to have no error handling: a network failure was an
+  // unhandled rejection and a double click sent the request twice.
+  async function mutate(url, options, onSuccess, label) {
+    if (mutate.inFlight) return;
+    mutate.inFlight = true;
+    showLoading(true, label || "Working...");
+    try {
+      const res = await apiFetch(url, options);
+      if (!res) return;
+      const data = await res.json();
+      if (data.success) await onSuccess(data);
+      else showError(data.error || "The request failed.");
+    } catch (error) {
+      showError("Connection error. Please try again.");
+    } finally {
+      mutate.inFlight = false;
+      showLoading(false);
+    }
+  }
+
   async function renameDatabase(id, currentName) {
     const newName = prompt("Enter a new database name:", currentName);
     if (newName && newName !== currentName) {
-      const res = await apiFetch(`/api/databases/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: newName }),
-      });
-      if (!res) return;
-      const data = await res.json();
-      if (data.success) loadDatabases();
-      else showError(data.error);
+      await mutate(
+        `/api/databases/${id}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name: newName }),
+        },
+        loadDatabases,
+        "Renaming database..."
+      );
     }
   }
 
@@ -325,11 +372,12 @@ document.addEventListener("DOMContentLoaded", () => {
     )
       return;
 
-    const res = await apiFetch(`/api/databases/${id}`, { method: "DELETE" });
-    if (!res) return;
-    const data = await res.json();
-    if (data.success) loadDatabases();
-    else showError(data.error);
+    await mutate(
+      `/api/databases/${id}`,
+      { method: "DELETE" },
+      loadDatabases,
+      "Deleting database..."
+    );
   }
 
   if (createDbBtn) {
@@ -484,17 +532,16 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    const res = await apiFetch(`/api/tables/${tableId}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: newName }),
-    });
-    if (!res) return;
-    const data = await res.json();
-    if (data.success) {
-      alert("Table renamed successfully!");
-      updateSchemaFromServer();
-    } else showError(data.error);
+    await mutate(
+      `/api/tables/${tableId}`,
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: newName }),
+      },
+      updateSchemaFromServer,
+      "Renaming table..."
+    );
   }
 
   async function handleDeleteTable(tableId) {
@@ -502,13 +549,12 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!confirm(`Are you sure you want to delete the table "${input.value}"?`))
       return;
 
-    const res = await apiFetch(`/api/tables/${tableId}`, { method: "DELETE" });
-    if (!res) return;
-    const data = await res.json();
-    if (data.success) {
-      alert("Table deleted.");
-      updateSchemaFromServer();
-    } else showError(data.error);
+    await mutate(
+      `/api/tables/${tableId}`,
+      { method: "DELETE" },
+      updateSchemaFromServer,
+      "Deleting table..."
+    );
   }
 
   function closeCleaningModal() {
@@ -538,21 +584,21 @@ document.addEventListener("DOMContentLoaded", () => {
       let html = `
         <div class="mb-4">
           <p class="font-semibold text-slate-700">${escapeHtml(tableName)}</p>
-          <p class="text-[11px] text-slate-500 mt-1">${report.total_rows} source rows • ${report.estimated_output_rows} estimated cleaned rows</p>
+          <p class="text-[11px] text-slate-500 mt-1">${escapeHtml(report.total_rows)} source rows • ${escapeHtml(report.estimated_output_rows)} estimated cleaned rows</p>
         </div>
         <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-4">
-          <div class="p-2 rounded-xl bg-slate-50"><p class="text-[10px] text-slate-400">Duplicates</p><p class="font-semibold text-slate-700">${report.duplicate_rows}</p></div>
-          <div class="p-2 rounded-xl bg-slate-50"><p class="text-[10px] text-slate-400">Empty rows</p><p class="font-semibold text-slate-700">${report.empty_rows}</p></div>
-          <div class="p-2 rounded-xl bg-slate-50"><p class="text-[10px] text-slate-400">Whitespace cells</p><p class="font-semibold text-slate-700">${report.trimmed_cells}</p></div>
-          <div class="p-2 rounded-xl bg-slate-50"><p class="text-[10px] text-slate-400">Null markers</p><p class="font-semibold text-slate-700">${report.standardized_nulls}</p></div>
-          <div class="p-2 rounded-xl bg-slate-50"><p class="text-[10px] text-slate-400">Malformed rows</p><p class="font-semibold text-slate-700">${report.malformed_rows}</p></div>
-          <div class="p-2 rounded-xl bg-slate-50"><p class="text-[10px] text-slate-400">Header changes</p><p class="font-semibold text-slate-700">${report.header_changes.length}</p></div>
+          <div class="p-2 rounded-xl bg-slate-50"><p class="text-[10px] text-slate-400">Duplicates</p><p class="font-semibold text-slate-700">${escapeHtml(report.duplicate_rows)}</p></div>
+          <div class="p-2 rounded-xl bg-slate-50"><p class="text-[10px] text-slate-400">Empty rows</p><p class="font-semibold text-slate-700">${escapeHtml(report.empty_rows)}</p></div>
+          <div class="p-2 rounded-xl bg-slate-50"><p class="text-[10px] text-slate-400">Whitespace cells</p><p class="font-semibold text-slate-700">${escapeHtml(report.trimmed_cells)}</p></div>
+          <div class="p-2 rounded-xl bg-slate-50"><p class="text-[10px] text-slate-400">Null markers</p><p class="font-semibold text-slate-700">${escapeHtml(report.standardized_nulls)}</p></div>
+          <div class="p-2 rounded-xl bg-slate-50"><p class="text-[10px] text-slate-400">Malformed rows</p><p class="font-semibold text-slate-700">${escapeHtml(report.malformed_rows)}</p></div>
+          <div class="p-2 rounded-xl bg-slate-50"><p class="text-[10px] text-slate-400">Header changes</p><p class="font-semibold text-slate-700">${escapeHtml(report.header_changes.length)}</p></div>
         </div>`;
 
       if (result.requires_cleaning) {
         html += '<p class="font-medium text-slate-700 mb-2">Recommended plan</p><div class="space-y-2">';
         report.actions.forEach((action) => {
-          html += `<div class="flex gap-2 p-2 rounded-xl border border-emerald-100 bg-emerald-50/50"><i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-emerald-500 mt-0.5 shrink-0"></i><div><p class="text-slate-700">${escapeHtml(action.description)}</p><p class="text-[10px] text-slate-400">${action.affected} affected</p></div></div>`;
+          html += `<div class="flex gap-2 p-2 rounded-xl border border-emerald-100 bg-emerald-50/50"><i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-emerald-500 mt-0.5 shrink-0"></i><div><p class="text-slate-700">${escapeHtml(action.description)}</p><p class="text-[10px] text-slate-400">${escapeHtml(action.affected)} affected</p></div></div>`;
         });
         html += "</div>";
       } else {
@@ -562,7 +608,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (missing.length) {
         html += '<details class="mt-4"><summary class="cursor-pointer text-slate-600 font-medium">Missing values by column</summary><div class="mt-2 space-y-1">';
         missing.forEach(([column, count]) => {
-          html += `<div class="flex justify-between text-[11px]"><span>${escapeHtml(column)}</span><span class="text-slate-400">${count}</span></div>`;
+          html += `<div class="flex justify-between text-[11px]"><span>${escapeHtml(column)}</span><span class="text-slate-400">${escapeHtml(count)}</span></div>`;
         });
         html += '<p class="text-[10px] text-amber-600 mt-2">Missing values are reported, not guessed or filled.</p></div></details>';
       }
@@ -650,28 +696,28 @@ document.addEventListener("DOMContentLoaded", () => {
           <div class="flex items-center gap-2">
             <i data-lucide="file-text" class="text-sky-500 w-4 h-4"></i>
             <div>
-              <p class="text-slate-700 text-xs font-medium">${
+              <p class="text-slate-700 text-xs font-medium">${escapeHtml(
                 details.filename
-              }</p>
-              <p class="text-[11px] text-slate-400">${
+              )}</p>
+              <p class="text-[11px] text-slate-400">${escapeHtml(
                 details.row_count || 0
-              } rows</p>
+              )} rows</p>
             </div>
           </div>
           <div class="flex items-center gap-2">
-            <input type="text" value="${tableName}" data-table-id="${
+            <input type="text" value="${escapeHtml(tableName)}" data-table-id="${escapeHtml(
         details.id
-      }"
+      )}"
                    class="w-28 p-1.5 border border-slate-200 rounded-lg text-[11px] focus:ring-1 focus:ring-sky-500">
-            <button data-table-id="${details.id}" data-original-content="Rename"
+            <button data-table-id="${escapeHtml(details.id)}" data-original-content="Rename"
                     class="rename-btn text-[10px] bg-slate-200 text-slate-600 px-2 py-1 rounded-md hover:bg-slate-300">
               Rename
             </button>
-            <button data-table-id="${details.id}" data-table-name="${tableName}"
+            <button data-table-id="${escapeHtml(details.id)}" data-table-name="${escapeHtml(tableName)}"
                     class="clean-btn text-[10px] bg-emerald-50 text-emerald-700 px-2 py-1 rounded-md hover:bg-emerald-100">
               Auto clean
             </button>
-            <button data-table-id="${details.id}"
+            <button data-table-id="${escapeHtml(details.id)}"
                     class="delete-btn text-slate-400 hover:text-red-500 p-1">
               <i data-lucide="trash-2" class="w-3 h-3"></i>
             </button>
@@ -685,9 +731,11 @@ document.addEventListener("DOMContentLoaded", () => {
     let columnsHTML = '<div class="space-y-2">';
 
     Object.entries(schema).forEach(([tableName, details]) => {
-      tablesHTML += `<li class="flex items-center justify-between"><span>${tableName}</span><span class="text-slate-400">${
+      tablesHTML += `<li class="flex items-center justify-between"><span>${escapeHtml(
+        tableName
+      )}</span><span class="text-slate-400">${escapeHtml(
         details.row_count || 0
-      } rows</span></li>`;
+      )} rows</span></li>`;
       let colList = "";
       if (details.types) {
         Object.entries(details.types).forEach(([colName, colType]) => {
@@ -695,10 +743,16 @@ document.addEventListener("DOMContentLoaded", () => {
             colType === "int" || colType === "float"
               ? "text-amber-600"
               : "text-emerald-600";
-          colList += `<li class="flex justify-between"><span>${colName}</span><span class="${typeColor} font-medium">${colType}</span></li>`;
+          colList += `<li class="flex justify-between"><span>${escapeHtml(
+            colName
+          )}</span><span class="${typeColor} font-medium">${escapeHtml(
+            colType
+          )}</span></li>`;
         });
       }
-      columnsHTML += `<div><p class="font-semibold text-slate-600 mb-1">${tableName}</p><ul class="pl-2 space-y-0.5 text-slate-500">${colList}</ul></div>`;
+      columnsHTML += `<div><p class="font-semibold text-slate-600 mb-1">${escapeHtml(
+        tableName
+      )}</p><ul class="pl-2 space-y-0.5 text-slate-500">${colList}</ul></div>`;
     });
     tablesHTML += "</ul>";
     columnsHTML += "</div>";
@@ -745,7 +799,13 @@ document.addEventListener("DOMContentLoaded", () => {
     let listHTML = "";
     let schemaHTML = `<p class="font-semibold text-slate-700 mb-1 flex items-center gap-1"><i data-lucide="git-branch" class="w-3.5 h-3.5 text-emerald-500"></i> Relationships</p><ul class="space-y-1">`;
     relationships.forEach((rel) => {
-      const relText = `<span class="font-semibold">${rel.from_table}.${rel.from_column}</span> → <span class="font-semibold">${rel.to_table}.${rel.to_column}</span>`;
+      const relText = `<span class="font-semibold">${escapeHtml(
+        rel.from_table
+      )}.${escapeHtml(
+        rel.from_column
+      )}</span> → <span class="font-semibold">${escapeHtml(
+        rel.to_table
+      )}.${escapeHtml(rel.to_column)}</span>`;
       listHTML += `<div class="rounded-2xl border border-dashed border-emerald-200 bg-emerald-50/70 px-3 py-2.5 flex items-start gap-2"><i data-lucide="link-2" class="text-emerald-500 w-4 h-4 mt-[2px]"></i><div><p class="text-[11px] text-emerald-800 font-medium">Suggested relationship</p><p class="text-[11px] text-emerald-700">${relText}</p></div></div>`;
       schemaHTML += `<li class="text-emerald-700">${relText}</li>`;
     });
@@ -776,10 +836,21 @@ document.addEventListener("DOMContentLoaded", () => {
     );
   }
 
+  // Escapes for text nodes AND double/single quoted attribute values. The
+  // previous textContent -> innerHTML round-trip did not escape quotes, so a
+  // value containing a double quote could break out of an attribute.
+  const HTML_ESCAPES = {
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;",
+    "`": "&#96;",
+  };
+
   function escapeHtml(value) {
-    const element = document.createElement("div");
-    element.textContent = value === null || value === undefined ? "" : String(value);
-    return element.innerHTML;
+    if (value === null || value === undefined) return "";
+    return String(value).replace(/[&<>"'`]/g, (character) => HTML_ESCAPES[character]);
   }
 
   function appendBubble(html, side) {
@@ -819,6 +890,268 @@ document.addEventListener("DOMContentLoaded", () => {
       table += "</tr>";
     });
     return `<div class="overflow-x-auto">${table}</tbody></table></div>`;
+  }
+
+  function formatEdaNumber(value) {
+    if (value === null || value === undefined) return "—";
+    const number = Number(value);
+    if (!Number.isFinite(number)) return escapeHtml(value);
+    return number.toLocaleString(undefined, { maximumFractionDigits: 4 });
+  }
+
+  function formatEdaLabel(value) {
+    if (!value) return "—";
+    const text = String(value).replaceAll("_", " ");
+    return text.charAt(0).toUpperCase() + text.slice(1);
+  }
+
+  function edaList(items, emptyMessage) {
+    if (!items || !items.length) {
+      return `<p class="text-[11px] text-slate-400">${escapeHtml(emptyMessage)}</p>`;
+    }
+    return `<ul class="space-y-1 text-[11px] text-slate-600">${items
+      .map(
+        (item) =>
+          `<li class="flex gap-2"><span class="text-sky-500">•</span><span>${escapeHtml(
+            item
+          )}</span></li>`
+      )
+      .join("")}</ul>`;
+  }
+
+  function renderEdaTableReport(table) {
+    const missingRows = (table.missingness || [])
+      .filter((item) => Number(item.missing_count) > 0)
+      .slice(0, 12)
+      .map((item) => ({
+        Column: item.column,
+        Missing: formatEdaNumber(item.missing_count),
+        Rate: `${(Number(item.missing_rate || 0) * 100).toFixed(1)}%`,
+        Privacy: item.classification,
+      }));
+    const numericRows = (table.numeric_summary || []).slice(0, 20).map((item) => ({
+      Column: item.column,
+      Count: formatEdaNumber(item.count),
+      Mean: formatEdaNumber(item.mean),
+      Median: formatEdaNumber(item.median),
+      Min: formatEdaNumber(item.min),
+      Max: formatEdaNumber(item.max),
+      "Std dev": formatEdaNumber(item.std_dev),
+      "IQR tails": item.outlier_status === "assessed"
+        ? `${formatEdaNumber(item.iqr_outlier_count)} (${(
+            Number(item.iqr_outlier_rate || 0) * 100
+          ).toFixed(1)}%)`
+        : "Not assessed (small sample)",
+      Shape: formatEdaLabel(item.distribution_shape),
+    }));
+    const categoryRows = (table.categorical_summary || []).slice(0, 20).map((item) => ({
+      Column: item.column,
+      Distinct: `${formatEdaNumber(item.distinct_count)}${
+        item.distinct_count_is_lower_bound ? "+" : ""
+      }`,
+      "Top values": item.values_suppressed_reason
+        ? `[SUPPRESSED: ${String(item.values_suppressed_reason).replaceAll("_", " ")}]`
+        : (item.top_values || [])
+            .map((entry) => `${entry.value} (${entry.count})`)
+            .join(", ") || "—",
+      Privacy: item.classification,
+    }));
+    const timeRows = (table.time_summary || []).map((item) => ({
+      Column: item.column,
+      Earliest: item.min,
+      Latest: item.max,
+      Parsed: formatEdaNumber(item.parsed_count),
+      Invalid: formatEdaNumber(item.invalid_date_count),
+    }));
+    const correlationRows = (table.correlations || []).map((item) => ({
+      Columns: `${item.left} ↔ ${item.right}`,
+      "Pearson r": formatEdaNumber(item.pearson_r),
+      Pairs: formatEdaNumber(item.pair_count),
+    }));
+    const missingPatternRows = (table.missingness_patterns || []).map((item) => ({
+      Column: item.column,
+      "Explained by": item.group_by,
+      Interpretation: item.summary,
+    }));
+    const completeness = table.complete_scan ? "Complete scan" : "Bounded sample";
+    const statusClass = table.complete_scan
+      ? "bg-emerald-50 text-emerald-700"
+      : "bg-amber-50 text-amber-700";
+    return `<details open class="rounded-xl border border-slate-200 bg-white overflow-hidden">
+      <summary class="cursor-pointer px-4 py-3 flex flex-wrap items-center justify-between gap-2">
+        <span class="font-semibold text-sm text-slate-800">${escapeHtml(table.name)}</span>
+        <span class="flex items-center gap-2 text-[10px]"><span class="${statusClass} px-2 py-1 rounded-full">${completeness}</span><span class="text-slate-400">${formatEdaNumber(
+      table.rows_scanned
+    )} rows • ${formatEdaNumber(table.column_count)} columns • ${formatEdaNumber(
+      table.duration_ms
+    )} ms</span></span>
+      </summary>
+      <div class="border-t border-slate-100 p-4 space-y-5">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+          <div class="rounded-lg bg-slate-50 p-2"><p class="text-[9px] uppercase text-slate-400">Declared rows</p><p class="text-sm font-semibold">${formatEdaNumber(
+            table.declared_row_count
+          )}</p></div>
+          <div class="rounded-lg bg-slate-50 p-2"><p class="text-[9px] uppercase text-slate-400">Duplicates</p><p class="text-sm font-semibold">${formatEdaNumber(
+            table.duplicate_rows
+          )}</p></div>
+          <div class="rounded-lg bg-slate-50 p-2"><p class="text-[9px] uppercase text-slate-400">Numeric columns</p><p class="text-sm font-semibold">${formatEdaNumber(
+            table.numeric_column_count
+          )}</p></div>
+          <div class="rounded-lg bg-slate-50 p-2"><p class="text-[9px] uppercase text-slate-400">Categorical columns</p><p class="text-sm font-semibold">${formatEdaNumber(
+            table.categorical_column_count
+          )}</p></div>
+        </div>
+        <section><h4 class="text-xs font-semibold text-slate-700 mb-2">Verified findings</h4>${edaList(
+          table.findings,
+          "No high-priority deterministic flags in this table."
+        )}</section>
+        <section><h4 class="text-xs font-semibold text-slate-700 mb-2">Missing values</h4>${renderTable(
+          missingRows
+        )}</section>
+        <section><h4 class="text-xs font-semibold text-slate-700 mb-2">Missingness context</h4>${renderTable(
+          missingPatternRows
+        )}</section>
+        <section><h4 class="text-xs font-semibold text-slate-700 mb-2">Numeric distributions</h4>${renderTable(
+          numericRows
+        )}</section>
+        <section><h4 class="text-xs font-semibold text-slate-700 mb-2">Categorical distributions</h4>${renderTable(
+          categoryRows
+        )}</section>
+        <section><h4 class="text-xs font-semibold text-slate-700 mb-2">Time coverage</h4>${renderTable(
+          timeRows
+        )}</section>
+        <section><h4 class="text-xs font-semibold text-slate-700 mb-2">Strongest correlations</h4>${renderTable(
+          correlationRows
+        )}</section>
+        ${
+          table.warnings && table.warnings.length
+            ? `<section class="rounded-lg bg-amber-50 p-3"><h4 class="text-xs font-semibold text-amber-700 mb-2">Scope warnings</h4>${edaList(
+                table.warnings,
+                ""
+              )}</section>`
+            : ""
+        }
+      </div>
+    </details>`;
+  }
+
+  function renderEdaReport(report) {
+    const overview = report.overview || {};
+    const statusClass = report.status === "complete"
+      ? "bg-emerald-50 text-emerald-700"
+      : "bg-amber-50 text-amber-700";
+    const relationships = (report.relationships || []).map((item) => {
+      const coverage = item.status === "data_verified"
+        ? ` • ${(Number(item.from_match_rate || 0) * 100).toFixed(
+            1
+          )}% of child rows reference a valid parent; ${(
+            Number(item.to_match_rate || 0) * 100
+          ).toFixed(1)}% of parent rows participate${
+            item.scope_complete ? "" : " (bounded scope)"
+          }`
+        : " • schema validated; data coverage unavailable";
+      return `${item.from_table}.${item.from_column} → ${item.to_table}.${item.to_column}${coverage}`;
+    });
+    const sensitiveCount = ((report.privacy || {}).sensitive_columns || []).length;
+    const traceRows = (report.trace || []).map((item) => ({
+      Step: item.step,
+      Table: item.table,
+      Status: item.status,
+      Duration: `${formatEdaNumber(item.duration_ms)} ms`,
+      Summary: item.summary,
+    }));
+    return `<div class="space-y-5">
+      <section class="rounded-xl border border-slate-200 bg-white p-4">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+          <div><p class="text-sm font-semibold text-slate-800">Database overview</p><p class="text-[11px] text-slate-400">Generated ${escapeHtml(
+            new Date(report.generated_at).toLocaleString()
+          )} • ${formatEdaNumber(report.duration_ms)} ms</p></div>
+          <span class="${statusClass} px-2.5 py-1 rounded-full text-[10px] font-medium">${escapeHtml(
+            report.status
+          )}</span>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-2">
+          ${[
+            ["Tables", overview.profiled_table_count],
+            ["Rows scanned", overview.scanned_rows],
+            ["Declared rows", overview.declared_rows],
+            ["Columns", overview.column_count],
+            ["Relationships", overview.relationship_count],
+          ]
+            .map(
+              ([label, value]) =>
+                `<div class="rounded-lg bg-slate-50 p-3"><p class="text-[9px] uppercase text-slate-400">${label}</p><p class="text-base font-semibold text-slate-700">${formatEdaNumber(
+                  value
+                )}</p></div>`
+            )
+            .join("")}
+        </div>
+      </section>
+      <section class="grid md:grid-cols-2 gap-3">
+        <div class="rounded-xl border border-sky-100 bg-sky-50/60 p-4"><h3 class="text-xs font-semibold text-sky-800 mb-2">Verified findings</h3>${edaList(
+          report.findings,
+          "No high-priority deterministic flags were found."
+        )}</div>
+        <div class="rounded-xl border border-violet-100 bg-violet-50/60 p-4"><h3 class="text-xs font-semibold text-violet-800 mb-2">Privacy controls</h3><p class="text-[11px] text-slate-600">All calculations ran locally. No raw rows are returned in this report. Category values are hidden for ${formatEdaNumber(
+          sensitiveCount
+        )} name-classified columns; identifier and free-text values are also suppressed.</p></div>
+      </section>
+      <section class="space-y-3">${(report.tables || [])
+        .map(renderEdaTableReport)
+        .join("")}</section>
+      <section class="rounded-xl border border-slate-200 bg-white p-4"><h3 class="text-xs font-semibold text-slate-700 mb-2">Schema relationships</h3>${edaList(
+        relationships,
+        "No validated relationship hints are available."
+      )}</section>
+      <section class="rounded-xl border border-amber-100 bg-amber-50/60 p-4"><h3 class="text-xs font-semibold text-amber-800 mb-2">Limitations</h3>${edaList(
+        report.limitations,
+        "No additional limitations were recorded."
+      )}</section>
+      <details class="rounded-xl border border-slate-200 bg-white p-4"><summary class="cursor-pointer text-xs font-semibold text-slate-700">Validated plan and execution trace</summary><div class="mt-3 space-y-3"><p class="text-[11px] text-emerald-700">Plan version ${formatEdaNumber(
+        (report.plan || {}).version
+      )} passed structural validation before execution.</p>${renderTable(traceRows)}<p class="text-[10px] text-slate-400">Limits: ${formatEdaNumber(
+        (report.limits || {}).tables
+      )} tables, ${formatEdaNumber(
+        (report.limits || {}).rows_per_table
+      )} rows per table, ${formatEdaNumber(
+        (report.limits || {}).timeout_seconds
+      )} seconds.</p></div></details>
+    </div>`;
+  }
+
+  async function runEdaReport() {
+    if (!edaReportModal || !edaReportContent || !edaReportButton) return;
+    if (activeRequestId) {
+      showError("Finish or cancel the current agent task first.");
+      return;
+    }
+    edaReportModal.classList.remove("hidden");
+    edaReportDownload.classList.add("hidden");
+    edaReportContent.innerHTML =
+      '<div class="h-full flex items-center justify-center"><div class="text-center"><div class="spinner mx-auto mb-3"></div><p class="text-xs text-slate-600">Profiling tables locally…</p><p class="text-[10px] text-slate-400 mt-1">Large datasets may use bounded samples.</p></div></div>';
+    setButtonLoading(edaReportButton, true);
+    try {
+      const response = await apiFetch("/api/eda-report", { method: "POST" });
+      if (!response) return;
+      const result = await response.json();
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || "The EDA report could not be completed.");
+      }
+      lastEdaReport = result.report;
+      edaReportSubtitle.textContent = `${lastEdaReport.status} • ${formatEdaNumber(
+        lastEdaReport.overview.scanned_rows
+      )} rows scanned locally`;
+      edaReportContent.innerHTML = renderEdaReport(lastEdaReport);
+      edaReportDownload.classList.remove("hidden");
+    } catch (error) {
+      lastEdaReport = null;
+      edaReportSubtitle.textContent = "The report was not generated";
+      edaReportContent.innerHTML = `<div class="rounded-xl border border-red-100 bg-red-50 p-4"><p class="text-sm font-semibold text-red-700">EDA report error</p><p class="text-xs text-red-600 mt-1">${escapeHtml(
+        error.message
+      )}</p></div>`;
+    } finally {
+      setButtonLoading(edaReportButton, false);
+    }
   }
 
   function traceHtml(result) {
@@ -1141,6 +1474,28 @@ document.addEventListener("DOMContentLoaded", () => {
         autoAnalyze: true,
       })
     );
+  }
+  if (edaReportButton) {
+    edaReportButton.addEventListener("click", runEdaReport);
+  }
+  if (edaReportClose) {
+    edaReportClose.addEventListener("click", () =>
+      edaReportModal.classList.add("hidden")
+    );
+  }
+  if (edaReportDownload) {
+    edaReportDownload.addEventListener("click", () => {
+      if (!lastEdaReport) return;
+      const blob = new Blob([JSON.stringify(lastEdaReport, null, 2)], {
+        type: "application/json",
+      });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `aistora-eda-${new Date().toISOString().slice(0, 10)}.json`;
+      link.click();
+      URL.revokeObjectURL(url);
+    });
   }
   if (chatInput) {
     chatInput.addEventListener("keydown", (event) => {

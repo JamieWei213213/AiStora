@@ -43,3 +43,8 @@ output "gemini_secret_arn" {
   description = "Update this secret value out of band; never put the API key in Terraform variables."
   value       = aws_secretsmanager_secret.gemini.arn
 }
+
+output "session_cache_endpoint" {
+  description = "Redis endpoint for REDIS_URL, or null when the cache is disabled."
+  value       = try(aws_elasticache_replication_group.sessions[0].primary_endpoint_address, null)
+}

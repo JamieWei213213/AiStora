@@ -3,6 +3,8 @@ import hashlib
 import os
 import re
 
+from engine.parser import detect_encoding
+
 
 NULL_TOKENS = {"", "na", "n/a", "null", "none"}
 
@@ -52,7 +54,7 @@ def _row_digest(values):
 
 
 def build_cleaning_preview(filepath, max_rows=250_000):
-    with open(filepath, "r", encoding="utf-8-sig", newline="") as source:
+    with open(filepath, "r", encoding=detect_encoding(filepath), newline="") as source:
         reader = csv.reader(source)
         try:
             headers = next(reader)
@@ -152,7 +154,7 @@ def build_cleaning_preview(filepath, max_rows=250_000):
 def write_cleaned_copy(source_path, destination_path, action_ids, max_rows=250_000):
     actions = set(action_ids)
     with (
-        open(source_path, "r", encoding="utf-8-sig", newline="") as source,
+        open(source_path, "r", encoding=detect_encoding(source_path), newline="") as source,
         open(destination_path, "w", encoding="utf-8", newline="") as destination,
     ):
         reader = csv.reader(source)

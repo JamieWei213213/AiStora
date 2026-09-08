@@ -59,7 +59,7 @@
     the live health endpoint.
 - `AWS_DEPLOYMENT_GUIDE.md`
   - Documents provisioning, costs, CI/CD, S3/RDS behavior, and the exact IAM
-    boundaries an interviewer may ask about.
+    boundaries.
 - `.env.example`
   - Gemini, secret-key, and agent-budget configuration template.
 - `AGENT_GUIDE.md`

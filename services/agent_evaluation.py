@@ -12,6 +12,8 @@ class AgentEvaluationCase:
     expected_result_kind: str = None
     max_turns: int = None
     max_tool_calls: int = None
+    expected_answer: object = None
+    required_correction: bool = False
 
 
 def _is_subsequence(expected, actual):
@@ -68,6 +70,23 @@ def evaluate_case(case, outcome, max_output_rows=25):
             ),
             "severity": "required",
         })
+    if case.expected_answer is not None:
+        actual = outcome.result.value if outcome.result is not None else outcome.message
+        passed = case.expected_answer(actual) if callable(case.expected_answer) else actual == case.expected_answer
+        checks.append({
+            "name": "answer_accuracy",
+            "passed": bool(passed),
+            "detail": "Final answer matched the case oracle." if passed else "Final answer did not match the case oracle.",
+            "severity": "required",
+        })
+    if case.required_correction:
+        corrections = int((outcome.metrics or {}).get("self_corrections", 0))
+        checks.append({
+            "name": "self_correction_success",
+            "passed": outcome.status == "finished" and corrections > 0,
+            "detail": f"Observed {corrections} bounded correction attempts.",
+            "severity": "required",
+        })
 
     required = [check for check in checks if check.get("severity") == "required"]
     passed_count = sum(bool(check.get("passed")) for check in required)
@@ -84,6 +103,7 @@ def evaluate_suite(cases_and_outcomes, max_output_rows=25):
         evaluate_case(case, outcome, max_output_rows)
         for case, outcome in cases_and_outcomes
     ]
+    outcomes = [outcome for _, outcome in cases_and_outcomes]
     return {
         "cases": results,
         "passed": sum(result["passed"] for result in results),
@@ -93,4 +113,14 @@ def evaluate_suite(cases_and_outcomes, max_output_rows=25):
             if results
             else None
         ),
+        "metrics": {
+            "plan_validity_rate": round(sum(bool(outcome.plan) for outcome in outcomes) / len(outcomes), 3) if outcomes else None,
+            "execution_success_rate": round(sum(outcome.status == "finished" for outcome in outcomes) / len(outcomes), 3) if outcomes else None,
+            "answer_accuracy_rate": round(sum(result["passed"] for result in results) / len(results), 3) if results else None,
+            "self_correction_success_rate": round(sum(bool((outcome.metrics or {}).get("self_corrections")) and outcome.status == "finished" for outcome in outcomes) / sum(bool((outcome.metrics or {}).get("self_corrections")) for outcome in outcomes), 3) if any(bool((outcome.metrics or {}).get("self_corrections")) for outcome in outcomes) else None,
+            "total_retries": sum(int((outcome.metrics or {}).get("retries", 0)) for outcome in outcomes),
+            "average_latency_ms": round(sum(int((outcome.metrics or {}).get("latency_ms", 0)) for outcome in outcomes) / len(outcomes)) if outcomes else None,
+            "total_tokens": sum(int((outcome.metrics or {}).get("total_tokens", 0)) for outcome in outcomes),
+            "estimated_cost_usd": round(sum(float((outcome.metrics or {}).get("estimated_cost_usd", 0)) for outcome in outcomes), 6),
+        },
     }

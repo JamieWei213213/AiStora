@@ -74,6 +74,32 @@ def test_named_results_can_be_reused_across_tools():
     assert tools.results["sales_by_region"].value["East"]["sum_amount"] == 225
 
 
+def test_top_rows_can_rank_a_named_aggregate():
+    tools = runtime()
+    tools.execute("aggregate_rows", {
+        "source": "sales",
+        "group_by": "region",
+        "value_column": "amount",
+        "operation": "sum",
+        "save_as": "sales_by_region",
+    })
+
+    ranked = tools.execute("top_rows", {
+        "source": "sales_by_region",
+        "sort_column": "sum_amount",
+        "limit": 1,
+        "descending": True,
+        "save_as": "top_region",
+    })
+
+    assert ranked["status"] == "ok"
+    assert ranked["rows"] == 1
+    assert tools.results["top_region"].value == [{
+        "region": "East",
+        "sum_amount": 225.0,
+    }]
+
+
 def test_observations_do_not_expose_row_or_scalar_values():
     tools = runtime()
     top = tools.execute("top_rows", {

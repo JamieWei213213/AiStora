@@ -13,3 +13,4 @@ instance
 tests
 uploads
 terraform.tfstate*
+node_modules/

@@ -21,3 +21,41 @@
 >
   <span id="error-message"></span>
 </div>
+
+<div
+  id="eda-report-modal"
+  class="hidden fixed inset-0 bg-slate-950/50 backdrop-blur-sm z-50 p-3 md:p-8"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="eda-report-title"
+>
+  <div class="mx-auto h-full max-w-6xl rounded-2xl bg-slate-50 shadow-2xl flex flex-col overflow-hidden">
+    <div class="flex items-center justify-between gap-3 border-b border-slate-200 bg-white px-5 py-3">
+      <div>
+        <h2 id="eda-report-title" class="text-sm font-semibold text-slate-800">
+          Exploratory data analysis report
+        </h2>
+        <p id="eda-report-subtitle" class="text-[11px] text-slate-500 mt-0.5">
+          Deterministic statistics computed locally
+        </p>
+      </div>
+      <div class="flex items-center gap-2">
+        <button
+          id="eda-report-download"
+          class="hidden text-xs text-sky-700 hover:text-sky-900 px-3 py-1.5 rounded-lg bg-sky-50"
+        >
+          Download JSON
+        </button>
+        <button
+          id="eda-report-close"
+          class="text-xs text-slate-500 hover:text-slate-800 px-3 py-1.5 rounded-lg bg-slate-100"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+    <div id="eda-report-content" class="flex-1 overflow-y-auto p-4 md:p-6">
+      <p class="text-xs text-slate-500">Choose EDA report to begin.</p>
+    </div>
+  </div>
+</div>

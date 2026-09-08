@@ -16,9 +16,20 @@ def test_gemini_model_configures_native_tools(monkeypatch):
             return SimpleNamespace()
 
     fake_client = SimpleNamespace(chats=Chats())
-    monkeypatch.setattr("google.genai.Client", lambda api_key: fake_client)
+    client_config = {}
 
-    model = GeminiModel("test-key", "test-model")
+    def fake_genai_client(**kwargs):
+        client_config.update(kwargs)
+        return fake_client
+
+    monkeypatch.setattr("google.genai.Client", fake_genai_client)
+
+    model = GeminiModel(
+        "test-key",
+        "test-model",
+        request_timeout_seconds=12,
+        max_output_tokens=321,
+    )
     model.start_agent("agent instructions", [{
         "name": "finish",
         "description": "Finish.",
@@ -32,6 +43,11 @@ def test_gemini_model_configures_native_tools(monkeypatch):
     assert captured["model"] == "test-model"
     assert captured["config"].automatic_function_calling.disable is True
     assert captured["config"].tools[0].function_declarations[0].name == "finish"
+    function_config = captured["config"].tool_config.function_calling_config
+    assert function_config.mode.value == "VALIDATED"
+    assert function_config.allowed_function_names == ["finish"]
+    assert captured["config"].max_output_tokens == 321
+    assert client_config["http_options"].timeout == 12_000
 
 
 def test_quota_error_detection_handles_sdk_text_and_nested_causes():
@@ -48,7 +64,7 @@ def test_quota_error_detection_handles_sdk_text_and_nested_causes():
 
 def test_transient_errors_retry_but_quota_errors_do_not(monkeypatch):
     fake_client = SimpleNamespace()
-    monkeypatch.setattr("google.genai.Client", lambda api_key: fake_client)
+    monkeypatch.setattr("google.genai.Client", lambda **kwargs: fake_client)
     model = GeminiModel(
         "test-key",
         "test-model",

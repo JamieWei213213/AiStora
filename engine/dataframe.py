@@ -1,11 +1,16 @@
 # engine/dataframe.py
 from .parser import CsvParser
-import types
+
 
 class DataFrame:
-    """
-    A custom DataFrame structure that can be sourced from a file (via CsvParser)
-    or from an in-memory list of dicts (for example, from a join).
+    """A minimal DataFrame over a CSV file or an in-memory list of dicts.
+
+    Streaming, honestly described: reading a file source streams row by row and
+    holds one row in memory at a time, so ``count``, ``max_by`` and ``min_by``
+    are constant-space over arbitrarily large files. The operations that must
+    produce a new collection -- ``filter``, ``project``, ``join`` and
+    ``top_k_by`` -- materialise their *output* in memory. The agent bounds
+    those outputs with ``AGENT_MAX_MATERIALIZED_ROWS``.
     """
 
     def __init__(self, source):
@@ -15,6 +20,7 @@ class DataFrame:
         self.parser = None
         self.filepath = None
         self.column_types = {}
+        self._row_count = None
 
         if isinstance(source, str):  # Source is a filepath
             self.source_type = 'file'
@@ -57,16 +63,17 @@ class DataFrame:
             return iter(self.data)  # Return an iterator for consistency
 
     def __len__(self):
-        """
-        Allows len(df) to work.
-        """
-        if self.source_type == 'file':
-            count = 0
-            for _ in self.parser.parse():  # Use a fresh generator
-                count += 1
-            return count
-        else:  # 'list'
+        """Row count. Counting a file source requires a full pass, so the
+        result is memoised: a DataFrame is bound to one immutable snapshot of
+        the file for its lifetime."""
+        if self.source_type != 'file':
             return len(self.data)
+        if self._row_count is None:
+            count = 0
+            for _ in self.parser.parse():
+                count += 1
+            self._row_count = count
+        return self._row_count
 
     def _infer_types_from_list(self, data):
         """
@@ -261,25 +268,31 @@ class DataFrame:
         return [min_row]
 
     def top_k_by(self, column_name, k=5):
-        """
-        Returns top K rows sorted by a numeric column.
-        Loads data only once.
-        """
-        buffer = []
+        """Return the K highest rows by a numeric column.
 
+        Uses a bounded heap, so memory is O(k) rather than O(rows). The
+        previous implementation buffered and sorted every row to return five
+        of them.
+        """
+        import heapq
+
+        heap = []
+        counter = 0
         for row in self._get_data():
             val = row.get(column_name)
             if val is None:
                 continue
             try:
                 v = float(val)
-            except Exception:
+            except (ValueError, TypeError):
                 continue
-
-            buffer.append((v, row))
-
-        buffer.sort(key=lambda x: x[0], reverse=True)
-        return [r for _, r in buffer[:k]]
+            counter += 1
+            item = (v, counter, row)
+            if len(heap) < k:
+                heapq.heappush(heap, item)
+            elif item[0] > heap[0][0]:
+                heapq.heapreplace(heap, item)
+        return [row for _, _, row in sorted(heap, key=lambda i: i[0], reverse=True)]
 
     def join(self, right_dataframe, left_on, right_on):
         """
@@ -308,8 +321,10 @@ class DataFrame:
                         if key not in new_row:
                             new_row[key] = value
                         else:
-                            filepath_tag = right_dataframe.filepath if right_dataframe.filepath else 'joined'
-                            new_row[f"{filepath_tag}.{key}"] = value
+                            # Was prefixed with the right frame's absolute
+                            # filepath, which put a server path into a column
+                            # name -- and column names are sent to the model.
+                            new_row[f"right.{key}"] = value
                     joined_data.append(new_row)
 
         return DataFrame(source=joined_data)

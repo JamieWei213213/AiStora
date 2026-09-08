@@ -8,6 +8,7 @@ from services.agent_tools import (
     TOOL_DECLARATIONS,
 )
 from services.logger import get_logger
+from services.privacy import PrivacyPolicy, redact_relationships, redact_schema
 
 
 logger = get_logger(__name__)
@@ -55,6 +56,7 @@ class AgentOutcome:
     tool_calls: int = 0
     approval: dict = None
     verification: dict = None
+    metrics: dict = field(default_factory=dict)
 
 
 def _build_goal_prompt(
@@ -66,7 +68,8 @@ def _build_goal_prompt(
 ):
     schema_view = {
         name: {
-            "columns": details.get("types", {}),
+            "columns": details.get("columns", details.get("types", {})),
+            "classifications": details.get("classifications", {}),
             "row_count": details.get("row_count"),
         }
         for name, details in schema.items()
@@ -92,15 +95,33 @@ def run_agent(
     mode="interactive",
     successful_examples=None,
     verifier=None,
+    privacy_policy=None,
 ):
+    def metrics(turns):
+        usage = dict(getattr(session, "usage", {}) or {})
+        return {
+            **usage,
+            "turns": turns,
+            "tool_calls": runtime.tool_calls,
+            "retries": getattr(session, "retry_count", 0),
+            "self_corrections": runtime.corrections,
+            "latency_ms": round((__import__("time").monotonic() - runtime.started_at) * 1000),
+        }
+
     system_prompt = AGENT_SYSTEM_PROMPT
     if mode == "auto":
         system_prompt = f"{system_prompt}\n\n{AUTO_ANALYSIS_PROMPT}"
-    session = model.start_agent(system_prompt, TOOL_DECLARATIONS)
+    declarations = [
+        declaration for declaration in TOOL_DECLARATIONS
+        if declaration["name"] in runtime.allowed_tools
+    ]
+    session = model.start_agent(system_prompt, declarations)
+    safe_schema = redact_schema(schema, privacy_policy or PrivacyPolicy())
+    safe_relationships = redact_relationships(relationships, safe_schema)
     turn = session.send(_build_goal_prompt(
         user_query,
-        schema,
-        relationships,
+        safe_schema,
+        safe_relationships,
         memory,
         successful_examples,
     ))
@@ -119,6 +140,7 @@ def run_agent(
                     plan=runtime.plan,
                     turns=turn_number,
                     tool_calls=runtime.tool_calls,
+                    metrics=metrics(turn_number),
                 )
             raise AgentToolError("The model returned neither a tool call nor an answer.")
 
@@ -127,9 +149,11 @@ def run_agent(
             try:
                 observation = runtime.execute(call.name, call.arguments)
             except (AgentToolError, ValueError, TypeError, KeyError) as exc:
+                runtime.record_correction()
                 observation = {
                     "status": "error",
-                    "error": f"{type(exc).__name__}: {str(exc)[:240]}",
+                    "category": "invalid_plan_or_tool_arguments",
+                    "error": str(exc)[:240],
                 }
 
             tool_results.append({"name": call.name, "response": observation})
@@ -143,6 +167,7 @@ def run_agent(
                     plan=runtime.plan,
                     turns=turn_number,
                     tool_calls=runtime.tool_calls,
+                    metrics=metrics(turn_number),
                 )
                 if verifier is not None:
                     verification = verifier(candidate)
@@ -181,6 +206,7 @@ def run_agent(
                     plan=runtime.plan,
                     turns=turn_number,
                     tool_calls=runtime.tool_calls,
+                    metrics=metrics(turn_number),
                 )
             if runtime.approval:
                 return AgentOutcome(
@@ -191,6 +217,7 @@ def run_agent(
                     plan=runtime.plan,
                     turns=turn_number,
                     tool_calls=runtime.tool_calls,
+                    metrics=metrics(turn_number),
                 )
 
         if turn_number < runtime.limits.max_turns:

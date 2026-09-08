@@ -86,7 +86,9 @@ class S3DatasetStorage:
         cache_dir,
         client=None,
         endpoint_url=None,
+        max_cache_bytes=2 * 1024 * 1024 * 1024,
     ):
+        self.max_cache_bytes = int(max_cache_bytes or 0)
         if not bucket:
             raise DatasetStorageError(
                 "S3_DATASET_BUCKET is required when DATASET_STORAGE_BACKEND=s3."
@@ -164,6 +166,37 @@ class S3DatasetStorage:
             "last_modified": str(modified or ""),
         }
 
+    def _evict_cache(self, incoming_size):
+        """Keep the local cache under ``max_cache_bytes`` (least recently used).
+
+        Every dataset version used to be cached forever; on a task with a few
+        GB of ephemeral disk, 50 MB uploads exhaust it in weeks and the next
+        download fails with a confusing "no space left" error.
+        """
+        budget = int(self.max_cache_bytes)
+        if budget <= 0:
+            return
+        entries = []
+        total = 0
+        for path in self.cache_dir.iterdir():
+            if not path.is_file() or path.suffix == ".download":
+                continue
+            try:
+                stat = path.stat()
+            except OSError:
+                continue
+            entries.append((stat.st_atime, stat.st_size, path))
+            total += stat.st_size
+        entries.sort()
+        for _, size, path in entries:
+            if total + incoming_size <= budget:
+                break
+            try:
+                path.unlink()
+                total -= size
+            except OSError:
+                pass
+
     def materialize(self, reference):
         metadata = self.fingerprint(reference)
         identity = "|".join(
@@ -174,8 +207,13 @@ class S3DatasetStorage:
         suffix = Path(metadata["key"]).suffix or ".csv"
         destination = self.cache_dir / f"{cache_name}{suffix}"
         if destination.is_file() and destination.stat().st_size == metadata["size"]:
+            try:
+                os.utime(destination, None)  # mark as recently used
+            except OSError:
+                pass
             return str(destination)
 
+        self._evict_cache(int(metadata.get("size") or 0))
         handle = tempfile.NamedTemporaryFile(
             prefix="aistora-s3-",
             suffix=".download",
@@ -238,6 +276,7 @@ def get_dataset_storage():
             region=app.config.get("AWS_REGION", "us-west-2"),
             cache_dir=app.config.get("DATASET_CACHE_DIR", "/tmp/aistora-cache"),
             endpoint_url=app.config.get("S3_ENDPOINT_URL"),
+            max_cache_bytes=int(app.config.get("DATASET_CACHE_MAX_BYTES", 2 * 1024 ** 3)),
         )
     else:
         raise DatasetStorageError(

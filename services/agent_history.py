@@ -129,6 +129,7 @@ def finish_run(
     duration_ms=0,
     verification=None,
     error_type=None,
+    metrics=None,
 ):
     if record is None:
         return
@@ -139,7 +140,19 @@ def finish_run(
             for step in list(plan or [])[:6]
             if goal_signature(step) != "unspecified goal"
         ]
-        record.trace = list(trace or [])[:30]
+        stored_trace = list(trace or [])[:29]
+        if metrics:
+            stored_trace.append({
+                "tool": "request_summary",
+                "status": status,
+                "duration_ms": int(metrics.get("latency_ms", duration_ms) or 0),
+                "retries": int(metrics.get("retries", 0) or 0),
+                "self_corrections": int(metrics.get("self_corrections", 0) or 0),
+                "input_tokens": int(metrics.get("input_tokens", 0) or 0),
+                "output_tokens": int(metrics.get("output_tokens", 0) or 0),
+                "estimated_cost_usd": float(metrics.get("estimated_cost_usd", 0) or 0),
+            })
+        record.trace = stored_trace
         record.result_kind = str(result_kind)[:30] if result_kind else None
         record.result_name = str(result_name)[:100] if result_name else None
         record.turns = max(int(turns or 0), 0)
@@ -152,6 +165,25 @@ def finish_run(
     except (SQLAlchemyError, RuntimeError, TypeError, ValueError):
         _rollback()
         logger.exception("Could not persist agent run completion")
+
+
+def run_belongs_to_user(request_id, user_id):
+    """True when this user started the given agent run.
+
+    Used to authorise cancellation. Returns False if the run was never
+    recorded (for example because the history write failed), which fails
+    closed.
+    """
+    try:
+        return (
+            AgentRun.query.filter_by(request_id=request_id, user_id=user_id)
+            .first()
+            is not None
+        )
+    except (SQLAlchemyError, RuntimeError):
+        _rollback()
+        logger.warning("Could not verify agent run ownership for %s", request_id)
+        return False
 
 
 def record_feedback(request_id, user_id, rating, comment=""):
@@ -236,6 +268,10 @@ def project_metrics(user_id, project_id):
         for item in (run.trace or [])
         if item.get("tool")
     )
+    summaries = [
+        item for run in runs for item in (run.trace or [])
+        if item.get("tool") == "request_summary"
+    ]
     return {
         "total_runs": total,
         "completed_runs": len(completed),
@@ -253,6 +289,12 @@ def project_metrics(user_id, project_id):
         "average_duration_ms": (
             round(sum(run.duration_ms for run in runs) / total) if total else None
         ),
+        "total_retries": sum(item.get("retries", 0) for item in summaries),
+        "total_self_corrections": sum(item.get("self_corrections", 0) for item in summaries),
+        "total_input_tokens": sum(item.get("input_tokens", 0) for item in summaries),
+        "total_output_tokens": sum(item.get("output_tokens", 0) for item in summaries),
+        "estimated_cost_usd": round(sum(item.get("estimated_cost_usd", 0) for item in summaries), 6),
+        "failure_categories": dict(Counter(run.error_type for run in runs if run.error_type)),
         "models": dict(models),
         "top_tools": [
             {"tool": tool, "uses": count}

@@ -49,6 +49,25 @@ def test_verifier_checks_operation_and_agent_evaluation_constraints():
     assert evaluate_suite([(case, outcome)])["average_score"] == 1.0
 
 
+def test_verifier_accepts_valid_result_after_recoverable_tool_error():
+    outcome = finished_average_outcome()
+    outcome.trace.insert(1, {
+        "tool": "top_rows",
+        "status": "error",
+        "summary": "An exploratory ranking attempt failed.",
+    })
+
+    verification = verify_outcome("Auto-analyze this database", outcome)
+
+    assert verification["passed"] is True
+    tool_check = next(
+        check for check in verification["checks"]
+        if check["name"] == "tool_execution"
+    )
+    assert tool_check["severity"] == "advisory"
+    assert tool_check["passed"] is False
+
+
 def test_model_router_uses_advanced_model_only_for_complex_work():
     schema = {"sales": {}, "customers": {}}
     assert route_agent_task("Count sales", schema)["tier"] == "standard"

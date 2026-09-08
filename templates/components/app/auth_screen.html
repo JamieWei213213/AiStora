@@ -40,21 +40,32 @@
         id="auth-error"
         class="hidden bg-red-50 text-red-600 p-3 rounded-lg text-xs border border-red-100"
       ></div>
-      <div class="space-y-4">
-        <input
-          id="auth-email"
-          type="email"
-          placeholder="you@example.com"
-          class="w-full p-3 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-sky-500"
-        />
-        <input
-          id="auth-password"
-          type="password"
-          placeholder="••••••••"
-          class="w-full p-3 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-sky-500"
-        />
+      <form id="auth-form" class="space-y-4" novalidate>
+        <label class="block">
+          <span class="sr-only">Email address</span>
+          <input
+            id="auth-email"
+            name="email"
+            type="email"
+            autocomplete="email"
+            placeholder="you@example.com"
+            class="w-full p-3 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-sky-500"
+          />
+        </label>
+        <label class="block">
+          <span class="sr-only">Password</span>
+          <input
+            id="auth-password"
+            name="password"
+            type="password"
+            autocomplete="current-password"
+            placeholder="••••••••"
+            class="w-full p-3 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-sky-500"
+          />
+        </label>
         <button
           id="auth-submit-btn"
+          type="submit"
           class="w-full p-3 bg-sky-600 text-white rounded-xl font-medium hover:bg-sky-700 transition flex items-center justify-center gap-2"
         >
           <i data-lucide="log-in" class="w-4 h-4"></i
@@ -62,11 +73,12 @@
         </button>
         <button
           id="auth-toggle-mode"
+          type="button"
           class="w-full p-3 border border-slate-200 bg-slate-50 text-slate-700 rounded-xl hover:bg-slate-100 transition text-xs"
         >
           Don’t have an account? <span class="font-medium">Create one</span>
         </button>
-      </div>
+      </form>
     </div>
   </div>
 </section>

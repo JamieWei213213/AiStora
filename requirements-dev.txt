@@ -1,0 +1,10 @@
+# Development and CI dependencies. NOT installed into the production image.
+#
+# pytest, selenium and webdriver-manager previously shipped inside the
+# deployed container, which enlarged the image and put test tooling on a
+# production host for no reason.
+
+-r requirements.txt
+
+pytest==9.1.1
+pytest-cov==7.1.0

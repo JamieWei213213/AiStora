@@ -133,3 +133,34 @@ variable "gemini_advanced_model" {
   type        = string
   default     = "gemini-3.6-flash"
 }
+
+variable "enable_elasticache" {
+  description = <<-DESC
+    Provision ElastiCache for Redis to hold server-side sessions.
+
+    Defaults to false so that adopting this module is an explicit decision.
+    With a single Fargate task the filesystem fallback works; with more than
+    one, sessions must be shared or users are logged out as requests move
+    between tasks.
+  DESC
+  type        = bool
+  default     = false
+}
+
+variable "elasticache_node_type" {
+  description = "ElastiCache node size. cache.t4g.micro is the cheapest option."
+  type        = string
+  default     = "cache.t4g.micro"
+}
+
+variable "elasticache_engine_version" {
+  description = "Redis engine version for the session cache."
+  type        = string
+  default     = "7.1"
+}
+
+variable "elasticache_multi_az" {
+  description = "Run a replica in a second AZ with automatic failover."
+  type        = bool
+  default     = false
+}

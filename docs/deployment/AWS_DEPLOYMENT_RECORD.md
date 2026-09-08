@@ -3,8 +3,7 @@
 Deployment completed and verified on **August 3, 2026**.
 
 This file records what was actually done. The companion
-`AWS_DEPLOYMENT_GUIDE.md` explains the design and interview concepts in more
-depth.
+`AWS_DEPLOYMENT_GUIDE.md` explains the design in more depth.
 
 ## Final result
 
@@ -469,9 +468,7 @@ source control.
 Scaling ECS to zero stops Fargate task compute, but it does **not** stop NAT,
 ALB, RDS, Secrets Manager, S3, or log charges.
 
-## Honest interview explanation
-
-Use this summary:
+## Summary of what was deployed
 
 > I deployed AIStora on ECS/Fargate behind an Application Load Balancer. CSV
 > objects are encrypted and versioned in S3, while users, schemas, and agent
@@ -520,4 +517,4 @@ Be ready to explain these tradeoffs honestly:
 - `routes/databases.py` - project and dataset deletion behavior.
 - `config.py` - RDS, S3, Gemini, and agent runtime configuration.
 - `services/llm_service.py` - standard/advanced Gemini model routing.
-- `AWS_DEPLOYMENT_GUIDE.md` - architecture, IAM, deployment, and interview guide.
+- `AWS_DEPLOYMENT_GUIDE.md` - architecture, IAM, and deployment design.

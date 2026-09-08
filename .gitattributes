@@ -1,5 +1,25 @@
+# Normalise line endings in the repository to LF.
+#
+# Files previously carried a mix of CRLF and LF, sometimes within the same
+# file (static/js/scripts.js had 1201 CRLF and 315 LF terminators). Every
+# Windows checkout then produced a diff of whole files, hiding the real change:
+# an apparent 11,924 insertions across 78 files was about 963 real lines.
+#
+# After changing this, normalise the working tree once:
+#   git add --renormalize .
+* text=auto
+
 *.sh text eol=lf
 Dockerfile text eol=lf
 *.tf text eol=lf
 *.yml text eol=lf
 *.yaml text eol=lf
+*.py text eol=lf
+*.js text eol=lf
+*.md text eol=lf
+
+*.png binary
+*.jpg binary
+*.gif binary
+*.mp4 binary
+*.db binary

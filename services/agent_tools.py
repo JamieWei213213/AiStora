@@ -3,10 +3,16 @@ import math
 import re
 import time
 from dataclasses import dataclass, field
+from datetime import datetime
 
 from engine.dataframe import DataFrame
 from services.agent_audit import AgentAuditLogger
 from services.chart_builder import build_chart_url
+from services.privacy import classify_column
+
+# QuickChart renders from a GET URL; beyond this many labels the URL is
+# rejected and the labels themselves become a data export.
+MAX_CHART_GROUPS = 60
 
 
 class AgentToolError(Exception):
@@ -29,6 +35,8 @@ class AgentLimits:
     max_materialized_rows: int = 25_000
     max_groups: int = 500
     timeout_seconds: int = 45
+    max_plan_steps: int = 6
+    max_corrections: int = 3
 
 
 @dataclass
@@ -147,7 +155,7 @@ TOOL_DECLARATIONS = [
     },
     {
         "name": "top_rows",
-        "description": "Select the highest or lowest rows by a numeric column and save them.",
+        "description": "Select the highest or lowest rows from a row source or grouped aggregate and save them.",
         "parameters": {
             "type": "object",
             "properties": {
@@ -209,6 +217,41 @@ def _as_number(value):
         return None
 
 
+_DATE_FORMATS = (
+    "%Y-%m-%d", "%Y/%m/%d", "%d/%m/%Y", "%m/%d/%Y", "%d-%m-%Y", "%m-%d-%Y",
+    "%d %b %Y", "%d %B %Y", "%b %d %Y", "%B %d %Y", "%Y-%m-%dT%H:%M:%S",
+    "%Y-%m-%d %H:%M:%S",
+)
+
+
+def _as_date(value):
+    """Parse a date, or return None. Ambiguous D/M vs M/D input is rejected.
+
+    A string such as "03/04/2026" is a different day in the UK and the US and
+    there is no way to tell which was meant, so it is not guessed.
+    """
+    if isinstance(value, (int, float)) or value is None:
+        return None
+    text = str(value).strip()
+    if not text or len(text) > 40:
+        return None
+    for fmt in _DATE_FORMATS:
+        try:
+            parsed = datetime.strptime(text, fmt)
+        except (ValueError, TypeError):
+            continue
+        if fmt in {"%d/%m/%Y", "%m/%d/%Y", "%d-%m-%Y", "%m-%d-%Y"}:
+            parts = re.split(r"[/-]", text)
+            try:
+                first, second = int(parts[0]), int(parts[1])
+            except (ValueError, IndexError):
+                return None
+            if first <= 12 and second <= 12 and first != second:
+                return None  # genuinely ambiguous
+        return parsed
+    return None
+
+
 def _privacy_metadata(result):
     metadata = {"status": "ok", "name": result.name, "kind": result.kind}
     if result.columns:
@@ -234,6 +277,7 @@ class AgentToolRuntime:
         limits=None,
         cancelled=None,
         audit=None,
+        allowed_tools=None,
     ):
         self.schema = schema
         self.relationships = relationships or []
@@ -244,14 +288,21 @@ class AgentToolRuntime:
         self.limits = limits or AgentLimits()
         self.cancelled = cancelled or (lambda: False)
         self.audit = audit or AgentAuditLogger()
+        self.allowed_tools = set(allowed_tools or [item["name"] for item in TOOL_DECLARATIONS])
         self.started_at = time.monotonic()
         self.results = {}
+        # Base tables are re-read on every tool call otherwise: a database
+        # round trip, a storage materialise and a fresh file handle each time.
+        # One run sees one immutable snapshot, so caching is safe and removes
+        # most of the per-call overhead in a multi-step analysis.
+        self._base_tables = {}
         self.trace = []
         self.plan = []
         self.tool_calls = 0
         self.finished = None
         self.clarification = None
         self.approval = None
+        self.corrections = 0
 
     def _check_budget(self):
         self._check_running()
@@ -277,18 +328,22 @@ class AgentToolRuntime:
     def _load(self, name):
         if name in self.results:
             return self.results[name]
+        if name in self._base_tables:
+            return self._base_tables[name]
         if name not in self.schema:
             raise AgentToolError(f"Unknown source: {name}")
         dataframe = self.table_loader(name)
         if dataframe is None:
             raise AgentToolError(f"Table could not be loaded: {name}")
-        return StoredResult(
+        stored = StoredResult(
             name=name,
             kind="dataframe",
             value=dataframe,
             columns=list(dataframe.columns),
             metadata={"base_table": True},
         )
+        self._base_tables[name] = stored
+        return stored
 
     def _dataframe(self, name):
         result = self._load(name)
@@ -301,6 +356,24 @@ class AgentToolRuntime:
                 value=DataFrame(result.value),
                 columns=result.columns,
                 metadata={"rows": len(result.value)},
+            )
+        if result.kind == "aggregate":
+            group_by = result.metadata.get("group_by", "group")
+            metric = result.metadata.get("metric", "value")
+            rows = []
+            for group, values in result.value.items():
+                row = {group_by: group}
+                if isinstance(values, dict):
+                    row.update(values)
+                else:
+                    row[metric] = values
+                rows.append(row)
+            return StoredResult(
+                name=name,
+                kind="dataframe",
+                value=DataFrame(rows),
+                columns=list(result.columns),
+                metadata={"rows": len(rows), "derived_from": "aggregate"},
             )
         raise AgentToolError(f"{name} is not a row-based result.")
 
@@ -324,6 +397,8 @@ class AgentToolRuntime:
         status = "ok"
         summary = ""
         try:
+            if tool_name not in self.allowed_tools:
+                raise AgentToolError(f"Tool is not allowed for this request route: {tool_name}")
             handler = getattr(self, f"_tool_{tool_name}", None)
             if handler is None:
                 raise AgentToolError(f"Unknown tool: {tool_name}")
@@ -351,6 +426,11 @@ class AgentToolRuntime:
                 duration_ms,
             )
 
+    def record_correction(self):
+        self.corrections += 1
+        if self.corrections > self.limits.max_corrections:
+            raise ResourceLimitExceeded("The agent exceeded its self-correction budget.")
+
     def _summary(self, tool_name, output):
         if tool_name == "record_plan":
             return f"Recorded {len(self.plan)} plan steps."
@@ -369,9 +449,15 @@ class AgentToolRuntime:
         return "Completed."
 
     def _tool_record_plan(self, steps):
-        cleaned = [" ".join(str(step).split())[:120] for step in list(steps)[:6]]
-        if not cleaned:
+        if not isinstance(steps, list) or not steps:
             raise AgentToolError("A plan needs at least one step.")
+        if len(steps) > self.limits.max_plan_steps:
+            raise AgentToolError(f"A plan may contain at most {self.limits.max_plan_steps} steps.")
+        cleaned = [" ".join(str(step).split()) for step in steps]
+        if any(not step or len(step) > 160 for step in cleaned):
+            raise AgentToolError("Each plan step must be between 1 and 160 characters.")
+        if len({step.casefold() for step in cleaned}) != len(cleaned):
+            raise AgentToolError("Plan steps must be unique.")
         self.plan = cleaned
         return {"status": "ok", "steps": cleaned}
 
@@ -399,26 +485,10 @@ class AgentToolRuntime:
         stored = StoredResult(save_as, "number", count, metadata={"operation": "count"})
         return self._store(stored)
 
-    def _matches(self, actual, operator, expected):
-        if operator == "is_null":
-            return actual is None or actual == ""
-        if operator == "not_null":
-            return actual is not None and actual != ""
-        if operator in {"contains", "starts_with", "ends_with"}:
-            actual_text = str(actual or "").casefold()
-            expected_text = str(expected or "").casefold()
-            if operator == "contains":
-                return expected_text in actual_text
-            if operator == "starts_with":
-                return actual_text.startswith(expected_text)
-            return actual_text.endswith(expected_text)
-        actual_number = _as_number(actual)
-        expected_number = _as_number(expected)
-        left, right = (
-            (actual_number, expected_number)
-            if actual_number is not None and expected_number is not None
-            else (str(actual), str(expected))
-        )
+    ORDERING_OPERATORS = {"gt", "gte", "lt", "lte"}
+
+    @staticmethod
+    def _compare(left, right, operator):
         return {
             "eq": left == right,
             "neq": left != right,
@@ -428,13 +498,84 @@ class AgentToolRuntime:
             "lte": left <= right,
         }[operator]
 
+    def _comparison(self, operator, expected):
+        """Resolve the comparison strategy once, before scanning any rows.
+
+        The previous per-row logic fell back to comparing ``str(actual)``
+        against ``str(expected)`` whenever either side was not numeric. For
+        ``gt``/``lt`` that silently produced a lexicographic comparison, so
+        filtering an amount column against a value the model had quoted
+        (``"1000"`` vs ``1000``) still "worked" but returned wrong rows, and
+        filtering a US-formatted date column ordered by the first character.
+
+        Ordering an unorderable value is now an explicit tool error, which the
+        agent can see and correct, rather than a wrong answer.
+        """
+        if operator == "is_null":
+            return lambda actual: actual is None or str(actual).strip() == ""
+        if operator == "not_null":
+            return lambda actual: actual is not None and str(actual).strip() != ""
+
+        if operator in {"contains", "starts_with", "ends_with"}:
+            needle = str(expected or "").casefold()
+
+            def text_match(actual):
+                haystack = str("" if actual is None else actual).casefold()
+                if operator == "contains":
+                    return needle in haystack
+                if operator == "starts_with":
+                    return haystack.startswith(needle)
+                return haystack.endswith(needle)
+
+            return text_match
+
+        expected_number = _as_number(expected)
+        if expected_number is not None:
+            def numeric_match(actual):
+                actual_number = _as_number(actual)
+                if actual_number is None:
+                    return False  # not comparable, so not a match
+                return self._compare(actual_number, expected_number, operator)
+
+            return numeric_match
+
+        expected_date = _as_date(expected)
+        if expected_date is not None:
+            def date_match(actual):
+                actual_date = _as_date(actual)
+                if actual_date is None:
+                    return False
+                return self._compare(actual_date, expected_date, operator)
+
+            return date_match
+
+        if operator in self.ORDERING_OPERATORS:
+            raise AgentToolError(
+                f"'{expected}' is not a number or an unambiguous date, so it "
+                f"cannot be used with the '{operator}' operator. Use eq, neq "
+                "or contains for text, or supply a numeric or YYYY-MM-DD value."
+            )
+
+        expected_text = str("" if expected is None else expected).casefold()
+
+        def equality_match(actual):
+            actual_text = str("" if actual is None else actual).casefold()
+            return self._compare(actual_text, expected_text, operator)
+
+        return equality_match
+
+    def _matches(self, actual, operator, expected):
+        """Kept for callers that compare a single value."""
+        return self._comparison(operator, expected)(actual)
+
     def _tool_filter_rows(self, source, column, operator, save_as, value=None):
         result = self._dataframe(source)
         self._column(result, column)
+        predicate = self._comparison(operator, value)
         rows = []
         for row_number, row in enumerate(result.value._get_data(), start=1):
             self._check_row_progress(row_number)
-            if self._matches(row.get(column), operator, value):
+            if predicate(row.get(column)):
                 rows.append(row)
                 if len(rows) > self.limits.max_materialized_rows:
                     raise ResourceLimitExceeded(
@@ -563,13 +704,32 @@ class AgentToolRuntime:
         result = self._load(source)
         if result.kind != "aggregate":
             raise AgentToolError("Charts require a named aggregate result.")
+        # The chart is rendered by QuickChart, so the group labels leave the
+        # server. Aggregating by customer_name or email would put identifiers
+        # into a third-party URL, which the "raw rows are not sent" promise
+        # does not cover. Only ordinary columns may label an external chart.
+        group_by = result.metadata.get("group_by")
+        classification = classify_column(group_by) if group_by else "ordinary"
+        if classification != "ordinary":
+            raise AgentToolError(
+                f"Charts cannot be grouped by '{group_by}' because it is a "
+                f"{classification.replace('_', ' ')} column and the labels would "
+                "be sent to an external chart service. Group by a non-identifying "
+                "column instead."
+            )
+        if len(result.value or {}) > MAX_CHART_GROUPS:
+            raise AgentToolError(
+                f"Charts are limited to {MAX_CHART_GROUPS} groups; this result has "
+                f"{len(result.value)}. Narrow the grouping first."
+            )
         if "external_chart" not in self.approvals:
             self.approval = {
                 "scope": "external_chart",
                 "title": "Share aggregate chart data?",
                 "message": (
-                    "Creating this chart sends aggregate labels and values to QuickChart. "
-                    "Raw source rows are not sent."
+                    f"Creating this chart sends the {len(result.value or {})} group "
+                    f"labels from '{group_by}' and their aggregate values to "
+                    "QuickChart, an external service. Raw source rows are not sent."
                 ),
             }
             return {"status": "paused", "approval_required": True, **self.approval}

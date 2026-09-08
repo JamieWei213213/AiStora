@@ -2,6 +2,7 @@ from engine.dataframe import DataFrame
 from services.agent_service import run_agent
 from services.agent_tools import AgentToolRuntime
 from services.llm_service import AgentFunctionCall, AgentModelTurn
+from services.agent_verifier import verify_outcome
 
 
 SCHEMA = {"sales": {"types": {"amount": "float"}, "row_count": 2}}
@@ -171,3 +172,66 @@ def test_agent_can_repair_a_result_rejected_by_deterministic_verification():
     assert outcome.verification["passed"] is True
     assert model.session.observations[0][0]["response"]["status"] == "error"
     assert any(item["status"] == "warning" for item in outcome.trace)
+
+
+def test_auto_analysis_can_aggregate_rank_and_finish_within_budget():
+    schema = {
+        "customers": {
+            "types": {"city": "str", "annual_revenue_est": "float"},
+            "row_count": 3,
+        },
+    }
+    model = FakeModel([
+        AgentModelTurn("", [AgentFunctionCall("record_plan", {
+            "steps": ["Group revenue by city", "Rank the highest cities"],
+        })]),
+        AgentModelTurn("", [AgentFunctionCall("aggregate_rows", {
+            "source": "customers",
+            "group_by": "city",
+            "value_column": "annual_revenue_est",
+            "operation": "sum",
+            "save_as": "revenue_by_city",
+        })]),
+        AgentModelTurn("", [AgentFunctionCall("top_rows", {
+            "source": "revenue_by_city",
+            "sort_column": "sum_annual_revenue_est",
+            "limit": 10,
+            "descending": True,
+            "save_as": "top_revenue_cities",
+        })]),
+        AgentModelTurn("", [AgentFunctionCall("finish", {
+            "source": "top_revenue_cities",
+            "message": "Top cities by estimated annual revenue are ready.",
+        })]),
+    ])
+    runtime = AgentToolRuntime(
+        schema=schema,
+        relationships=[],
+        table_loader=lambda _: DataFrame([
+            {"city": "Los Angeles", "annual_revenue_est": 100.0},
+            {"city": "Los Angeles", "annual_revenue_est": 50.0},
+            {"city": "Seattle", "annual_revenue_est": 125.0},
+        ]),
+        request_id="auto-regression",
+        user_id=1,
+        audit=Audit(),
+    )
+
+    outcome = run_agent(
+        model,
+        "Auto-analyze this database",
+        schema,
+        [],
+        [],
+        runtime,
+        mode="auto",
+        verifier=lambda candidate: verify_outcome(
+            "Auto-analyze this database",
+            candidate,
+        ),
+    )
+
+    assert outcome.status == "finished"
+    assert outcome.turns == 4
+    assert outcome.result.name == "top_revenue_cities"
+    assert outcome.verification["passed"] is True

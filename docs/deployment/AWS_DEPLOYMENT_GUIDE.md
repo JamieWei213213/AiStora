@@ -1,8 +1,8 @@
 # AIStora AWS Deployment and IAM Guide
 
-This deployment is designed to be something you can explain in a data
-engineering interview. It does not use the AWS root user, long-lived access
-keys in GitHub, a public database, or a public dataset bucket.
+This deployment is designed so that every control can be explained and
+defended. It does not use the AWS root user, long-lived access keys in
+GitHub, a public database, or a public dataset bucket.
 
 ## Architecture
 
@@ -230,9 +230,7 @@ keep. The S3 bucket refuses deletion while it contains data by default.
 Production should also enable RDS deletion protection, final snapshots,
 Multi-AZ, and HTTPS with ACM.
 
-## Honest interview limitations
-
-Be ready to say:
+## Honest limitations
 
 - The development deployment is single-AZ RDS to control cost; production
   would enable Multi-AZ and deletion protection.
