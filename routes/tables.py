@@ -18,6 +18,7 @@ from services.data_cleaning_agent import (
 )
 from services.schema_service import build_project_schema
 from services.storage_service import DatasetStorageError, get_dataset_storage
+from services.validation import ValidationError, validate_table_name
 
 tables_bp = Blueprint('tables', __name__)
 
@@ -62,10 +63,11 @@ def rename_table(id):
     if not table:
         return jsonify({'success': False, 'error': 'Table not found'}), 404
 
-    data = request.get_json()
-    new_name = data.get('name')
-    if not new_name:
-        return jsonify({'success': False, 'error': 'Name is required'}), 400
+    data = request.get_json(silent=True) or {}
+    try:
+        new_name = validate_table_name(data.get('name'))
+    except ValidationError as exc:
+        return jsonify({'success': False, 'error': str(exc)}), 400
     
     # Check for name collision in the same project
     exists = Table.query.filter_by(project_id=table.project_id, name=new_name).first()
@@ -230,8 +232,6 @@ def apply_table_cleaning(id):
         previews.pop(str(token), None)
         session["cleaning_previews"] = previews
         schema = build_project_schema(table.project_id)
-        session["db_schema"] = schema
-        session.modified = True
 
         duration_ms = round((time.monotonic() - started) * 1000)
         AgentAuditLogger().record(

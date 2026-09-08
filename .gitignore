@@ -7,6 +7,10 @@ venv/
 # Python cache
 __pycache__/
 *.pyc
+.pytest_cache/
+.pytest-tmp-*/
+.coverage
+htmlcov/
 
 # OS-specific files
 .DS_Store
@@ -16,6 +20,7 @@ uploads/*
 !uploads/.gitkeep
 instance/agent_audit.jsonl
 instance/agent_cancellations/
+instance/sessions/
 instance/*.db
 
 # Terraform runtime and sensitive local configuration
@@ -30,5 +35,17 @@ crash.*.log
 
 # Secrets and environment variables
 .env
-*.json
+.env.*
+!.env.example
+
+# Credential files. The previous rule was a bare `*.json`, which also ignored
+# legitimate JSON that belongs in the repository and hid it silently.
+aws-credentials*.json
+*service-account*.json
+*credentials*.json
 !tests/fixtures/*.json
+node_modules/
+
+# Source archives and local scratch
+*.tgz
+*.zip

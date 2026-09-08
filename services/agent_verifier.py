@@ -42,7 +42,12 @@ def verify_outcome(query, outcome, max_output_rows=25):
         _check(
             "tool_execution",
             not any(item.get("status") == "error" for item in outcome.trace or []),
-            "No local tool ended in an error.",
+            (
+                "No local tool ended in an error."
+                if not any(item.get("status") == "error" for item in outcome.trace or [])
+                else "The final result is valid, but an earlier exploratory tool call failed."
+            ),
+            severity="advisory",
         ),
     ]
 

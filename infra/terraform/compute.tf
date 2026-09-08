@@ -127,6 +127,10 @@ resource "aws_ecs_task_definition" "app" {
         { name = "UPLOAD_FOLDER", value = "/tmp/aistora-uploads" },
         { name = "AGENT_AUDIT_PATH", value = "/tmp/aistora-agent-audit.jsonl" },
         { name = "AGENT_CANCELLATION_DIR", value = "/tmp/aistora-cancellations" },
+        { name = "APP_ENV", value = "production" },
+        # Empty when the cache is disabled; the app then falls back to a
+        # per-container session store and warns at startup.
+        { name = "REDIS_URL", value = local.session_redis_url },
         { name = "DB_HOST", value = aws_db_instance.main.address },
         { name = "DB_PORT", value = tostring(aws_db_instance.main.port) },
         { name = "DB_NAME", value = aws_db_instance.main.db_name },
@@ -142,7 +146,7 @@ resource "aws_ecs_task_definition" "app" {
         { name = "AGENT_HISTORY_EXAMPLES", value = "3" },
         { name = "MAX_UPLOAD_BYTES", value = tostring(50 * 1024 * 1024) },
         { name = "WEB_CONCURRENCY", value = "2" },
-        { name = "GUNICORN_THREADS", value = "2" },
+        { name = "GUNICORN_THREADS", value = "8" },
         { name = "FLASK_ENV", value = "production" },
       ]
 
@@ -199,6 +203,7 @@ resource "aws_ecs_service" "app" {
   enable_ecs_managed_tags = true
   propagate_tags          = "SERVICE"
 
+  health_check_grace_period_seconds  = 90
   deployment_minimum_healthy_percent = 100
   deployment_maximum_percent         = 200
 

@@ -9,6 +9,8 @@ WORKDIR /app
 RUN groupadd --gid 10001 aistora \
     && useradd --uid 10001 --gid 10001 --create-home --shell /usr/sbin/nologin aistora
 
+# Only runtime dependencies. requirements-dev.txt (pytest, selenium) is not
+# copied, so test tooling never reaches a production host.
 COPY requirements.txt .
 RUN python -m pip install --no-cache-dir -r requirements.txt
 

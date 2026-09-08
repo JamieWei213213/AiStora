@@ -1,7 +1,9 @@
 # routes/databases.py
-from flask import Blueprint, request, jsonify, session
+from flask import current_app, Blueprint, request, jsonify, session
 from extensions import db
 from models import Project, Table
+from services.schema_service import build_project_schema
+from services.validation import ValidationError, validate_database_name
 from services.storage_service import DatasetStorageError, get_dataset_storage
 
 databases_bp = Blueprint('databases', __name__)
@@ -22,10 +24,19 @@ def create_database():
     if 'user_id' not in session:
         return jsonify({'success': False, 'error': 'Unauthorized'}), 401
     
-    data = request.get_json()
-    name = data.get('name')
-    if not name:
-        return jsonify({'success': False, 'error': 'Name required'}), 400
+    data = request.get_json(silent=True) or {}
+    try:
+        name = validate_database_name(data.get('name'))
+    except ValidationError as exc:
+        return jsonify({'success': False, 'error': str(exc)}), 400
+
+    max_projects = int(current_app.config.get('MAX_PROJECTS_PER_USER', 10) or 0)
+    if max_projects and Project.query.filter_by(user_id=session['user_id']).count() >= max_projects:
+        return jsonify({
+            'success': False,
+            'error': f'You may have at most {max_projects} databases. Delete one to add another.',
+            'error_type': 'input_limit',
+        }), 400
 
     new_project = Project(name=name, user_id=session['user_id'])
     db.session.add(new_project)
@@ -42,8 +53,12 @@ def rename_database(id):
     if not project:
         return jsonify({'success': False, 'error': 'Database not found'}), 404
 
-    data = request.get_json()
-    project.name = data.get('name', project.name)
+    data = request.get_json(silent=True) or {}
+    if 'name' in data:
+        try:
+            project.name = validate_database_name(data.get('name'))
+        except ValidationError as exc:
+            return jsonify({'success': False, 'error': str(exc)}), 400
     db.session.commit()
     
     return jsonify({'success': True})
@@ -87,16 +102,11 @@ def select_database():
         return jsonify({'success': False, 'error': 'Database not found'}), 404
         
     session['active_project_id'] = project.id
-    
-    # Load schema for the frontend
-    schema = {}
-    for table in project.tables:
-        schema[table.name] = {
-            'id': table.id,
-            'filename': table.filename,
-            'types': table.columns_schema,
-            'row_count': table.row_count
-        }
-    
-    session['db_schema'] = schema # For chat/upload routes
+    # Switching projects must not carry the previous project's agent memory,
+    # pending approvals or cleaning previews across.
+    session.pop('db_relationships', None)
+    session.pop('pending_agent', None)
+    session.pop('cleaning_previews', None)
+
+    schema = build_project_schema(project.id)
     return jsonify({'success': True, 'schema': schema, 'name': project.name})

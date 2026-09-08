@@ -12,6 +12,7 @@ from services.agent_history import (
     finish_run,
     project_metrics,
     record_feedback,
+    run_belongs_to_user,
     start_run,
     successful_examples,
 )
@@ -30,18 +31,63 @@ from services.llm_service import (
 )
 from services.logger import get_logger
 from services.model_router import route_agent_task
+from services.rate_limit import SharedRateLimiter
+from services.usage_budget import BUDGET_MESSAGES, BudgetExceeded, usage_budget
 from services.schema_agent import build_auto_analysis_goal, build_query_suggestions
+from services.schema_service import active_schema
 from services.state_manager import get_dataframe
 from services.agent_verifier import verify_outcome
+from services.privacy import (
+    PrivacyPolicy,
+    protect_result_rows,
+    redact_relationships,
+    redact_schema,
+)
 
 
 chat_bp = Blueprint("chat", __name__)
 logger = get_logger(__name__)
+agent_rate_limiter = SharedRateLimiter('agent')
+
+
+def _rate_limit_response(scope, limit):
+    allowed, retry_after = agent_rate_limiter.check(
+        f"{scope}:{session['user_id']}",
+        limit=limit,
+        window_seconds=60,
+    )
+    if allowed:
+        return None
+    response = jsonify({
+        "success": False,
+        "type": "error",
+        "error": "Too many AI requests. Please wait and try again.",
+        "data": "Too many AI requests. Please wait and try again.",
+        "error_type": "rate_limit",
+    })
+    response.headers["Retry-After"] = str(retry_after)
+    return response, 429
+
+
+def _budget_response(exc):
+    message = BUDGET_MESSAGES.get(exc.scope, BUDGET_MESSAGES["user_tokens"])
+    response = jsonify({
+        "success": False,
+        "type": "error",
+        "error": message,
+        "data": message,
+        "error_type": "daily_budget",
+        "budget_scope": exc.scope,
+    })
+    response.headers["Retry-After"] = str(exc.retry_after)
+    return response, 429
 
 
 def _display_value(value):
-    if isinstance(value, float) and math.isfinite(value):
-        return round(value, 4)
+    if isinstance(value, float):
+        # JSON has no inf/nan; jsonify would emit bare ``Infinity`` and the
+        # browser's JSON.parse would reject the whole response.
+        return round(value, 4) if math.isfinite(value) else None
     return value
 
 
@@ -54,6 +100,14 @@ def _clean_json(text):
     if cleaned.endswith("```"):
         cleaned = cleaned[:-3]
     return json.loads(cleaned.strip())
+
+
+def _privacy_policy():
+    return PrivacyPolicy(
+        schema_mode=str(getattr(Config, "AGENT_SCHEMA_PRIVACY", "classified")),
+        result_mode=str(getattr(Config, "AGENT_RESULT_PRIVACY", "masked")),
+        max_result_rows=int(getattr(Config, "AGENT_MAX_OUTPUT_ROWS", 25)),
+    )
 
 
 def _base_payload(
@@ -71,6 +125,7 @@ def _base_payload(
             "turns_used": outcome.turns,
             "tool_calls_used": outcome.tool_calls,
         },
+        "metrics": outcome.metrics,
     }
     if agent_meta:
         payload["agent"] = agent_meta
@@ -85,6 +140,7 @@ def _format_finished(
     max_rows,
     agent_meta=None,
     verification=None,
+    privacy_policy=None,
 ):
     payload = _base_payload(
         outcome,
@@ -93,6 +149,7 @@ def _format_finished(
         verification=verification,
     )
     result = outcome.result
+    policy = privacy_policy or PrivacyPolicy()
     if result is None:
         payload.update({"type": "text", "data": outcome.message})
         return payload
@@ -105,10 +162,10 @@ def _format_finished(
     elif result.kind == "table":
         payload.update({
             "type": "table",
-            "data": [
+            "data": protect_result_rows([
                 {key: _display_value(value) for key, value in row.items()}
                 for row in result.value[:max_rows]
-            ],
+            ], policy),
         })
     elif result.kind == "dataframe":
         rows = []
@@ -119,7 +176,7 @@ def _format_finished(
             })
             if len(rows) >= max_rows:
                 break
-        payload.update({"type": "table", "data": rows})
+        payload.update({"type": "table", "data": protect_result_rows(rows, policy)})
     elif result.kind == "aggregate":
         group_by = result.metadata.get("group_by", "group")
         rows = []
@@ -132,7 +189,10 @@ def _format_finished(
             rows.append(row)
             if len(rows) >= max_rows:
                 break
-        payload.update({"type": "table", "data": rows})
+        # The aggregate branch previously bypassed the result policy, so
+        # grouping by a sensitive column returned values that selecting the
+        # same column would have masked. The policy now applies on every path.
+        payload.update({"type": "table", "data": protect_result_rows(rows, policy)})
     else:
         payload.update({"type": "text", "data": outcome.message})
     return payload
@@ -147,21 +207,33 @@ def detect_relationships():
     if not model:
         return jsonify({"success": False, "error": "AI model not configured"}), 500
 
-    schema = session.get("db_schema", {})
+    schema = active_schema()
     if len(schema) < 2:
         return jsonify({"success": False, "error": "At least two tables are required."}), 400
+    limited = _rate_limit_response(
+        "relationships",
+        int(getattr(Config, "RELATIONSHIP_RATE_LIMIT_PER_MINUTE", 5)),
+    )
+    if limited:
+        return limited
+    try:
+        usage_budget.reserve_request(session["user_id"])
+    except BudgetExceeded as exc:
+        return _budget_response(exc)
 
-    prompt_schema = {name: details["types"] for name, details in schema.items()}
+    safe_schema = redact_schema(schema, _privacy_policy())
     prompt = f"""
     Given this database schema:
-    {json.dumps(prompt_schema)}
+    {json.dumps(safe_schema)}
     Infer likely foreign-key relationships. Return only JSON:
     {{"success":true,"relationships":[{{"from_table":"t1","from_column":"c1","to_table":"t2","to_column":"c2"}}]}}
     """
     try:
         result = _clean_json(model.generate_content(prompt).text)
-        session["db_relationships"] = result.get("relationships", [])
-        logger.info("Relationships detected: %s", len(result.get("relationships", [])))
+        relationships = redact_relationships(result.get("relationships", []), safe_schema)
+        result = {"success": True, "relationships": relationships}
+        session["db_relationships"] = relationships
+        logger.info("Relationships detected: %s", len(relationships))
         return jsonify(result)
     except Exception as exc:
         if is_gemini_quota_error(exc):
@@ -172,7 +244,11 @@ def detect_relationships():
                 "error_type": "quota",
             }), 429
         logger.error("Gemini relationship detection failed: %s", exc)
-        return jsonify({"success": False, "error": f"AI API error: {exc}"}), 500
+        return jsonify({
+            "success": False,
+            "error": "Relationship detection failed. Please try again.",
+            "error_type": "model_error",
+        }), 500
 
 
 @chat_bp.route("/api/chat", methods=["POST"])
@@ -187,9 +263,27 @@ def chat():
         user_query = "Auto-analyze this database"
     if not isinstance(user_query, str) or not user_query.strip():
         return jsonify({"type": "error", "data": "Please enter a question."}), 400
+    max_query_chars = int(getattr(Config, "AGENT_MAX_QUERY_CHARS", 4000))
+    if len(user_query) > max_query_chars:
+        return jsonify({
+            "type": "error",
+            "data": f"Question is too long. Limit it to {max_query_chars} characters.",
+            "error_type": "input_limit",
+        }), 413
 
-    schema = session.get("db_schema", {})
+    limited = _rate_limit_response(
+        "chat",
+        int(getattr(Config, "AGENT_RATE_LIMIT_PER_MINUTE", 20)),
+    )
+    if limited:
+        return limited
+    try:
+        usage_budget.reserve_request(session["user_id"])
+    except BudgetExceeded as exc:
+        return _budget_response(exc)
+
     project_id = session.get("active_project_id")
+    schema = active_schema()
     if not schema or not project_id:
         return jsonify({"type": "error", "data": "No active database schema found."}), 400
 
@@ -240,7 +334,10 @@ def chat():
         "routing_tier": routing["tier"],
         "routing_reason": routing["reason"],
         "examples_used": len(examples),
+        "intent": routing["intent"],
+        "allowed_tools": routing["allowed_tools"],
     }
+    privacy_policy = _privacy_policy()
 
     configured_turns = int(getattr(Config, "AGENT_MAX_TURNS", 8))
     requested_turns = body.get("max_turns", configured_turns)
@@ -256,6 +353,7 @@ def chat():
         max_materialized_rows=int(getattr(Config, "AGENT_MAX_MATERIALIZED_ROWS", 25_000)),
         max_groups=int(getattr(Config, "AGENT_MAX_GROUPS", 500)),
         timeout_seconds=int(getattr(Config, "AGENT_TIMEOUT_SECONDS", 45)),
+        max_corrections=int(getattr(Config, "AGENT_MAX_CORRECTIONS", 3)),
     )
     cancel_event = cancellation_registry.register(request_id)
     runtime = AgentToolRuntime(
@@ -267,6 +365,7 @@ def chat():
         approvals=approvals,
         limits=limits,
         cancelled=cancel_event.is_set,
+        allowed_tools=routing["allowed_tools"],
     )
     run_started = time.monotonic()
     run_record = start_run(
@@ -295,6 +394,11 @@ def chat():
                 candidate,
                 limits.max_output_rows,
             ),
+            privacy_policy=privacy_policy,
+        )
+        usage_budget.record_tokens(
+            session["user_id"],
+            (outcome.metrics or {}).get("total_tokens", 0),
         )
 
         if outcome.status == "clarification":
@@ -369,6 +473,7 @@ def chat():
                 tool_calls=outcome.tool_calls,
                 duration_ms=round((time.monotonic() - run_started) * 1000),
                 verification=verification,
+                metrics=outcome.metrics,
             )
             payload = _base_payload(
                 outcome,
@@ -391,6 +496,7 @@ def chat():
             limits.max_output_rows,
             agent_meta=agent_meta,
             verification=verification,
+            privacy_policy=privacy_policy,
         )
         result_kind = outcome.result.kind if outcome.result else "text"
         result_name = outcome.result.name if outcome.result else "none"
@@ -405,6 +511,7 @@ def chat():
             tool_calls=outcome.tool_calls,
             duration_ms=round((time.monotonic() - run_started) * 1000),
             verification=verification,
+            metrics=outcome.metrics,
         )
         add_memory(
             session,
@@ -486,7 +593,8 @@ def chat():
         )
         return jsonify({
             "type": "error",
-            "data": f"Agent error: {str(exc)[:300]}",
+            "data": "The analysis could not be completed. Please try again.",
+            "error_type": "internal_error",
             "request_id": request_id,
             "trace": runtime.trace,
             "plan": runtime.plan,
@@ -500,7 +608,7 @@ def chat():
 def chat_suggestions():
     if "user_id" not in session:
         return jsonify({"success": False, "error": "Unauthorized"}), 401
-    schema = session.get("db_schema", {})
+    schema = active_schema()
     if not schema:
         return jsonify({"success": True, "suggestions": []})
     suggestions = build_query_suggestions(
@@ -519,6 +627,11 @@ def cancel_chat():
         request_id = str(uuid.UUID(str(request_id)))
     except (ValueError, TypeError, AttributeError):
         return jsonify({"success": False, "error": "request_id must be a UUID"}), 400
+    # Any authenticated user could previously cancel any in-flight run by
+    # supplying its request ID. Runs are recorded at start, so ownership is
+    # checked against that record before the cancellation is honoured.
+    if not run_belongs_to_user(request_id, session["user_id"]):
+        return jsonify({"success": False, "error": "Agent run not found"}), 404
     return jsonify({"success": cancellation_registry.cancel(request_id)})
 
 
@@ -569,6 +682,7 @@ def chat_metrics():
     return jsonify({
         "success": True,
         "metrics": project_metrics(session["user_id"], project_id),
+        "budget": usage_budget.snapshot(session["user_id"]),
     })
 
 

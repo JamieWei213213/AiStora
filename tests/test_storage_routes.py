@@ -59,7 +59,6 @@ def test_upload_persists_s3_reference_and_schema(tmp_path, monkeypatch):
     with client.session_transaction() as flask_session:
         flask_session["user_id"] = user_id
         flask_session["active_project_id"] = project_id
-        flask_session["db_schema"] = {}
 
     response = client.post(
         "/api/upload",

@@ -1,8 +1,8 @@
 # AIStora AWS Deployment and IAM Guide
 
-This deployment is designed to be something you can explain in a data
-engineering interview. It does not use the AWS root user, long-lived access
-keys in GitHub, a public database, or a public dataset bucket.
+This deployment is designed so that every control can be explained and
+defended. It does not use the AWS root user, long-lived access keys in
+GitHub, a public database, or a public dataset bucket.
 
 ## Architecture
 
@@ -116,23 +116,21 @@ From `infra/terraform`:
 
 ```powershell
 Copy-Item terraform.tfvars.example terraform.tfvars
+Copy-Item backend.hcl.example backend.hcl
 terraform fmt -recursive
-terraform init
+terraform init -reconfigure -backend-config=backend.hcl
 terraform validate
 terraform plan -out aistora.tfplan
 terraform apply aistora.tfplan
 ```
 
-For team use, first create a dedicated Terraform-state S3 bucket with
-versioning and encryption, copy `backend.hcl.example` to `backend.hcl`, and
-initialize with:
+First create the dedicated Terraform-state S3 bucket with versioning,
+encryption, public-access blocking, and a TLS-only policy. Configure its exact
+name, key, and region in `backend.hcl`. The backend uses native S3 lockfiles,
+so DynamoDB locking is not required for modern Terraform.
 
-```powershell
-terraform init -backend-config=backend.hcl
-```
-
-The backend uses S3 lockfiles. DynamoDB locking is not needed for modern
-Terraform.
+Do not apply the stack after a `Missing backend configuration` warning. Confirm
+Terraform reports `Successfully configured the backend "s3"` first.
 
 ## Configure the Gemini secret
 
@@ -232,9 +230,7 @@ keep. The S3 bucket refuses deletion while it contains data by default.
 Production should also enable RDS deletion protection, final snapshots,
 Multi-AZ, and HTTPS with ACM.
 
-## Honest interview limitations
-
-Be ready to say:
+## Honest limitations
 
 - The development deployment is single-AZ RDS to control cost; production
   would enable Multi-AZ and deletion protection.

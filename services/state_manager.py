@@ -26,10 +26,3 @@ def get_dataframe(table_name):
             return None
     
     return None
-
-def clear_cache_for_user():
-    """
-    No longer needed since we don't cache objects, 
-    but kept for interface compatibility.
-    """
-    pass

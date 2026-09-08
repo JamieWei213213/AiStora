@@ -59,7 +59,7 @@
     the live health endpoint.
 - `AWS_DEPLOYMENT_GUIDE.md`
   - Documents provisioning, costs, CI/CD, S3/RDS behavior, and the exact IAM
-    boundaries an interviewer may ask about.
+    boundaries.
 - `.env.example`
   - Gemini, secret-key, and agent-budget configuration template.
 - `AGENT_GUIDE.md`
@@ -92,8 +92,7 @@
   - Removes project dataset objects when their database metadata is deleted.
 - `services/llm_service.py`
   - Uses the supported Gemini SDK.
-  - Uses `gemini-3.1-flash-lite` for low-cost standard requests and routes
-    complex requests to the configurable `gemini-3.6-flash` advanced model.
+  - Uses configurable `GEMINI_MODEL` with `gemini-3.6-flash` as the default.
   - Configures manual native function calling so raw tool results cannot be
     automatically returned to the model.
   - Recognizes Gemini quota failures without exposing raw SDK errors.

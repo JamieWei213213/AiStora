@@ -4,42 +4,22 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{% block title %}Aistora{% endblock %}</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest" crossorigin></script>
-    <style>
-      html,
-      body {
-        height: 100%;
-      }
-      .spinner {
-        border: 2px solid #f3f3f3;
-        border-top: 2px solid #3498db;
-        border-radius: 50%;
-        width: 16px;
-        height: 16px;
-        animation: spin 1s linear infinite;
-      }
-      @keyframes spin {
-        0% {
-          transform: rotate(0deg);
-        }
-        100% {
-          transform: rotate(360deg);
-        }
-      }
-    </style>
+    <!-- Tailwind is compiled at build time (see docs/FRONTEND_BUILD.md) rather
+         than loaded from the Play CDN, which is a runtime JIT compiler that
+         Tailwind itself says not to use in production. -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/tailwind.css') }}?v={{ version_id }}" />
+    <!-- lucide is vendored and pinned: an unpinned CDN build could change its
+         API under us, and a CDN host in script-src is a full-XSS trust grant. -->
+    <script src="{{ url_for('static', filename='js/vendor/lucide-1.43.0.min.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}?v={{ version_id }}" />
   </head>
   <body class="bg-slate-50 text-slate-800 h-full w-full overflow-hidden">
     {% block content %}{% endblock %}
 
-    <script>
-      // This is left here *only* to initialize the icons,
-      // as it's small and must run *after* the DOM is loaded.
-      // All other logic is in scripts.js
-      document.addEventListener("DOMContentLoaded", () => {
-        lucide.createIcons();
-      });
-    </script>
+    <!-- Icon initialisation lives in a static file: the Content-Security-Policy
+         has no 'unsafe-inline' for scripts, so an inline block here is refused
+         by the browser and landing-page icons rendered empty. -->
+    <script src="{{ url_for('static', filename='js/icons.js') }}?v={{ version_id }}"></script>
     {% block scripts %}{% endblock %}
   </body>
 </html>

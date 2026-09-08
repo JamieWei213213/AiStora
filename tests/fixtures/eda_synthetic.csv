@@ -1,0 +1,10 @@
+id,age,spend,segment,email,signup_date
+1,21,100.00,Starter,one@example.com,2026-01-01
+2,25,125.50,Starter,two@example.com,2026-01-03
+3,31,180.00,Growth,three@example.com,2026-01-08
+4,,220.00,Growth,four@example.com,2026-01-11
+5,38,260.00,Growth,five@example.com,2026-01-14
+6,42,310.00,Enterprise,six@example.com,2026-01-20
+7,47,360.00,,seven@example.com,2026-01-25
+8,52,10000.00,Enterprise,eight@example.com,2026-01-30
+8,52,10000.00,Enterprise,eight@example.com,2026-01-30

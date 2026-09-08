@@ -8,8 +8,10 @@ from werkzeug.utils import secure_filename
 from extensions import db
 from models import Table, Project
 from engine.dataframe import DataFrame
-from services.schema_service import build_project_schema
+from engine.parser import CsvParseError
+from services.schema_service import active_schema, build_project_schema
 from services.storage_service import DatasetStorageError, get_dataset_storage
+from services.validation import ValidationError, validate_column_names
 
 data_bp = Blueprint('data', __name__)
 
@@ -32,7 +34,15 @@ def upload_files():
         return jsonify({'success': False, 'error': 'No files part'}), 400
 
     files = request.files.getlist('files')
-    schema_cache = session.get('db_schema', {})
+    # Names are checked against the database, not against a session copy.
+    schema_cache = build_project_schema(active_project_id)
+    max_tables = int(current_app.config.get("MAX_TABLES_PER_PROJECT", 20) or 0)
+    if max_tables and len(schema_cache) + len(files) > max_tables:
+        return jsonify({
+            "success": False,
+            "error": f"A database may hold at most {max_tables} tables.",
+            "error_type": "input_limit",
+        }), 400
     storage = get_dataset_storage()
     stored_references = []
     temporary_paths = []
@@ -61,6 +71,11 @@ def upload_files():
 
             df = DataFrame(source=temp_path)
             column_types = df.get_column_types()
+            validate_column_names(
+                column_types,
+                max_columns=int(current_app.config.get("MAX_UPLOAD_COLUMNS", 200) or 0),
+                max_name_chars=int(current_app.config.get("MAX_COLUMN_NAME_CHARS", 64) or 0),
+            )
             row_count = len(df)
             table_base = secure_filename(os.path.splitext(filename)[0]) or "table"
             table_name = table_base
@@ -100,7 +115,7 @@ def upload_files():
             }
 
         db.session.commit()
-    except DatasetStorageError as exc:
+    except (DatasetStorageError, ValidationError, CsvParseError) as exc:
         db.session.rollback()
         for reference in stored_references:
             try:
@@ -124,8 +139,7 @@ def upload_files():
             if os.path.exists(temp_path):
                 os.remove(temp_path)
 
-    session['db_schema'] = schema_cache
-    return jsonify({'success': True, 'schema': schema_cache})
+    return jsonify({'success': True, 'schema': build_project_schema(active_project_id)})
 
 
 @data_bp.route("/api/schema", methods=["GET"])
@@ -138,6 +152,4 @@ def get_schema():
     project = Project.query.filter_by(id=project_id, user_id=session["user_id"]).first()
     if not project:
         return jsonify({"success": False, "error": "Database not found"}), 404
-    schema = build_project_schema(project_id)
-    session["db_schema"] = schema
-    return jsonify({"success": True, "schema": schema})
+    return jsonify({"success": True, "schema": build_project_schema(project_id)})

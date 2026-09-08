@@ -102,8 +102,22 @@ class GeminiAgentSession:
         self.chat = chat
         self.types = types_module
         self.request_with_retry = request_with_retry
+        self.usage = {"input_tokens": 0, "output_tokens": 0, "total_tokens": 0, "estimated_cost_usd": 0.0}
+        self.retry_count = 0
 
     def _normalize(self, response):
+        usage = getattr(response, "usage_metadata", None)
+        input_tokens = int(getattr(usage, "prompt_token_count", 0) or 0)
+        output_tokens = int(getattr(usage, "candidates_token_count", 0) or 0)
+        self.usage["input_tokens"] += input_tokens
+        self.usage["output_tokens"] += output_tokens
+        self.usage["total_tokens"] += input_tokens + output_tokens
+        input_rate = float(getattr(Config, "AGENT_INPUT_COST_PER_MILLION", 0.0))
+        output_rate = float(getattr(Config, "AGENT_OUTPUT_COST_PER_MILLION", 0.0))
+        self.usage["estimated_cost_usd"] = round(
+            (self.usage["input_tokens"] * input_rate + self.usage["output_tokens"] * output_rate) / 1_000_000,
+            8,
+        )
         calls = [
             AgentFunctionCall(call.name, dict(call.args or {}))
             for call in (response.function_calls or [])
@@ -132,16 +146,33 @@ class GeminiModel:
     def __init__(
         self,
         api_key,
-        model_name="gemini-3.1-flash-lite",
+        model_name="gemini-3.5-flash-lite",
         max_retries=None,
         retry_base_seconds=None,
+        request_timeout_seconds=None,
+        max_output_tokens=None,
     ):
         from google import genai
         from google.genai import types
 
         self.types = types
-        self.client = genai.Client(api_key=api_key)
         self.model_name = model_name
+        self.request_timeout_seconds = (
+            int(getattr(Config, "AGENT_LLM_TIMEOUT_SECONDS", 30))
+            if request_timeout_seconds is None
+            else max(int(request_timeout_seconds), 1)
+        )
+        self.max_output_tokens = (
+            int(getattr(Config, "AGENT_LLM_MAX_OUTPUT_TOKENS", 2048))
+            if max_output_tokens is None
+            else max(int(max_output_tokens), 1)
+        )
+        self.client = genai.Client(
+            api_key=api_key,
+            http_options=types.HttpOptions(
+                timeout=self.request_timeout_seconds * 1000,
+            ),
+        )
         self.max_retries = (
             int(getattr(Config, "AGENT_LLM_MAX_RETRIES", 2))
             if max_retries is None
@@ -152,6 +183,7 @@ class GeminiModel:
             if retry_base_seconds is None
             else max(float(retry_base_seconds), 0.0)
         )
+        self.retry_count = 0
 
     def _request(self, operation):
         for attempt in range(self.max_retries + 1):
@@ -160,6 +192,7 @@ class GeminiModel:
             except Exception as exc:
                 if attempt >= self.max_retries or not is_transient_gemini_error(exc):
                     raise
+                self.retry_count += 1
                 delay = min(self.retry_base_seconds * (2 ** attempt), 4.0)
                 logger.warning(
                     "Retrying transient Gemini failure for %s in %.2fs (%s/%s)",
@@ -178,6 +211,7 @@ class GeminiModel:
                 contents=prompt,
                 config=self.types.GenerateContentConfig(
                     system_instruction=SYSTEM_PROMPT,
+                    max_output_tokens=self.max_output_tokens,
                 ),
             )
         )
@@ -187,12 +221,29 @@ class GeminiModel:
         config = self.types.GenerateContentConfig(
             system_instruction=f"{SYSTEM_PROMPT}\n\n{system_prompt}",
             tools=[tool],
+            tool_config=self.types.ToolConfig(
+                function_calling_config=self.types.FunctionCallingConfig(
+                    mode=self.types.FunctionCallingConfigMode.VALIDATED,
+                    allowed_function_names=[
+                        declaration["name"] for declaration in tool_declarations
+                    ],
+                ),
+            ),
+            max_output_tokens=self.max_output_tokens,
             automatic_function_calling=self.types.AutomaticFunctionCallingConfig(
                 disable=True
             ),
         )
         chat = self.client.chats.create(model=self.model_name, config=config)
-        return GeminiAgentSession(chat, self.types, self._request)
+        session = GeminiAgentSession(chat, self.types, self._request)
+        original_request = session.request_with_retry
+        def request_with_retry(operation):
+            before = self.retry_count
+            response = original_request(operation)
+            session.retry_count += self.retry_count - before
+            return response
+        session.request_with_retry = request_with_retry
+        return session
 
 
 def configure_llm():

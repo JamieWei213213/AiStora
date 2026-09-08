@@ -127,12 +127,15 @@
 
 \begin{onecolentry}
 \begin{highlights}
-    \item Built ETL workflows to extract, clean, normalize, and load financial
-    datasets into analytics-ready relational structures using Python and SQL.
-    \item Created data-quality checks and transformation logic to improve
-    consistency and reliability for downstream reporting and analysis.
-    \item Developed relational data models and Power BI dashboards supporting
-    financial, operational, and engineering decision-making.
+    \item Architected Python and SQL ETL pipelines powering analytics across
+    \textbf{20M+ financial records}, integrating heterogeneous Apollo, FFIEC,
+    and NCUA datasets into standardized, analytics-ready relational models.
+    \item Engineered automated data-quality and transformation workflows to
+    detect missing, duplicate, and inconsistent records before downstream
+    analysis, improving reliability across large-scale financial datasets.
+    \item Built dimensional data models, Power BI dashboards, and DAX measures
+    that transformed raw banking data into actionable financial, operational,
+    and portfolio-level insights.
 \end{highlights}
 \end{onecolentry}
 
@@ -145,12 +148,15 @@
 
 \begin{onecolentry}
 \begin{highlights}
-    \item Developed backend features and integrated REST APIs supporting
-    internal applications and data workflows.
-    \item Diagnosed issues across application logic, SQL queries, and API
-    request-response flows to improve backend reliability.
-    \item Implemented SQL-based validation checks to identify inconsistent
-    records and strengthen application data integrity.
+    \item Shipped application features across the stack, connecting frontend
+    workflows with Python REST APIs, backend application logic, and SQL-backed
+    data services.
+    \item Owned cross-stack debugging by tracing user interactions through API
+    requests, backend handlers, SQL queries, and response mappings to resolve
+    integration and data-flow failures.
+    \item Strengthened application reliability with API and SQL validation checks
+    that detected inconsistent records and verified data integrity across
+    request-response workflows.
 \end{highlights}
 \end{onecolentry}
 
@@ -163,24 +169,24 @@
 \begin{tabularx}{\textwidth}{Xr}
     \textbf{AIStora -- Agentic Data Analytics Platform}
         & \href{https://github.com/JamieWei213213/AiStora}{GitHub}\\
-    \textit{Python, Flask, Gemini API, JavaScript, SQLAlchemy, Docker, Pytest}
+    \textit{Python, Flask, PostgreSQL, AWS, Terraform, Docker, GitHub Actions}
         & \\
 \end{tabularx}
 
 \begin{onecolentry}
 \begin{highlights}
-    \item Engineered a bounded agentic analytics system that converts
-    natural-language goals into multi-step plans and orchestrates 11 typed
-    tools for filtering, joining, aggregating, ranking, and result selection.
-    \item Replaced LLM-generated executable code with validated function calls
-    and server-owned local operations; exposed only schemas and privacy-safe
-    metadata to the model rather than raw dataset rows.
-    \item Added model routing, transient-error retries, deterministic result
-    verification with bounded self-repair, privacy-limited successful-plan
-    retrieval, user feedback, and project-level quality metrics.
-    \item Developed an approval-gated cleaning workflow that detects malformed
-    headers, null markers, duplicates, whitespace, and inconsistent rows while
-    preserving the source dataset; verified the system with 47 automated tests.
+    \item Built a privacy-first analytics product that translates customer-style
+    business questions into multi-step plans across 11 typed tools while keeping
+    raw financial data out of the LLM context.
+    \item Deployed the containerized application on AWS ECS/Fargate behind an
+    Application Load Balancer, with encrypted datasets in S3, application data
+    in private RDS PostgreSQL, and operational logs in CloudWatch.
+    \item Provisioned a two-Availability-Zone VPC with public, private application,
+    and isolated database subnets; restricted traffic using security groups and
+    an S3 VPC endpoint and separated least-privilege ECS IAM roles.
+    \item Automated infrastructure and delivery with Terraform and GitHub Actions
+    using AWS OIDC, ECR, rolling ECS deployments, health checks, and rollback;
+    validated application behavior with 47 automated tests.
 \end{highlights}
 \end{onecolentry}
 
@@ -195,10 +201,11 @@
 
 \begin{onecolentry}
 \begin{highlights}
-    \item Developed a CycleGAN image-to-image translation system in PyTorch for
-    unpaired photo-to-cartoon domain adaptation.
-    \item Built preprocessing and training pipelines for more than 20,000
-    images to improve input quality and model-training stability.
+    \item Engineered a CycleGAN in PyTorch for unpaired photo-to-cartoon image
+    translation using adversarial, cycle-consistency, and identity objectives.
+    \item Built preprocessing and training pipelines for \textbf{20,000+ images}
+    and reduced test-set \textbf{FID from 115 to 82.04} through systematic
+    loss-weight and learning-rate tuning.
 \end{highlights}
 \end{onecolentry}
 
@@ -213,9 +220,14 @@
 
     \vspace{1pt}
 
+    \textbf{Cloud, Networking \& Security:}
+    AWS (ECS/Fargate, S3, RDS, ECR, IAM, VPC, CloudWatch), Terraform,
+    Load Balancing, Subnets, Security Groups, Docker, GitHub Actions, CI/CD
+
+    \vspace{1pt}
+
     \textbf{Backend \& Software Engineering:}
-    Flask, SQLAlchemy, REST APIs, Object-Oriented Programming, Git, Docker,
-    Pytest, Debugging, Data Structures, Algorithms
+    Flask, SQLAlchemy, REST APIs, PostgreSQL, Linux, Git, Pytest, Debugging
 
     \vspace{1pt}
 
@@ -226,7 +238,7 @@
     \vspace{1pt}
 
     \textbf{Data Engineering \& Analytics:}
-    PostgreSQL, Spark, Pandas, NumPy, ETL, Data Cleaning, Data Modeling,
+    Spark, Pandas, NumPy, ETL, Data Cleaning, Data Modeling,
     Power BI, Tableau
 \end{onecolentry}
 
