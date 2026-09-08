@@ -16,7 +16,7 @@ from flask import Flask
 import routes.auth as auth_routes
 import routes.chat as chat_routes
 import routes.data as data_routes
-from app import create_app
+from app import register_error_handlers
 from extensions import db
 from models import Project, Table, User
 from routes.auth import auth_bp
@@ -293,18 +293,14 @@ def test_database_creation_is_capped_per_user(tmp_path, monkeypatch):
     assert "at most 2" in third.get_json()["error"]
 
 
-def test_oversized_request_returns_json_not_html(monkeypatch):
-    monkeypatch.setenv("APP_ENV", "development")
-    app = create_app()
-    app.config["MAX_CONTENT_LENGTH"] = 1024
-    client = app.test_client()
-    with client.session_transaction() as flask_session:
-        flask_session["user_id"] = 1
-        flask_session["active_project_id"] = 1
+def test_oversized_request_returns_json_not_html(tmp_path, monkeypatch):
+    app, client = _upload_app(tmp_path, monkeypatch, MAX_CONTENT_LENGTH=1024)
+    register_error_handlers(app)
     response = _upload(client, b"a,b\n" + b"1,2\n" * 2_000)
     assert response.status_code == 413
     assert response.is_json
     assert response.get_json()["error_type"] == "input_limit"
+    assert "MB per request" in response.get_json()["error"]
 
 
 # --------------------------------------------------------------------------
@@ -325,6 +321,7 @@ def test_daily_budget_limits_requests_tokens_and_global_spend(monkeypatch):
         budget.reserve_request("u1")
     assert excinfo.value.scope == "user_requests"
     assert excinfo.value.retry_after >= 1
+    assert budget.snapshot("u1")["requests_today"] == 2  # rejections do not count
 
     budget.record_tokens("u2", 1_000)
     with pytest.raises(BudgetExceeded) as excinfo:

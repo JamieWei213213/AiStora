@@ -147,6 +147,8 @@ class DailyUsageBudget:
         if limits["user_requests"]:
             count = self._safe("add", f"requests:user:{user_id}", 1, _DAY_SECONDS)
             if count > limits["user_requests"]:
+                # Rejected attempts are not usage; keep the counter honest.
+                self._safe("add", f"requests:user:{user_id}", -1, _DAY_SECONDS)
                 raise BudgetExceeded("user_requests", retry_after)
 
     def record_tokens(self, user_id, total_tokens):
