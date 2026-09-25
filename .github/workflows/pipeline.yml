@@ -1,0 +1,221 @@
+name: Test and deploy the AIStora pipeline
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "pipeline/**"
+      - "engine/**"
+      - "tests/pipeline/**"
+      - ".github/workflows/pipeline.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "pipeline/**"
+      - "engine/**"
+      - "tests/pipeline/**"
+      - ".github/workflows/pipeline.yml"
+  workflow_dispatch:
+    inputs:
+      image_tag_suffix:
+        description: "Optional suffix appended to the image tag (for example rc1)."
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+concurrency:
+  group: aistora-pipeline-deployment
+  cancel-in-progress: false
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: python -m pip install -r requirements-dev.txt -r pipeline/requirements.txt
+
+      - name: Run pipeline tests
+        run: python -m pytest -q tests/pipeline
+
+      - name: Compile the pipeline package
+        run: python -m compileall -q pipeline
+
+  terraform:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        root: [infra/terraform, infra/terraform/pipeline]
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Check Terraform formatting
+        working-directory: ${{ matrix.root }}
+        run: terraform fmt -check
+
+      - name: Initialize Terraform without a remote backend
+        working-directory: ${{ matrix.root }}
+        run: terraform init -backend=false
+
+      - name: Validate Terraform
+        working-directory: ${{ matrix.root }}
+        run: terraform validate
+
+  image:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Build the pipeline image
+        run: docker build -f pipeline/Dockerfile -t aistora-pipeline-ci:${{ github.sha }} .
+
+      - name: Import the handler and the jobs inside the image
+        run: |
+          docker run --rm --entrypoint python aistora-pipeline-ci:${{ github.sha }} \
+            -c "import pipeline.lambda_handler, pipeline.telemetry_job, dbt.cli.main; print('ok')"
+
+  deploy:
+    # Deployment is manual: the pipeline stack is only provisioned for demos.
+    # Run it from the Actions tab ("Run workflow") after `terraform apply`
+    # in infra/terraform/pipeline (see its README for the first-image dance).
+    if: github.event_name == 'workflow_dispatch'
+    needs: [test, terraform, image]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      AWS_REGION: ${{ vars.AWS_REGION }}
+      PIPELINE_ECR_REPOSITORY: ${{ vars.PIPELINE_ECR_REPOSITORY }}
+      PIPELINE_FUNCTION_NAME: ${{ vars.PIPELINE_FUNCTION_NAME }}
+      PIPELINE_STATE_MACHINE_ARN: ${{ vars.PIPELINE_STATE_MACHINE_ARN }}
+      LAKE_BUCKET: ${{ vars.LAKE_BUCKET }}
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Validate deployment variables
+        shell: bash
+        run: |
+          required=(AWS_REGION PIPELINE_ECR_REPOSITORY PIPELINE_FUNCTION_NAME PIPELINE_STATE_MACHINE_ARN LAKE_BUCKET)
+          for name in "${required[@]}"; do
+            if [ -z "${!name}" ]; then
+              echo "::error::$name is not configured as a GitHub repository variable."
+              exit 1
+            fi
+          done
+          if [ -z "${{ vars.AWS_DEPLOY_ROLE_ARN }}" ]; then
+            echo "::error::AWS_DEPLOY_ROLE_ARN is not configured as a GitHub repository variable."
+            exit 1
+          fi
+
+      - name: Obtain short-lived AWS credentials through OIDC
+        uses: aws-actions/configure-aws-credentials@v6.1.2
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+          role-session-name: aistora-pipeline-github-${{ github.run_id }}
+
+      - name: Log in to Amazon ECR
+        id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push an immutable image
+        id: image
+        shell: bash
+        env:
+          REGISTRY: ${{ steps.ecr.outputs.registry }}
+          TAG_SUFFIX: ${{ github.event.inputs.image_tag_suffix }}
+        run: |
+          IMAGE_TAG="${GITHUB_SHA::12}-${GITHUB_RUN_ATTEMPT}"
+          if [ -n "$TAG_SUFFIX" ]; then
+            IMAGE_TAG="$IMAGE_TAG-$TAG_SUFFIX"
+          fi
+          IMAGE_URI="$REGISTRY/$PIPELINE_ECR_REPOSITORY:$IMAGE_TAG"
+          docker build --pull \
+            --label "org.opencontainers.image.revision=$GITHUB_SHA" \
+            --label "org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}" \
+            -f pipeline/Dockerfile -t "$IMAGE_URI" .
+          docker push "$IMAGE_URI"
+          echo "tag=$IMAGE_TAG" >> "$GITHUB_OUTPUT"
+          echo "uri=$IMAGE_URI" >> "$GITHUB_OUTPUT"
+          echo "::notice::Pushed $IMAGE_URI (terraform apply -var image_tag=$IMAGE_TAG on a first deploy)."
+
+      - name: Roll the function over to the new image
+        id: rollout
+        shell: bash
+        env:
+          IMAGE_URI: ${{ steps.image.outputs.uri }}
+        run: |
+          if ! aws lambda get-function --function-name "$PIPELINE_FUNCTION_NAME" > /dev/null 2>&1; then
+            echo "::warning::$PIPELINE_FUNCTION_NAME does not exist yet. Apply infra/terraform/pipeline with -var image_tag=${{ steps.image.outputs.tag }} and re-run this workflow."
+            echo "skipped=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          aws lambda update-function-code \
+            --function-name "$PIPELINE_FUNCTION_NAME" \
+            --image-uri "$IMAGE_URI" > /dev/null
+          aws lambda wait function-updated --function-name "$PIPELINE_FUNCTION_NAME"
+          echo "skipped=false" >> "$GITHUB_OUTPUT"
+
+      - name: Smoke-test the deployed pipeline
+        if: steps.rollout.outputs.skipped == 'false'
+        shell: bash
+        run: |
+          # Same encoding as pipeline/ids.py: 48-bit timestamp + 80 random bits, Crockford base32.
+          LOAD_ID="$(python3 - <<'PY'
+          import os, time
+          alphabet = "0123456789ABCDEFGHJKMNPQRSTVWXYZ"
+          value = (int(time.time() * 1000) << 80) | int.from_bytes(os.urandom(10), "big")
+          chars = []
+          for _ in range(26):
+              chars.append(alphabet[value & 31])
+              value >>= 5
+          print("".join(reversed(chars)))
+          PY
+          )"
+          RAW_KEY="raw/project=0/dataset=ci_smoke/load_id=$LOAD_ID/smoke.csv"
+          MANIFEST_KEY="manifests/project=0/dataset=ci_smoke/$LOAD_ID.json"
+          printf 'id,name,amount,created_at\n1,alpha,10.5,2026-01-01\n2,beta,20,2026-01-02\n3,gamma,30.25,2026-01-03\n' > smoke.csv
+          aws s3 cp smoke.csv "s3://$LAKE_BUCKET/$RAW_KEY" --content-type text/csv
+          echo "Dropped $RAW_KEY; waiting for $MANIFEST_KEY"
+
+          for attempt in {1..30}; do
+            sleep 10
+            if aws s3 cp "s3://$LAKE_BUCKET/$MANIFEST_KEY" manifest.json > /dev/null 2>&1; then
+              status="$(jq -r '.status // empty' manifest.json)"
+              echo "attempt $attempt: status=$status stage=$(jq -r '.stage // empty' manifest.json)"
+              case "$status" in
+                succeeded)
+                  jq . manifest.json
+                  exit 0
+                  ;;
+                quarantined|failed)
+                  echo "::error::Smoke load $LOAD_ID ended with status $status."
+                  jq . manifest.json
+                  exit 1
+                  ;;
+              esac
+            else
+              echo "attempt $attempt: no manifest yet"
+            fi
+          done
+          echo "::error::Smoke load $LOAD_ID did not succeed within 5 minutes."
+          [ -f manifest.json ] && jq . manifest.json
+          exit 1

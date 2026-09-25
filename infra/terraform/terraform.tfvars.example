@@ -17,3 +17,9 @@ database_deletion_protection   = false
 database_skip_final_snapshot   = true
 dataset_force_destroy          = false
 certificate_arn                = null
+
+# Data pipeline (infra/terraform/pipeline). Leave null to run the legacy
+# synchronous upload path; set all three from that module's outputs.
+lake_bucket_name       = null
+pipeline_function_name = null
+glue_database_name     = null

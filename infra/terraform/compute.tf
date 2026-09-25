@@ -91,6 +91,21 @@ resource "aws_lb_listener" "https" {
   }
 }
 
+# Data pipeline wiring (infra/terraform/pipeline). Without a lake bucket the
+# app keeps the legacy synchronous upload path.
+locals {
+  pipeline_environment = var.lake_bucket_name == null ? [
+    { name = "PIPELINE_ENABLED", value = "false" },
+    ] : [
+    { name = "PIPELINE_ENABLED", value = "true" },
+    { name = "PIPELINE_BACKEND", value = "aws" },
+    { name = "LAKE_BUCKET", value = var.lake_bucket_name },
+    { name = "ICEBERG_CATALOG", value = "glue" },
+    { name = "ICEBERG_NAMESPACE", value = coalesce(var.glue_database_name, replace(local.name, "-", "_")) },
+    { name = "PIPELINE_FUNCTION_NAME", value = coalesce(var.pipeline_function_name, "${local.name}-pipeline") },
+  ]
+}
+
 resource "aws_ecs_task_definition" "app" {
   family                   = local.name
   requires_compatibilities = ["FARGATE"]
@@ -118,7 +133,7 @@ resource "aws_ecs_task_definition" "app" {
         name          = "http"
       }]
 
-      environment = [
+      environment = concat([
         { name = "AWS_REGION", value = var.aws_region },
         { name = "DATASET_STORAGE_BACKEND", value = "s3" },
         { name = "S3_DATASET_BUCKET", value = aws_s3_bucket.datasets.id },
@@ -148,7 +163,7 @@ resource "aws_ecs_task_definition" "app" {
         { name = "WEB_CONCURRENCY", value = "2" },
         { name = "GUNICORN_THREADS", value = "8" },
         { name = "FLASK_ENV", value = "production" },
-      ]
+      ], local.pipeline_environment)
 
       secrets = [
         {

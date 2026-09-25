@@ -34,6 +34,112 @@ resource "aws_iam_role_policy" "task_storage" {
   policy = data.aws_iam_policy_document.task_storage.json
 }
 
+# Lake access (infra/terraform/pipeline). Prefixes follow pipeline/keys.py:
+# the app writes uploads to raw/, reads curated Parquet and manifests, and
+# rolls Iceberg tables back through the Glue catalog.
+locals {
+  lake_enabled    = var.lake_bucket_name != null
+  lake_bucket_arn = "arn:aws:s3:::${coalesce(var.lake_bucket_name, "unset")}"
+}
+
+data "aws_iam_policy_document" "task_lake" {
+  count = local.lake_enabled ? 1 : 0
+
+  statement {
+    sid       = "ListLakePrefixes"
+    effect    = "Allow"
+    actions   = ["s3:ListBucket"]
+    resources = [local.lake_bucket_arn]
+
+    condition {
+      test     = "StringLike"
+      variable = "s3:prefix"
+      values = [
+        "manifests/*",
+        "curated/*",
+        "silver/*",
+        "contracts/*",
+        "connectors/*",
+        "gold/*",
+        "events/*",
+        "raw/*",
+        "locks/*",
+      ]
+    }
+  }
+
+  statement {
+    sid     = "ReadLakeObjects"
+    effect  = "Allow"
+    actions = ["s3:GetObject"]
+    resources = [
+      for prefix in ["manifests", "curated", "silver", "contracts", "connectors", "gold", "locks", "quarantine"] :
+      "${local.lake_bucket_arn}/${prefix}/*"
+    ]
+  }
+
+  statement {
+    sid     = "WriteLakeObjects"
+    effect  = "Allow"
+    actions = ["s3:PutObject"]
+    resources = [
+      for prefix in ["raw", "manifests", "events", "connectors", "curated", "locks"] :
+      "${local.lake_bucket_arn}/${prefix}/*"
+    ]
+  }
+
+  statement {
+    sid     = "DeleteLakeObjects"
+    effect  = "Allow"
+    actions = ["s3:DeleteObject"]
+    resources = [
+      for prefix in ["connectors", "locks"] :
+      "${local.lake_bucket_arn}/${prefix}/*"
+    ]
+  }
+
+  dynamic "statement" {
+    for_each = var.glue_database_name == null ? [] : [var.glue_database_name]
+
+    content {
+      sid    = "IcebergCatalog"
+      effect = "Allow"
+      actions = [
+        "glue:GetDatabase",
+        "glue:GetDatabases",
+        "glue:GetTable",
+        "glue:GetTables",
+        "glue:CreateTable",
+        "glue:UpdateTable",
+      ]
+      resources = [
+        "arn:aws:glue:${var.aws_region}:${data.aws_caller_identity.current.account_id}:catalog",
+        "arn:aws:glue:${var.aws_region}:${data.aws_caller_identity.current.account_id}:database/${statement.value}",
+        "arn:aws:glue:${var.aws_region}:${data.aws_caller_identity.current.account_id}:table/${statement.value}/*",
+      ]
+    }
+  }
+
+  dynamic "statement" {
+    for_each = var.pipeline_function_name == null ? [] : [var.pipeline_function_name]
+
+    content {
+      sid       = "TriggerPipelineJobs"
+      effect    = "Allow"
+      actions   = ["lambda:InvokeFunction"]
+      resources = ["arn:aws:lambda:${var.aws_region}:${data.aws_caller_identity.current.account_id}:function:${statement.value}"]
+    }
+  }
+}
+
+resource "aws_iam_role_policy" "task_lake" {
+  count = local.lake_enabled ? 1 : 0
+
+  name   = "lake-access"
+  role   = aws_iam_role.task.id
+  policy = data.aws_iam_policy_document.task_lake[0].json
+}
+
 resource "aws_iam_role" "execution" {
   name               = "${local.name}-execution"
   assume_role_policy = data.aws_iam_policy_document.ecs_task_assume.json

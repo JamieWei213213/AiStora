@@ -80,7 +80,7 @@ def _budget_response(exc):
         "budget_scope": exc.scope,
     })
     response.headers["Retry-After"] = str(exc.retry_after)
-    return response, 429
+    return response, 503 if exc.scope == "budget_unavailable" else 429
 
 
 def _display_value(value):

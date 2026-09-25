@@ -1,5 +1,78 @@
 # Changelog
 
+## 25 September 2026 — the data platform
+
+Adds the data engineering layer described in `docs/DATA_PLATFORM.md`. Test
+suite: **233 tests** (37 new under `tests/pipeline/` plus `tests/test_loads_ui.py`).
+
+### Uploads became loads
+
+`POST /api/upload` used to parse the file inside the request and create a
+new table every time. It now delegates to `POST /api/loads`: the file lands
+immutably in the lake, a six-stage pipeline validates it, infers a full-file
+contract, runs a quality gate, writes typed Parquet, merges it into an
+Apache Iceberg table and registers the result. The UI polls the load, shows
+a per-stage progress strip, the quality report, header renames and schema
+changes, and offers snapshots and rollback. The legacy path remains behind
+`PIPELINE_ENABLED=false`.
+
+### Recurring files finally have somewhere to go
+
+Datasets have a load mode: `replace`, `append` (row-hash de-duplication) or
+`merge` (key-based upsert, optional type-2 history). Every load is a
+snapshot; the most recent load can be rolled back. Schema changes are judged
+by explicit rules — additive and narrowing changes load, widening or missing
+keys quarantine with a message, and only a `replace` load may reset a
+contract.
+
+### Validation stopped sampling
+
+Types are inferred from the whole file with DuckDB, including money columns
+(`$1,200.50`, `(20.00)`), US dates and booleans; a column that is 97%
+integers and 3% decimals becomes `float`, not `int` with nulls. Ragged rows
+are counted and reported, never padded or dropped silently. Header names are
+sanitised to `[A-Za-z0-9_ ]{1,64}` with the rename recorded, closing the
+prompt-injection-via-header path in the default privacy mode.
+
+### The audit log became a data asset
+
+Agent runs, tool calls and pipeline events are batched to `events/` in the
+lake as gzip JSONL. A nightly dbt build (DuckDB adapter, no package
+dependencies) produces five gold marts with tests; `/api/pipeline/metrics`
+serves live numbers from the manifests and the daily series from gold.
+
+### Connectors
+
+Scheduled Postgres (high-watermark cursor) and Google Sheets (snapshot)
+extracts land files in the lake and go through the same stages. Configs live
+in the lake; secrets are SSM parameters or environment variables by name.
+
+### Infrastructure
+
+`infra/terraform/pipeline/` is a separate root module: lake bucket with
+lifecycle rules, ECR, one Lambda (image built from `pipeline/Dockerfile`),
+Glue database, the Step Functions state machine, EventBridge rule and
+Scheduler, SQS DLQ, SNS, five alarms and a dashboard. Idle cost about
+$1–2/month; no NAT, no VPC, no orchestrator server. The app stack takes
+`lake_bucket_name`, `pipeline_function_name` and `glue_database_name` to
+wire itself in. `.github/workflows/pipeline.yml` tests, builds, pushes,
+rolls the function out and runs an end-to-end smoke load.
+
+### Engine and storage
+
+`engine/parquet_source.py` gives the engine a Parquet source with exact types
+and column pruning; `DataFrame.project()` reads only the requested columns
+from Parquet. `services/storage_service.py` reads the lake's `curated/` and
+`silver/` prefixes and never deletes there. Auto-clean refuses
+pipeline-managed tables.
+
+### Schema
+
+Migration `7c2f1a9e4b10`: `table` gains `dataset`, `source_format`,
+`load_mode`, `key_columns`, `keep_history`, `last_load_id`, `updated_at`;
+new `load` table mirrors the lake's manifests for the UI.
+
+
 ## 8 September 2026 — remaining review fixes
 
 Closes the rest of `docs/REVIEW_2026-09-04.md`. Test suite: **196 tests**

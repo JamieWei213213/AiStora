@@ -1,0 +1,19 @@
+aistora:
+  target: "{{ env_var('DBT_TARGET', 'local') }}"
+  outputs:
+    local:
+      type: duckdb
+      path: "{{ env_var('DBT_DUCKDB_PATH', '/tmp/aistora-pipeline/telemetry.duckdb') }}"
+      external_root: "{{ env_var('LAKE_URI', '/tmp/aistora-pipeline/lake') }}/gold"
+      threads: 2
+    aws:
+      type: duckdb
+      path: "{{ env_var('DBT_DUCKDB_PATH', '/tmp/aistora-pipeline/telemetry.duckdb') }}"
+      external_root: "{{ env_var('LAKE_URI') }}/gold"
+      threads: 2
+      extensions:
+        - httpfs
+      secrets:
+        - type: s3
+          provider: credential_chain
+          region: "{{ env_var('AWS_REGION', 'us-west-2') }}"

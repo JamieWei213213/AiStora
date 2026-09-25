@@ -1,6 +1,6 @@
 # AIStora
 
-A self-hosted, privacy-first analytics platform for small business accountants and bookkeepers — query your QuickBooks, Xero, and Shopify exports in plain English. No SQL. No data team. No data ever sent to an AI.
+A CSV analysis workspace for sales, operations, research, and everyday data questions. Upload related files, inspect data quality, and ask questions in plain English. Analysis runs on the application server; the AI planner receives your question and permitted schema metadata.
 
 ---
 
@@ -23,11 +23,18 @@ and I'll set you up.
 
 ## The problem
 
-Small accountants and bookkeepers can't upload sensitive client data to tools like ChatGPT, and can't afford a data team. They're stuck manually digging through CSV exports to answer routine financial questions.
+CSV files are easy to collect and harder to understand together. AIStora brings
+files into a workspace, profiles their quality, and helps answer questions
+without requiring SQL. Start with small datasets and inspect results before
+using them to make decisions.
 
-AIStora fixes this — upload your CSV to your own server, ask in plain English, get your answer. The AI never sees your actual data.
+## Small public beta
 
----
+The optional [budget deployment](docs/deployment/BUDGET_LAUNCH.md) prepares a
+single-server setup for small CSVs with public registration, persistent sessions,
+password recovery through configured SMTP, and shared AI usage limits. It has
+not been deployed or load-tested on a cloud server. The full data-pipeline setup
+remains available separately.
 
 ## What makes it different from ChatGPT
 
@@ -53,6 +60,13 @@ Your data is stored on your own server. When you ask a question, the LLM only se
 - Cost-aware model routing sends simple work to a standard model and complex work to an advanced model
 - Privacy-safe run evaluation, user feedback, and successful-plan retrieval improve later requests
 - Per-project success, verification, feedback, latency, and tool-usage metrics
+- **Data platform** (September 2026): every upload runs through a six-stage
+  pipeline — validate, profile, quality gate, typed Parquet, Apache Iceberg
+  merge, register — with per-dataset schema contracts, replace / append /
+  merge loads, snapshot rollback, optional type-2 history, scheduled Postgres
+  and Google Sheets connectors, nightly dbt marts and a pipeline-health view.
+  Serverless on AWS (S3 → EventBridge → Step Functions → Lambda/DuckDB → Glue
+  catalog) for about $1–2/month idle; in-process locally with no AWS at all.
 
 See [ARCHITECTURE.md](./docs/ARCHITECTURE.md) for the component map, request
 lifecycle, the two privacy boundaries, where state lives, and the invariants
@@ -76,6 +90,11 @@ and current limitations.
 See [EDA_REPORT.md](./docs/analysis/EDA_REPORT.md) for the report contents,
 privacy behavior, limits, testing steps, and honest statistical limitations.
 
+See [DATA_PLATFORM.md](./docs/DATA_PLATFORM.md) for the pipeline: the lake
+layout, the stages, load modes and rollback, schema contracts, the quality
+gate, orchestration, telemetry marts, connectors, cost, and the decisions
+behind each piece.
+
 See [AWS_DEPLOYMENT_GUIDE.md](./docs/deployment/AWS_DEPLOYMENT_GUIDE.md) for the S3-backed
 dataset layer, private RDS PostgreSQL, ECS/Fargate deployment, Terraform,
 GitHub OIDC CI/CD, and least-privilege IAM design.
@@ -89,12 +108,13 @@ All project guides are indexed in [docs/README.md](./docs/README.md).
 | Layer | Tools |
 |---|---|
 | Backend | Flask, SQLAlchemy, Alembic, Gunicorn |
-| Engine | Custom DataFrame + streaming CSV parser |
+| Engine | Custom DataFrame + streaming CSV parser + Parquet source |
+| Data platform | DuckDB, Apache Iceberg (PyIceberg), Parquet, dbt, Step Functions, Lambda, EventBridge, Glue Data Catalog |
 | Database | PostgreSQL |
 | Sessions | Redis (filesystem fallback for local development) |
 | AI / LLM | Google Gemini |
 | Frontend | Vanilla JS, Tailwind CSS |
-| Infra | AWS S3, RDS, ElastiCache, ECS/Fargate, ECR, IAM, Terraform, Docker, GitHub Actions |
+| Infra | AWS S3, RDS, ElastiCache, ECS/Fargate, ECR, Lambda, Step Functions, EventBridge, Glue, IAM, Terraform, Docker, GitHub Actions |
 
 ---
 
@@ -109,7 +129,9 @@ docker compose up --build
 ```
 
 Compose starts the application, PostgreSQL and Redis. Database migrations run
-automatically on container start.
+automatically on container start. The data pipeline runs in-process against a
+local lake volume; nothing in AWS is needed. Load a file from the command line
+with `python -m pipeline.local_runner data.csv --project 1 --dataset invoices`.
 
 ### Without Docker
 
@@ -128,7 +150,7 @@ which is fine for a single process.
 
 ```bash
 pip install -r requirements-dev.txt
-pytest -q                                    # 190+ tests
+pytest -q                                    # 230+ tests, including tests/pipeline
 pytest --cov=. --cov-report=term
 ```
 

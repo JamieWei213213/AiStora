@@ -8,3 +8,6 @@
 
 pytest==9.1.1
 pytest-cov==7.1.0
+
+# Pipeline tests: an in-memory S3 for the object store and lock tests.
+moto[s3]==5.2.3

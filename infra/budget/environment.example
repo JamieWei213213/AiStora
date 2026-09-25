@@ -1,0 +1,13 @@
+# Copy to .env.budget in the project root. Never commit the resulting file.
+AISTORA_DOMAIN=ai-stora.com
+SECRET_KEY=
+POSTGRES_PASSWORD=
+# Select a model available in your Google AI project and verify its current price.
+GEMINI_API_KEY=
+GEMINI_MODEL=
+# Recovery email remains unavailable until these are configured.
+SMTP_HOST=
+SMTP_PORT=587
+SMTP_FROM=
+SMTP_USERNAME=
+SMTP_PASSWORD=

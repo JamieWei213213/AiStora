@@ -116,6 +116,7 @@ class DailyUsageBudget:
         from config import Config
 
         return {
+            "global_requests": int(getattr(Config, "AGENT_DAILY_REQUESTS_GLOBAL", 0) or 0),
             "user_requests": int(getattr(Config, "AGENT_DAILY_REQUESTS_PER_USER", 0) or 0),
             "user_tokens": int(getattr(Config, "AGENT_DAILY_TOKENS_PER_USER", 0) or 0),
             "global_tokens": int(getattr(Config, "AGENT_DAILY_TOKENS_GLOBAL", 0) or 0),
@@ -128,6 +129,9 @@ class DailyUsageBudget:
         except Exception:
             if store is self._memory:
                 raise
+            from config import Config
+            if getattr(Config, "AGENT_BUDGET_FAIL_CLOSED", False):
+                raise BudgetExceeded("budget_unavailable", 60) from None
             return getattr(self._memory, method)(*args)
 
     def reserve_request(self, user_id):
@@ -150,6 +154,14 @@ class DailyUsageBudget:
                 # Rejected attempts are not usage; keep the counter honest.
                 self._safe("add", f"requests:user:{user_id}", -1, _DAY_SECONDS)
                 raise BudgetExceeded("user_requests", retry_after)
+
+        if limits["global_requests"]:
+            count = self._safe("add", "requests:global", 1, _DAY_SECONDS)
+            if count > limits["global_requests"]:
+                self._safe("add", "requests:global", -1, _DAY_SECONDS)
+                if limits["user_requests"]:
+                    self._safe("add", f"requests:user:{user_id}", -1, _DAY_SECONDS)
+                raise BudgetExceeded("global_requests", retry_after)
 
     def record_tokens(self, user_id, total_tokens):
         total_tokens = int(total_tokens or 0)
@@ -180,6 +192,8 @@ usage_budget = DailyUsageBudget()
 
 
 BUDGET_MESSAGES = {
+    "global_requests": "AIStora has reached today's shared AI limit. Please try again after midnight UTC.",
+    "budget_unavailable": "AI requests are temporarily paused. Please try again shortly.",
     "user_requests": "You have reached today's limit of AI requests. It resets at midnight UTC.",
     "user_tokens": "You have reached today's AI usage limit. It resets at midnight UTC.",
     "global_tokens": "AIStora's daily AI budget is exhausted. Please try again after midnight UTC.",

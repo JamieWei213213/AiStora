@@ -108,6 +108,20 @@ def preview_table_cleaning(id):
     table = get_table_if_owner(id, user_id)
     if not table:
         return jsonify({"success": False, "error": "Table not found"}), 404
+    if getattr(table, "is_pipeline_managed", False):
+        # Pipeline-loaded datasets were already normalised at load time
+        # (header sanitising, null markers, typed casts, ragged rows) and
+        # exact duplicates are reported by the quality gate. Editing the
+        # curated Parquet in place would bypass the Iceberg snapshot history.
+        return jsonify({
+            "success": False,
+            "error": (
+                "This table is managed by the data pipeline and was cleaned at "
+                "load time. Reload the dataset to change its contents; see the "
+                "load's quality report for duplicates and cast failures."
+            ),
+            "error_type": "pipeline_managed",
+        }), 409
 
     try:
         storage = get_dataset_storage()

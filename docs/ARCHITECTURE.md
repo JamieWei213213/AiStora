@@ -355,6 +355,20 @@ The application logs a warning at startup when it detects this combination.
 
 ---
 
+## Data platform
+
+Since September 2026 uploads no longer go straight into a `Table` row. They
+land in a lake (`raw/`), are validated, profiled against a per-dataset
+contract, quality-gated, written as typed Parquet (`silver/`), merged into
+an Apache Iceberg table (`replace` / `append` / `merge`, with snapshots and
+rollback) and materialised to `curated/`, which the engine reads through
+`engine/parquet_source.py`. On AWS the stages run as one Lambda orchestrated
+by Step Functions from an S3 event; locally they run in-process. Product
+telemetry goes to `events/` and a nightly dbt build produces `gold/` marts
+behind `/api/pipeline/metrics`. The design, the decisions and the limits are
+in [DATA_PLATFORM.md](./DATA_PLATFORM.md); the module map is in
+`pipeline/README.md`.
+
 ## Invariants
 
 Things that must remain true. If a change breaks one of these, the change is
@@ -377,3 +391,14 @@ wrong.
    uploaded CSVs, which are untrusted files.
 7. **The agent always has tools to answer with.** Routing may choose a cheaper
    model; it may not leave the agent unable to read data.
+8. **A raw file is never modified and a curated table is never edited in
+   place.** Every load is an Iceberg snapshot; rollback is a snapshot change;
+   the app reads a materialisation of the current snapshot. Quarantined and
+   failed loads leave the raw object where it landed.
+9. **The pipeline does not depend on the app.** Manifests in the lake are the
+   ledger; the app syncs from them. A stage never opens a connection to the
+   app's database, and the pipeline keeps working while the app is down.
+10. **Schema changes are judged by explicit rules, never guessed.** Additive
+    changes and safe narrowings load; a widening or a missing merge key
+    quarantines with a message; only a `replace` load may reset a contract.
+    See `docs/DATA_PLATFORM.md`.

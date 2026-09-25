@@ -1,84 +1,47 @@
-<section
-  id="auth-screen"
-  class="flex-1 flex flex-col md:flex-row overflow-auto"
->
-  <div
-    class="hidden md:flex flex-col justify-between w-1/2 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-slate-50 p-10"
-  >
+<section id="auth-screen" class="auth-screen flex-1 overflow-auto">
+  <aside class="auth-story">
+    <a href="/" class="auth-brand">AIStora<span class="auth-beta">BETA</span></a>
     <div>
-      <h1 class="text-3xl font-semibold mb-2">Welcome to Aistora</h1>
-      <p class="text-slate-300 text-sm">
-        Upload CSVs, detect relationships, and chat with your data using AI.
-      </p>
+      <p class="auth-eyebrow">A clearer view of your data</p>
+      <h1>From CSVs<br>to answers.</h1>
+      <p class="auth-intro">Explore your data, check its quality, and ask questions in plain English. Start with the files you already have.</p>
+      <ul class="auth-benefits">
+        <li><span>01</span> Bring your CSV files together</li>
+        <li><span>02</span> Understand patterns and missing values</li>
+        <li><span>03</span> Ask questions and inspect the results</li>
+      </ul>
     </div>
-    <div class="space-y-3 text-sm text-slate-300">
-      <div class="flex items-center gap-2">
-        <i data-lucide="database" class="text-emerald-300 w-4 h-4"></i
-        ><span>Multiple CSVs to one database</span>
+    <p class="auth-footnote">Sales, operations, research, or your next project.</p>
+  </aside>
+  <div class="auth-form-panel">
+    <div class="auth-card">
+      <a href="/" class="auth-back">&larr; Back to AIStora</a>
+      <h2 id="auth-title">Welcome back</h2>
+      <p id="auth-subtitle" class="auth-subtitle">Sign in to continue exploring your data.</p>
+      <div id="auth-error" class="hidden auth-notice" role="alert" aria-atomic="true" tabindex="-1">
+        <strong id="auth-error-title">We couldn't sign you in</strong>
+        <p id="auth-error-message"></p>
       </div>
-      <div class="flex items-center gap-2">
-        <i data-lucide="git-branch" class="text-sky-300 w-4 h-4"></i
-        ><span>AI relationship detection</span>
-      </div>
-      <div class="flex items-center gap-2">
-        <i data-lucide="bot" class="text-violet-300 w-4 h-4"></i
-        ><span>AI chat analysis</span>
-      </div>
-    </div>
-  </div>
-  <div class="flex flex-1 items-center justify-center p-8">
-    <div class="w-full max-w-sm space-y-6">
-      <div class="text-center md:text-left space-y-1">
-        <h2 id="auth-title" class="text-2xl font-semibold text-slate-800">
-          Login
-        </h2>
-        <p id="auth-subtitle" class="text-xs text-slate-500">
-          Enter your credentials to continue.
-        </p>
-      </div>
-      <div
-        id="auth-error"
-        class="hidden bg-red-50 text-red-600 p-3 rounded-lg text-xs border border-red-100"
-      ></div>
-      <form id="auth-form" class="space-y-4" novalidate>
-        <label class="block">
-          <span class="sr-only">Email address</span>
-          <input
-            id="auth-email"
-            name="email"
-            type="email"
-            autocomplete="email"
-            placeholder="you@example.com"
-            class="w-full p-3 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-sky-500"
-          />
-        </label>
-        <label class="block">
-          <span class="sr-only">Password</span>
-          <input
-            id="auth-password"
-            name="password"
-            type="password"
-            autocomplete="current-password"
-            placeholder="••••••••"
-            class="w-full p-3 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-sky-500"
-          />
-        </label>
-        <button
-          id="auth-submit-btn"
-          type="submit"
-          class="w-full p-3 bg-sky-600 text-white rounded-xl font-medium hover:bg-sky-700 transition flex items-center justify-center gap-2"
-        >
-          <i data-lucide="log-in" class="w-4 h-4"></i
-          ><span id="auth-btn-label">Login</span>
-        </button>
-        <button
-          id="auth-toggle-mode"
-          type="button"
-          class="w-full p-3 border border-slate-200 bg-slate-50 text-slate-700 rounded-xl hover:bg-slate-100 transition text-xs"
-        >
-          Don’t have an account? <span class="font-medium">Create one</span>
-        </button>
+      <form id="auth-form" class="auth-form" novalidate>
+        <div id="auth-email-group">
+          <label for="auth-email">Email address</label>
+          <input id="auth-email" name="email" type="email" autocomplete="email" inputmode="email" autocapitalize="none" spellcheck="false" maxlength="120" placeholder="you@example.com" required aria-describedby="auth-email-error">
+          <p id="auth-email-error" class="auth-field-error hidden"></p>
+        </div>
+        <div id="auth-password-group">
+          <label for="auth-password">Password</label>
+          <div class="auth-password-wrap">
+            <input id="auth-password" name="password" type="password" autocomplete="current-password" maxlength="256" required aria-describedby="auth-password-hint auth-password-error">
+            <button id="auth-show-password" type="button" aria-label="Show password" aria-pressed="false">Show</button>
+          </div>
+          <p id="auth-password-hint" class="auth-hint hidden">Use 10–256 characters. A longer passphrase works well.</p>
+          <p id="auth-password-error" class="auth-field-error hidden"></p>
+        </div>
+        <button id="auth-forgot-password" type="button" class="auth-text-button">Forgot password?</button>
+        <button id="auth-submit-btn" type="submit" class="auth-primary"><span id="auth-btn-label">Sign in</span></button>
+        <button id="auth-toggle-mode" type="button" class="auth-secondary">New to AIStora? Create an account</button>
       </form>
+      <p class="auth-footnote auth-beta-note">Public beta. Usage limits help keep the service available.</p>
     </div>
   </div>
 </section>

@@ -164,3 +164,24 @@ variable "elasticache_multi_az" {
   type        = bool
   default     = false
 }
+
+variable "lake_bucket_name" {
+  description = "Name of the lake bucket created by infra/terraform/pipeline; when set the app lands uploads there and reads curated Parquet."
+  type        = string
+  default     = null
+  nullable    = true
+}
+
+variable "pipeline_function_name" {
+  description = "Name of the pipeline Lambda created by infra/terraform/pipeline, so the app can trigger jobs on demand."
+  type        = string
+  default     = null
+  nullable    = true
+}
+
+variable "glue_database_name" {
+  description = "Glue database (Iceberg namespace) created by infra/terraform/pipeline, so the app can read and roll back curated tables."
+  type        = string
+  default     = null
+  nullable    = true
+}

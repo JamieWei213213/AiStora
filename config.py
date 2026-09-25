@@ -62,6 +62,15 @@ class Config:
         hours=int(os.environ.get("SESSION_LIFETIME_HOURS", "12"))
     )
 
+    # Account recovery is enabled only with a trusted HTTPS origin and SMTP.
+    # Never construct reset URLs from the client-controlled Host header.
+    PUBLIC_APP_URL = os.environ.get("PUBLIC_APP_URL", "").rstrip("/")
+    SMTP_HOST = os.environ.get("SMTP_HOST", "")
+    SMTP_PORT = int(os.environ.get("SMTP_PORT", "587"))
+    SMTP_FROM = os.environ.get("SMTP_FROM", "")
+    SMTP_USERNAME = os.environ.get("SMTP_USERNAME", "")
+    SMTP_PASSWORD = os.environ.get("SMTP_PASSWORD", "")
+
     # --- Server-side session storage -----------------------------------
     # Session payloads (agent memory, pending approvals, cleaning previews)
     # are held server-side. They used to live in the signed cookie, which
@@ -122,9 +131,25 @@ class Config:
     DATASET_CACHE_MAX_BYTES = int(
         os.environ.get("DATASET_CACHE_MAX_BYTES", str(2 * 1024 ** 3))
     )
+    UPLOAD_MIN_FREE_BYTES = int(os.environ.get("UPLOAD_MIN_FREE_BYTES", "0"))
     MAX_CONTENT_LENGTH = int(
         os.environ.get("MAX_UPLOAD_BYTES", str(50 * 1024 * 1024))
     )
+    # --- Data platform (see pipeline/ and docs/DATA_PLATFORM.md) ---------
+    # PIPELINE_BACKEND=local runs loads in-process against a lake directory;
+    # =aws lands files in the lake bucket and Step Functions does the rest.
+    PIPELINE_ENABLED = _env_bool("PIPELINE_ENABLED", True)
+    PIPELINE_BACKEND = (os.environ.get("PIPELINE_BACKEND") or "local").strip().lower()
+    LAKE_ROOT = os.environ.get("LAKE_ROOT") or os.path.join("instance", "lake")
+    LAKE_BUCKET = os.environ.get("LAKE_BUCKET")
+    # Name of the pipeline Lambda, so the app can trigger connector runs and
+    # the nightly jobs on demand (aws backend only).
+    PIPELINE_FUNCTION_NAME = os.environ.get("PIPELINE_FUNCTION_NAME")
+    # Synchronous uploads (local backend): wait up to this long for the load
+    # to finish before answering, so small files behave as before.
+    PIPELINE_SYNC_WAIT_SECONDS = float(os.environ.get("PIPELINE_SYNC_WAIT_SECONDS", "20"))
+    LOADS_RATE_LIMIT_PER_MINUTE = int(os.environ.get("LOADS_RATE_LIMIT_PER_MINUTE", "10"))
+
     GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
     GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.5-flash-lite")
     GEMINI_ADVANCED_MODEL = os.environ.get(
@@ -201,6 +226,8 @@ class Config:
     AGENT_DAILY_TOKENS_PER_USER = int(
         os.environ.get("AGENT_DAILY_TOKENS_PER_USER", "400000")
     )
+    AGENT_DAILY_REQUESTS_GLOBAL = int(os.environ.get("AGENT_DAILY_REQUESTS_GLOBAL", "0"))
+    AGENT_BUDGET_FAIL_CLOSED = _env_bool("AGENT_BUDGET_FAIL_CLOSED", IS_PRODUCTION)
     AGENT_DAILY_TOKENS_GLOBAL = int(
         os.environ.get("AGENT_DAILY_TOKENS_GLOBAL", "4000000")
     )

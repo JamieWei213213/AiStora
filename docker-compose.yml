@@ -5,8 +5,17 @@ services:
       - "5001:5000"
     volumes:
       - ./uploads:/app/uploads
+      # The local data lake: raw uploads, curated Parquet, Iceberg tables,
+      # manifests, events and gold marts. Same layout as the S3 bucket.
+      - lake_data:/app/instance/lake
     environment:
       - APP_ENV=${APP_ENV:-development}
+      # entrypoint.sh runs `flask db upgrade` (Alembic) on every start. The
+      # app's dev-convenience db.create_all() defaults on whenever APP_ENV
+      # isn't "production", which races Alembic's own CREATE TABLE and
+      # crash-loops with "relation already exists" on a fresh database.
+      # Alembic must be the only thing creating tables under Docker.
+      - AUTO_CREATE_TABLES=false
       - GEMINI_API_KEY=${GEMINI_API_KEY}
       - GEMINI_MODEL=${GEMINI_MODEL:-gemini-3.5-flash-lite}
       - GEMINI_ADVANCED_MODEL=${GEMINI_ADVANCED_MODEL:-gemini-3.6-flash}
@@ -29,11 +38,35 @@ services:
       - AGENT_LLM_RETRY_BASE_SECONDS=${AGENT_LLM_RETRY_BASE_SECONDS:-0.5}
       - AGENT_HISTORY_EXAMPLES=${AGENT_HISTORY_EXAMPLES:-3}
       - CLEANING_MAX_ROWS=${CLEANING_MAX_ROWS:-250000}
+      # Data pipeline. Locally every load runs in-process against the lake
+      # volume; on AWS PIPELINE_BACKEND=aws hands off to Step Functions.
+      - PIPELINE_ENABLED=${PIPELINE_ENABLED:-true}
+      - PIPELINE_BACKEND=local
+      - LAKE_ROOT=/app/instance/lake
+      - PIPELINE_SCRATCH_DIR=/tmp/aistora-pipeline
+      - PIPELINE_SYNC_WAIT_SECONDS=${PIPELINE_SYNC_WAIT_SECONDS:-20}
     depends_on:
       db:
         condition: service_healthy
       cache:
         condition: service_healthy
+    restart: always
+
+  # Stands in for EventBridge Scheduler locally: nightly dbt build and
+  # compaction at 03:00 UTC, connectors on their rate(...) schedules.
+  scheduler:
+    build: .
+    entrypoint: ["python", "-m", "pipeline.local_scheduler"]
+    volumes:
+      - lake_data:/app/instance/lake
+    environment:
+      - PIPELINE_BACKEND=local
+      - LAKE_ROOT=/app/instance/lake
+      - PIPELINE_SCRATCH_DIR=/tmp/aistora-pipeline
+      - PIPELINE_NIGHTLY_UTC_HOUR=${PIPELINE_NIGHTLY_UTC_HOUR:-3}
+    depends_on:
+      web:
+        condition: service_started
     restart: always
 
   db:
@@ -63,3 +96,4 @@ services:
 
 volumes:
   postgres_data:
+  lake_data:

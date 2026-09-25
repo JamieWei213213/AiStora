@@ -165,6 +165,38 @@ def finish_run(
     except (SQLAlchemyError, RuntimeError, TypeError, ValueError):
         _rollback()
         logger.exception("Could not persist agent run completion")
+        return
+    _emit_run_event(record, metrics or {}, verification or {})
+
+
+def _emit_run_event(record, metrics, verification):
+    """Telemetry for the nightly marts: metadata only, never the question."""
+    try:
+        from pipeline import events as pipeline_events
+
+        pipeline_events.emit(
+            "agent.run",
+            request_id=record.request_id,
+            user_id=record.user_id,
+            project_id=record.project_id,
+            status=record.status,
+            mode=record.mode,
+            model=record.model_name,
+            routing_tier=record.routing_tier,
+            result_kind=record.result_kind,
+            turns=record.turns,
+            tool_calls=record.tool_calls,
+            duration_ms=record.duration_ms,
+            input_tokens=int(metrics.get("input_tokens", 0) or 0),
+            output_tokens=int(metrics.get("output_tokens", 0) or 0),
+            estimated_cost_usd=float(metrics.get("estimated_cost_usd", 0) or 0),
+            retries=int(metrics.get("retries", 0) or 0),
+            self_corrections=int(metrics.get("self_corrections", 0) or 0),
+            verification_passed=bool(verification.get("passed")) if verification else None,
+            error_type=record.error_type,
+        )
+    except Exception:  # pragma: no cover - telemetry never breaks a request
+        logger.debug("agent.run event not emitted", exc_info=True)
 
 
 def run_belongs_to_user(request_id, user_id):

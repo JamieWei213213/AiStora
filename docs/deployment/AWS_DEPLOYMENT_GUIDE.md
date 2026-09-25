@@ -247,3 +247,17 @@ Multi-AZ, and HTTPS with ACM.
 Only claim the deployment on your resume after Terraform has applied, the
 workflow has deployed an image, an upload is visible in S3, the metadata is
 visible in RDS, and a live analysis has completed.
+
+
+## Data pipeline (September 2026)
+
+The ingestion pipeline is deployed by a separate Terraform root module,
+`infra/terraform/pipeline/`, with its own state key: a lake bucket, one
+Lambda built from `pipeline/Dockerfile`, a Step Functions state machine, an
+EventBridge rule on `raw/` object creation, EventBridge Scheduler for the
+nightly jobs and connectors, a Glue database for the Iceberg catalog, a DLQ,
+alarms and a dashboard. It costs about $1–2/month idle and keeps running
+while this app stack is destroyed. The app stack is pointed at it with the
+`lake_bucket_name`, `pipeline_function_name` and `glue_database_name`
+variables. See `infra/terraform/pipeline/README.md` for the apply order and
+`docs/DATA_PLATFORM.md` for the design.

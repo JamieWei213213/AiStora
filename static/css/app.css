@@ -18,3 +18,50 @@ body {
     transform: rotate(360deg);
   }
 }
+
+/* Auth and feedback use local CSS, independent of the Tailwind build. */
+.auth-screen { display:flex; min-height:100%; background:#f8fafc; }
+.auth-screen.hidden { display:none; }
+.auth-story { width:46%; padding:clamp(2rem,5vw,5rem); background:linear-gradient(145deg,#0c2437,#123f4b); color:#ecfeff; display:flex; flex-direction:column; justify-content:space-between; gap:3rem; }
+.auth-brand { font-size:1.4rem; font-weight:750; text-decoration:none; color:inherit; }
+.auth-beta { font-size:.6rem; letter-spacing:.1em; margin-left:.7rem; padding:.25rem .5rem; border:1px solid #63848b; border-radius:5px; vertical-align:middle; }
+.auth-eyebrow { color:#8de0d5; font-size:.75rem; letter-spacing:.09em; text-transform:uppercase; margin-bottom:1.2rem; }
+.auth-story h1 { font-size:clamp(2.5rem,4.5vw,4.6rem); font-weight:650; line-height:1.08; letter-spacing:-.04em; margin:0 0 1.5rem; }
+.auth-intro { color:#c3d7dc; max-width:28rem; line-height:1.8; font-size:.95rem; }
+.auth-benefits { list-style:none; padding:0; margin:2.5rem 0 0; display:grid; gap:1.2rem; font-size:.85rem; }
+.auth-benefits span { color:#8de0d5; font-size:.7rem; margin-right:.9rem; }
+.auth-form-panel { flex:1; display:flex; justify-content:center; align-items:center; padding:2rem; }
+.auth-card { width:100%; max-width:25rem; }
+.auth-back { color:#526777; font-size:.8rem; display:inline-block; margin-bottom:2.5rem; }
+.auth-card h2 { font-size:1.9rem; font-weight:700; color:#122c3c; letter-spacing:-.03em; margin:0; }
+.auth-subtitle { color:#60717f; font-size:.9rem; line-height:1.6; margin:.6rem 0 1.8rem; }
+.auth-form { display:grid; gap:1.2rem; }
+.auth-form label { display:block; font-weight:600; color:#263e4d; font-size:.85rem; margin-bottom:.5rem; }
+.auth-form input { width:100%; border:1px solid #b9c8d1; border-radius:9px; padding:.85rem .9rem; background:white; font-size:1rem; color:#142d3c; }
+.auth-form input:focus { outline:3px solid #b3e5ed; outline-offset:2px; border-color:#087c90; }
+.auth-form input[aria-invalid="true"] { border-color:#b42318; }
+.auth-password-wrap { position:relative; }
+.auth-password-wrap input { padding-right:4.5rem; }
+.auth-password-wrap button { position:absolute; right:.8rem; top:0; height:100%; background:none; border:0; font-size:.8rem; font-weight:600; color:#076779; }
+.auth-primary,.auth-secondary { width:100%; padding:.85rem 1rem; border-radius:9px; font-weight:600; font-size:.9rem; min-height:48px; }
+.auth-primary { background:#08798a; color:white; border:1px solid #08798a; }
+.auth-primary:hover { background:#076475; }
+.auth-primary:disabled { opacity:.65; cursor:wait; }
+.auth-secondary { border:1px solid #cbd5e1; background:white; color:#284657; }
+.auth-text-button { justify-self:end; margin-top:-.5rem; font-size:.8rem; color:#076779; }
+.auth-form button:focus-visible,.auth-back:focus-visible { outline:3px solid #0891b2; outline-offset:3px; }
+.auth-hint,.auth-field-error { font-size:.75rem; line-height:1.5; margin:.4rem 0 0; }
+.auth-hint { color:#64748b; }
+.auth-field-error { color:#b42318; }
+.auth-notice { border:1px solid #c93329; border-left:4px solid #c93329; border-radius:9px; background:#fff5f4; color:#8f221a; padding:1rem; margin-bottom:1.3rem; font-size:.85rem; line-height:1.6; }
+.auth-notice strong { display:block; font-size:.95rem; margin-bottom:.25rem; }
+.auth-notice[data-tone="success"] { border-color:#27835b; background:#effbf4; color:#195338; }
+.auth-notice[data-tone="info"] { border-color:#32809a; background:#eef8fc; color:#20566b; }
+.auth-footnote { font-size:.75rem; color:#acc6ce; line-height:1.6; }
+.auth-beta-note { color:#64748b; margin-top:1.7rem; }
+.app-notice { position:fixed; top:1rem; right:1rem; max-width:min(28rem,calc(100vw - 2rem)); z-index:100; background:#fff; color:#80271e; border:1px solid #d26a5f; border-left:4px solid #bd3c2e; border-radius:10px; padding:1rem 3rem 1rem 1rem; box-shadow:0 8px 28px #0f172a20; font-size:.85rem; line-height:1.5; }
+.app-notice strong { display:block; margin-bottom:.25rem; }
+.app-notice button { position:absolute; top:.6rem; right:.6rem; padding:.25rem .5rem; font-size:1.3rem; }
+body.landing-page { overflow:auto; }
+@media(max-width:760px) { .auth-story { display:none; } .auth-form-panel { padding:1.5rem; align-items:flex-start; } .auth-card { margin:1rem 0; } .auth-back { margin-bottom:2rem; } }
+@media(prefers-reduced-motion:reduce) { *,*::before,*::after { animation-duration:.01ms !important; transition-duration:.01ms !important; scroll-behavior:auto !important; } }

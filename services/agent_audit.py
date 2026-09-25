@@ -41,3 +41,18 @@ class AgentAuditLogger:
         with _write_lock:
             with open(self.path, "a", encoding="utf-8") as audit_file:
                 audit_file.write(json.dumps(entry, default=str) + "\n")
+        # The same entry also goes to the lake's event stream, which is
+        # durable and queryable; the local file remains a debugging aid.
+        try:
+            from pipeline import events as pipeline_events
+
+            pipeline_events.emit(
+                "agent.tool_call",
+                request_id=request_id,
+                user_id=user_id,
+                tool=tool_name,
+                status=status,
+                duration_ms=duration_ms,
+            )
+        except Exception:  # pragma: no cover
+            pass

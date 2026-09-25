@@ -15,11 +15,28 @@ from services.validation import ValidationError, validate_column_names
 
 data_bp = Blueprint('data', __name__)
 
+
 @data_bp.route('/api/upload', methods=['POST'])
 def upload_files():
+    """Upload CSVs into the active database.
+
+    With the data pipeline enabled (the default) this is the same as
+    ``POST /api/loads`` in replace mode: the file lands in the lake, is
+    validated, typed, quality-gated and versioned, and the table points at
+    the curated Parquet. The pre-pipeline path below is kept for
+    ``PIPELINE_ENABLED=false`` and for the tests that pin its behaviour.
+    """
     if 'user_id' not in session:
         return jsonify({'success': False, 'error': 'Unauthorized. Please log in.'}), 401
-        
+    if current_app.config.get("PIPELINE_ENABLED"):
+        from routes.loads import create_loads
+
+        return create_loads()
+    return _legacy_upload()
+
+
+def _legacy_upload():
+
     active_project_id = session.get('active_project_id')
     if not active_project_id:
         return jsonify({'success': False, 'error': 'No database selected'}), 400

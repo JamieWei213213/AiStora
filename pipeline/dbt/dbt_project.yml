@@ -1,0 +1,26 @@
+name: aistora_telemetry
+version: "1.0.0"
+config-version: 2
+profile: aistora
+
+# The lake root is injected by pipeline.telemetry_job (LAKE_URI): an
+# absolute directory locally, s3://<bucket> on AWS. Every source path and
+# every gold location is derived from it, so the project has no environment
+# specific paths.
+vars:
+  lake_uri: "{{ env_var('LAKE_URI', '/tmp/aistora-pipeline/lake') }}"
+
+model-paths: ["models"]
+macro-paths: ["macros"]
+test-paths: ["tests"]
+packages-install-path: "{{ env_var('DBT_PACKAGES_PATH', '/tmp/aistora-pipeline/dbt-packages') }}"
+
+models:
+  aistora_telemetry:
+    staging:
+      +materialized: view
+    marts:
+      # Marts are written as Parquet into gold/ so the app (and Athena) can
+      # read them without dbt or DuckDB state.
+      +materialized: external
+      +format: parquet

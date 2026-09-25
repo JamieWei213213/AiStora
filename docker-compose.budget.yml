@@ -1,0 +1,122 @@
+# Single-server beta. Never combine with docker-compose.yml: this is standalone.
+# docker compose --env-file .env.budget -f docker-compose.budget.yml up -d --build
+name: aistora-beta
+services:
+  proxy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      AISTORA_DOMAIN: ${AISTORA_DOMAIN:?Set the hostname you control}
+    volumes:
+      - ./infra/budget/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      web:
+        condition: service_healthy
+    mem_limit: 128m
+    logging: &logging
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  web:
+    build: .
+    restart: unless-stopped
+    env_file: .env.budget
+    environment:
+      APP_ENV: production
+      AUTO_CREATE_TABLES: "false"
+      SESSION_COOKIE_SECURE: "true"
+      SECRET_KEY: ${SECRET_KEY:?Generate a long random signing key}
+      PUBLIC_APP_URL: https://${AISTORA_DOMAIN:?Set the hostname you control}
+      DATABASE_URL: ""
+      DB_HOST: db
+      DB_PORT: "5432"
+      DB_USER: aistora
+      DB_PASSWORD: ${POSTGRES_PASSWORD:?Generate a database password}
+      DB_NAME: aistora
+      DB_SSLMODE: disable
+      REDIS_URL: redis://cache:6379/0
+      SESSION_TYPE: redis
+      DATASET_STORAGE_BACKEND: local
+      UPLOAD_FOLDER: /app/uploads
+      DATASET_CACHE_DIR: /tmp/aistora-cache
+      PIPELINE_ENABLED: "false"
+      PIPELINE_EVENTS: "false"
+      WEB_CONCURRENCY: "1"
+      GUNICORN_THREADS: "4"
+      MAX_UPLOAD_BYTES: "5242880"
+      UPLOAD_MIN_FREE_BYTES: "2147483648"
+      MAX_PROJECTS_PER_USER: "2"
+      MAX_TABLES_PER_PROJECT: "5"
+      AGENT_MODEL_ROUTING: "false"
+      AGENT_MAX_TURNS: "4"
+      AGENT_MAX_TOOL_CALLS: "6"
+      AGENT_MAX_CORRECTIONS: "1"
+      AGENT_LLM_MAX_RETRIES: "1"
+      AGENT_LLM_MAX_OUTPUT_TOKENS: "1024"
+      AGENT_MAX_MATERIALIZED_ROWS: "10000"
+      AGENT_DAILY_REQUESTS_PER_USER: "10"
+      AGENT_DAILY_REQUESTS_GLOBAL: "50"
+      AGENT_DAILY_TOKENS_PER_USER: "40000"
+      AGENT_DAILY_TOKENS_GLOBAL: "100000"
+      AGENT_BUDGET_FAIL_CLOSED: "true"
+      EDA_MAX_ROWS_PER_TABLE: "25000"
+      EDA_MAX_TABLES: "5"
+      CLEANING_MAX_ROWS: "25000"
+    volumes:
+      - uploads_data:/app/uploads
+      - instance_data:/app/instance
+    depends_on:
+      db:
+        condition: service_healthy
+      cache:
+        condition: service_healthy
+    mem_limit: 768m
+    pids_limit: 128
+    logging: *logging
+
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: aistora
+      POSTGRES_DB: aistora
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Generate a database password}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aistora -d aistora"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    mem_limit: 256m
+    logging: *logging
+
+  cache:
+    image: redis:7-alpine
+    restart: unless-stopped
+    # Persist quota counters. Refuse writes when full rather than evicting limits.
+    command: ["redis-server", "--appendonly", "yes", "--appendfsync", "everysec", "--maxmemory", "80mb", "--maxmemory-policy", "noeviction"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    mem_limit: 128m
+    logging: *logging
+
+volumes:
+  caddy_data:
+  caddy_config:
+  uploads_data:
+  instance_data:
+  postgres_data:
+  redis_data:

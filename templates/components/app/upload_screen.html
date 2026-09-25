@@ -42,6 +42,73 @@
       <p class="text-[11px] text-slate-400">
         Each CSV will be mapped to a table named after the file.
       </p>
+      <div
+        id="load-options"
+        class="rounded-2xl border border-slate-200 bg-white p-3 space-y-3"
+      >
+        <p class="text-[11px] font-semibold text-slate-600 flex items-center gap-1.5">
+          <i data-lucide="settings-2" class="w-3.5 h-3.5 text-slate-400"></i>
+          Load options
+        </p>
+        <div class="space-y-1">
+          <label for="load-mode" class="text-[11px] text-slate-500">Mode</label>
+          <select
+            id="load-mode"
+            class="w-full p-1.5 border border-slate-200 rounded-lg text-[11px] bg-white focus:ring-1 focus:ring-sky-500"
+          >
+            <option value="replace" selected>
+              Replace: the table becomes this file
+            </option>
+            <option value="append">
+              Append: add new rows, skip exact duplicates
+            </option>
+            <option value="merge">
+              Merge: update rows by key, insert new ones
+            </option>
+          </select>
+        </div>
+        <div id="load-key-columns-wrap" class="hidden space-y-1">
+          <label for="load-key-columns" class="text-[11px] text-slate-500"
+            >Merge key column(s)</label
+          >
+          <input
+            id="load-key-columns"
+            type="text"
+            placeholder="invoice_id"
+            autocomplete="off"
+            class="w-full p-1.5 border border-slate-200 rounded-lg text-[11px] focus:ring-1 focus:ring-sky-500"
+          />
+          <p class="text-[10px] text-slate-400">
+            Comma separated. Rows with the same key are updated.
+          </p>
+        </div>
+        <div class="space-y-1">
+          <label for="load-dataset" class="text-[11px] text-slate-500"
+            >Dataset name (optional)</label
+          >
+          <input
+            id="load-dataset"
+            type="text"
+            placeholder="defaults to the file name"
+            autocomplete="off"
+            class="w-full p-1.5 border border-slate-200 rounded-lg text-[11px] focus:ring-1 focus:ring-sky-500 disabled:bg-slate-50 disabled:text-slate-400"
+          />
+          <p id="load-dataset-hint" class="hidden text-[10px] text-amber-600">
+            A dataset name applies to a single file.
+          </p>
+        </div>
+        <label
+          id="load-keep-history-wrap"
+          class="hidden flex items-center gap-2 text-[11px] text-slate-600 cursor-pointer"
+        >
+          <input
+            id="load-keep-history"
+            type="checkbox"
+            class="rounded border-slate-300 text-sky-600 focus:ring-sky-500"
+          />
+          Keep row history (type-2)
+        </label>
+      </div>
     </div>
     <div class="space-y-3 text-sm">
       <p class="text-slate-600 font-medium flex items-center gap-2">
@@ -86,6 +153,40 @@
         Upload files using the panel on the left.
       </p>
     </div>
+    <section id="loads-section" class="mt-6 space-y-3">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <p class="text-xs font-semibold text-slate-700 flex items-center gap-2">
+          <i data-lucide="layers" class="text-violet-500 w-4 h-4"></i> Data loads
+        </p>
+        <div class="flex items-center gap-1.5">
+          <button
+            id="pipeline-health-toggle"
+            type="button"
+            aria-expanded="false"
+            aria-controls="pipeline-health-panel"
+            class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] bg-slate-100 text-slate-600 hover:bg-slate-200 transition disabled:opacity-50"
+          >
+            <i data-lucide="activity" class="w-3.5 h-3.5"></i> Pipeline health
+          </button>
+          <button
+            id="loads-refresh"
+            type="button"
+            class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] bg-slate-100 text-slate-600 hover:bg-slate-200 transition disabled:opacity-50"
+          >
+            <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Refresh
+          </button>
+        </div>
+      </div>
+      <div
+        id="pipeline-health-panel"
+        class="hidden rounded-2xl border border-slate-200 bg-slate-50 p-3 space-y-3 text-xs"
+      ></div>
+      <div id="loads-list" class="space-y-2 text-xs">
+        <p class="text-[11px] text-slate-400 text-center py-3">
+          No loads yet. Upload a CSV to run it through the pipeline.
+        </p>
+      </div>
+    </section>
     <div id="relationship-list" class="mt-4 space-y-2"></div>
   </div>
 </section>

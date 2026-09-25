@@ -1,5 +1,14 @@
 # engine/dataframe.py
 from .parser import CsvParser
+from .parquet_source import ParquetParser
+
+
+def open_source(filepath):
+    """CSV or Parquet, decided by extension. Parquet is what the pipeline
+    writes to the curated layer; CSV is the pre-pipeline upload path."""
+    if str(filepath).lower().endswith(".parquet"):
+        return ParquetParser(filepath)
+    return CsvParser(filepath)
 
 
 class DataFrame:
@@ -24,7 +33,7 @@ class DataFrame:
 
         if isinstance(source, str):  # Source is a filepath
             self.source_type = 'file'
-            self.parser = CsvParser(source)
+            self.parser = open_source(source)
             self.header = self.parser.get_header()
             self.filepath = source
             # Get types from the parser
@@ -68,6 +77,8 @@ class DataFrame:
         the file for its lifetime."""
         if self.source_type != 'file':
             return len(self.data)
+        if self._row_count is None and isinstance(self.parser, ParquetParser):
+            self._row_count = self.parser.row_count
         if self._row_count is None:
             count = 0
             for _ in self.parser.parse():
@@ -134,6 +145,10 @@ class DataFrame:
         Implements the projection (column selection) operation.
         Returns a list of dicts (not a DataFrame).
         """
+        if self.source_type == 'file' and isinstance(self.parser, ParquetParser):
+            # Column pruning: only the requested columns are read from disk.
+            wanted = [col for col in columns if col in self.parser.column_types]
+            return list(self.parser.parse(columns=wanted))
         projected_data = []
         for row in self._get_data():
             new_row = {col: row[col] for col in columns if col in row}

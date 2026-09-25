@@ -13,7 +13,7 @@
     <script src="{{ url_for('static', filename='js/vendor/lucide-1.43.0.min.js') }}"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}?v={{ version_id }}" />
   </head>
-  <body class="bg-slate-50 text-slate-800 h-full w-full overflow-hidden">
+  <body class="{% block body_class %}{% endblock %} bg-slate-50 text-slate-800 h-full w-full overflow-hidden">
     {% block content %}{% endblock %}
 
     <!-- Icon initialisation lives in a static file: the Content-Security-Policy

@@ -1,0 +1,7 @@
+version: 2
+
+models:
+  - name: stg_events
+    description: Raw telemetry events from events/*.jsonl.gz, typed.
+  - name: stg_loads
+    description: Load manifests from manifests/**/*.json, flattened.

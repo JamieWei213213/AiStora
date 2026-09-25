@@ -14,3 +14,6 @@ tests
 uploads
 terraform.tfstate*
 node_modules/
+
+.env.*
+!.env.example

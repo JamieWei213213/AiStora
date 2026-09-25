@@ -1,0 +1,14 @@
+# Runtime dependencies of the pipeline Lambda image (pipeline/Dockerfile).
+# Pinned for the same reason requirements.txt is: an image built today and
+# one built next month must contain the same libraries.
+boto3==1.43.87
+duckdb==1.5.5
+pyarrow==25.0.1
+pyiceberg[glue]==0.12.0
+psycopg2-binary==2.9.12
+google-auth==2.58.1
+requests==2.33.1
+# Telemetry marts (nightly dbt build). dbt-core 1.x on purpose; see
+# pipeline/telemetry_job.py for why not dbt v2 yet.
+dbt-core==1.12.5
+dbt-duckdb==1.11.0

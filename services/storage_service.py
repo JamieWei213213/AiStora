@@ -26,9 +26,20 @@ def safe_dataset_filename(filename):
 class LocalDatasetStorage:
     backend = "local"
 
-    def __init__(self, root):
+    def __init__(self, root, extra_roots=()):
         self.root = Path(root).resolve()
         self.root.mkdir(parents=True, exist_ok=True)
+        # The pipeline's lake (curated Parquet) is a second read-only root.
+        self.extra_roots = tuple(Path(r).resolve() for r in extra_roots if r)
+
+    def _readable(self, path):
+        for root in (self.root, *self.extra_roots):
+            try:
+                path.relative_to(root)
+                return True
+            except ValueError:
+                continue
+        return False
 
     def put_file(self, source_path, project_id, filename):
         filename = safe_dataset_filename(filename)
@@ -47,6 +58,10 @@ class LocalDatasetStorage:
         if not path.is_absolute():
             path = Path.cwd() / path
         path = path.resolve()
+        if not self._readable(path):
+            raise DatasetStorageError(
+                "Refusing to read a file outside the dataset storage roots."
+            )
         if not path.is_file():
             raise DatasetStorageError("The dataset object could not be found.")
         return str(path)
@@ -68,6 +83,8 @@ class LocalDatasetStorage:
         try:
             path.relative_to(self.root)
         except ValueError as exc:
+            if self._readable(path):
+                return  # a lake object: owned by the pipeline, never deleted here
             raise DatasetStorageError(
                 "Refusing to delete a file outside the dataset storage root."
             ) from exc
@@ -87,8 +104,16 @@ class S3DatasetStorage:
         client=None,
         endpoint_url=None,
         max_cache_bytes=2 * 1024 * 1024 * 1024,
+        extra_sources=(),
     ):
         self.max_cache_bytes = int(max_cache_bytes or 0)
+        # (bucket, prefix) pairs the app may *read* datasets from besides its
+        # own upload prefix: the lake's curated/ and silver/ layers.
+        self.extra_sources = tuple(
+            (str(bucket), str(prefix).strip("/"))
+            for bucket, prefix in extra_sources
+            if bucket and prefix
+        )
         if not bucket:
             raise DatasetStorageError(
                 "S3_DATASET_BUCKET is required when DATASET_STORAGE_BACKEND=s3."
@@ -115,17 +140,19 @@ class S3DatasetStorage:
         )
 
     def _parse(self, reference):
+        """Return ``(bucket, key)`` for a reference this app may read."""
         parsed = urlparse(str(reference))
         key = parsed.path.lstrip("/")
-        if parsed.scheme != "s3" or parsed.netloc != self.bucket:
-            raise DatasetStorageError(
-                "The dataset reference is not in the configured S3 bucket."
-            )
-        if not key.startswith(f"{self.prefix}/"):
-            raise DatasetStorageError(
-                "The dataset reference is outside the configured S3 prefix."
-            )
-        return key
+        if parsed.scheme != "s3":
+            raise DatasetStorageError("The dataset reference is not an S3 URI.")
+        if parsed.netloc == self.bucket and key.startswith(f"{self.prefix}/"):
+            return self.bucket, key
+        for bucket, prefix in self.extra_sources:
+            if parsed.netloc == bucket and key.startswith(f"{prefix}/"):
+                return bucket, key
+        raise DatasetStorageError(
+            "The dataset reference is outside the configured S3 locations."
+        )
 
     def put_file(self, source_path, project_id, filename):
         key = self._key(project_id, filename)
@@ -146,9 +173,9 @@ class S3DatasetStorage:
         return f"s3://{self.bucket}/{key}"
 
     def fingerprint(self, reference):
-        key = self._parse(reference)
+        bucket, key = self._parse(reference)
         try:
-            metadata = self.client.head_object(Bucket=self.bucket, Key=key)
+            metadata = self.client.head_object(Bucket=bucket, Key=key)
         except Exception as exc:
             raise DatasetStorageError(
                 "The dataset object could not be read from S3."
@@ -158,7 +185,7 @@ class S3DatasetStorage:
             modified = modified.isoformat()
         return {
             "backend": self.backend,
-            "bucket": self.bucket,
+            "bucket": bucket,
             "key": key,
             "etag": str(metadata.get("ETag", "")).strip('"'),
             "version_id": metadata.get("VersionId"),
@@ -224,7 +251,7 @@ class S3DatasetStorage:
         handle.close()
         try:
             self.client.download_file(
-                self.bucket,
+                metadata["bucket"],
                 metadata["key"],
                 str(temp_path),
             )
@@ -238,9 +265,13 @@ class S3DatasetStorage:
         return str(destination)
 
     def delete(self, reference):
-        key = self._parse(reference)
+        bucket, key = self._parse(reference)
+        if bucket != self.bucket:
+            # Lake objects are owned by the pipeline (Iceberg snapshots,
+            # lifecycle rules); the app never deletes them.
+            return
         try:
-            self.client.delete_object(Bucket=self.bucket, Key=key)
+            self.client.delete_object(Bucket=bucket, Key=key)
         except Exception as exc:
             raise DatasetStorageError(
                 "The dataset object could not be deleted from S3."
@@ -256,6 +287,8 @@ def _storage_signature(app):
         str(app.config.get("AWS_REGION", "us-west-2")),
         str(app.config.get("DATASET_CACHE_DIR", "")),
         str(app.config.get("S3_ENDPOINT_URL", "")),
+        str(app.config.get("LAKE_BUCKET", "")),
+        str(app.config.get("LAKE_ROOT", "")),
     )
 
 
@@ -267,8 +300,13 @@ def get_dataset_storage():
         return cached[1]
 
     backend = signature[0]
+    lake_bucket = app.config.get("LAKE_BUCKET")
+    lake_root = app.config.get("LAKE_ROOT")
     if backend == "local":
-        storage = LocalDatasetStorage(app.config.get("UPLOAD_FOLDER", "uploads"))
+        storage = LocalDatasetStorage(
+            app.config.get("UPLOAD_FOLDER", "uploads"),
+            extra_roots=(lake_root,) if lake_root else (),
+        )
     elif backend == "s3":
         storage = S3DatasetStorage(
             bucket=app.config.get("S3_DATASET_BUCKET"),
@@ -277,6 +315,9 @@ def get_dataset_storage():
             cache_dir=app.config.get("DATASET_CACHE_DIR", "/tmp/aistora-cache"),
             endpoint_url=app.config.get("S3_ENDPOINT_URL"),
             max_cache_bytes=int(app.config.get("DATASET_CACHE_MAX_BYTES", 2 * 1024 ** 3)),
+            extra_sources=(
+                ((lake_bucket, "curated"), (lake_bucket, "silver")) if lake_bucket else ()
+            ),
         )
     else:
         raise DatasetStorageError(

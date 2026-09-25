@@ -252,9 +252,9 @@ def test_csp_trusts_only_the_origin_for_scripts_and_styles():
 
 def test_login_form_submits_on_enter():
     root = Path(__file__).parents[1]
-    html = (root / "templates" / "components" / "app" / "auth_screen.html").read_text()
+    html = (root / "templates" / "components" / "app" / "auth_screen.html").read_text(encoding="utf-8")
     assert '<form id="auth-form"' in html
     assert 'type="submit"' in html
     assert 'autocomplete="current-password"' in html
-    script = (root / "static" / "js" / "scripts.js").read_text()
-    assert 'authForm.addEventListener("submit"' in script
+    script = (root / "static" / "js" / "auth.js").read_text(encoding="utf-8")
+    assert 'form.addEventListener("submit"' in script

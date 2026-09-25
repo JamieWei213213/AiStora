@@ -1,0 +1,445 @@
+{
+  "Comment": "AIStora ingest: one execution per object created under raw/. Each state calls the pipeline Lambda with {stage, payload} and carries the returned payload forward.",
+  "StartAt": "ParseEvent",
+  "States": {
+    "ParseEvent": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "${lambda_arn}",
+        "Payload": {
+          "stage": "parse_event",
+          "event.$": "$"
+        }
+      },
+      "ResultSelector": {
+        "payload.$": "$.Payload"
+      },
+      "OutputPath": "$.payload",
+      "TimeoutSeconds": 900,
+      "Retry": [
+        {
+          "ErrorEquals": ["RetryableError"],
+          "IntervalSeconds": 15,
+          "MaxAttempts": 8,
+          "BackoffRate": 1.5
+        },
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException",
+            "Lambda.TooManyRequestsException"
+          ],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 4,
+          "BackoffRate": 2
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "ResultPath": "$.error",
+          "Next": "BadEvent"
+        }
+      ],
+      "Next": "Validate"
+    },
+    "Validate": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "${lambda_arn}",
+        "Payload": {
+          "stage": "validate",
+          "payload.$": "$"
+        }
+      },
+      "ResultSelector": {
+        "payload.$": "$.Payload"
+      },
+      "OutputPath": "$.payload",
+      "TimeoutSeconds": 900,
+      "Retry": [
+        {
+          "ErrorEquals": ["RetryableError"],
+          "IntervalSeconds": 15,
+          "MaxAttempts": 8,
+          "BackoffRate": 1.5
+        },
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException",
+            "Lambda.TooManyRequestsException"
+          ],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 4,
+          "BackoffRate": 2
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "ResultPath": "$.error",
+          "Next": "OnFailure"
+        }
+      ],
+      "Next": "AfterValidate"
+    },
+    "AfterValidate": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.status",
+          "StringEquals": "running",
+          "Next": "Profile"
+        },
+        {
+          "Variable": "$.status",
+          "StringEquals": "quarantined",
+          "Next": "Quarantined"
+        }
+      ],
+      "Default": "LoadFailed"
+    },
+    "Profile": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "${lambda_arn}",
+        "Payload": {
+          "stage": "profile",
+          "payload.$": "$"
+        }
+      },
+      "ResultSelector": {
+        "payload.$": "$.Payload"
+      },
+      "OutputPath": "$.payload",
+      "TimeoutSeconds": 900,
+      "Retry": [
+        {
+          "ErrorEquals": ["RetryableError"],
+          "IntervalSeconds": 15,
+          "MaxAttempts": 8,
+          "BackoffRate": 1.5
+        },
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException",
+            "Lambda.TooManyRequestsException"
+          ],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 4,
+          "BackoffRate": 2
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "ResultPath": "$.error",
+          "Next": "OnFailure"
+        }
+      ],
+      "Next": "AfterProfile"
+    },
+    "AfterProfile": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.status",
+          "StringEquals": "running",
+          "Next": "Gate"
+        },
+        {
+          "Variable": "$.status",
+          "StringEquals": "quarantined",
+          "Next": "Quarantined"
+        }
+      ],
+      "Default": "LoadFailed"
+    },
+    "Gate": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "${lambda_arn}",
+        "Payload": {
+          "stage": "gate",
+          "payload.$": "$"
+        }
+      },
+      "ResultSelector": {
+        "payload.$": "$.Payload"
+      },
+      "OutputPath": "$.payload",
+      "TimeoutSeconds": 900,
+      "Retry": [
+        {
+          "ErrorEquals": ["RetryableError"],
+          "IntervalSeconds": 15,
+          "MaxAttempts": 8,
+          "BackoffRate": 1.5
+        },
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException",
+            "Lambda.TooManyRequestsException"
+          ],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 4,
+          "BackoffRate": 2
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "ResultPath": "$.error",
+          "Next": "OnFailure"
+        }
+      ],
+      "Next": "AfterGate"
+    },
+    "AfterGate": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.status",
+          "StringEquals": "running",
+          "Next": "Transform"
+        },
+        {
+          "Variable": "$.status",
+          "StringEquals": "quarantined",
+          "Next": "Quarantined"
+        }
+      ],
+      "Default": "LoadFailed"
+    },
+    "Transform": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "${lambda_arn}",
+        "Payload": {
+          "stage": "transform",
+          "payload.$": "$"
+        }
+      },
+      "ResultSelector": {
+        "payload.$": "$.Payload"
+      },
+      "OutputPath": "$.payload",
+      "TimeoutSeconds": 900,
+      "Retry": [
+        {
+          "ErrorEquals": ["RetryableError"],
+          "IntervalSeconds": 15,
+          "MaxAttempts": 8,
+          "BackoffRate": 1.5
+        },
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException",
+            "Lambda.TooManyRequestsException"
+          ],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 4,
+          "BackoffRate": 2
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "ResultPath": "$.error",
+          "Next": "OnFailure"
+        }
+      ],
+      "Next": "AfterTransform"
+    },
+    "AfterTransform": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.status",
+          "StringEquals": "running",
+          "Next": "Curate"
+        },
+        {
+          "Variable": "$.status",
+          "StringEquals": "quarantined",
+          "Next": "Quarantined"
+        }
+      ],
+      "Default": "LoadFailed"
+    },
+    "Curate": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "${lambda_arn}",
+        "Payload": {
+          "stage": "curate",
+          "payload.$": "$"
+        }
+      },
+      "ResultSelector": {
+        "payload.$": "$.Payload"
+      },
+      "OutputPath": "$.payload",
+      "TimeoutSeconds": 900,
+      "Retry": [
+        {
+          "ErrorEquals": ["RetryableError"],
+          "IntervalSeconds": 15,
+          "MaxAttempts": 8,
+          "BackoffRate": 1.5
+        },
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException",
+            "Lambda.TooManyRequestsException"
+          ],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 4,
+          "BackoffRate": 2
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "ResultPath": "$.error",
+          "Next": "OnFailure"
+        }
+      ],
+      "Next": "AfterCurate"
+    },
+    "AfterCurate": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.status",
+          "StringEquals": "running",
+          "Next": "Register"
+        },
+        {
+          "Variable": "$.status",
+          "StringEquals": "quarantined",
+          "Next": "Quarantined"
+        }
+      ],
+      "Default": "LoadFailed"
+    },
+    "Register": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "${lambda_arn}",
+        "Payload": {
+          "stage": "register",
+          "payload.$": "$"
+        }
+      },
+      "ResultSelector": {
+        "payload.$": "$.Payload"
+      },
+      "OutputPath": "$.payload",
+      "TimeoutSeconds": 900,
+      "Retry": [
+        {
+          "ErrorEquals": ["RetryableError"],
+          "IntervalSeconds": 15,
+          "MaxAttempts": 8,
+          "BackoffRate": 1.5
+        },
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException",
+            "Lambda.TooManyRequestsException"
+          ],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 4,
+          "BackoffRate": 2
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "ResultPath": "$.error",
+          "Next": "OnFailure"
+        }
+      ],
+      "Next": "Loaded"
+    },
+    "OnFailure": {
+      "Type": "Task",
+      "Comment": "Marks the manifest failed and cleans up; the payload still carries project_id, dataset and load_id.",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "${lambda_arn}",
+        "Payload": {
+          "stage": "on_failure",
+          "payload.$": "$",
+          "error.$": "$.error"
+        }
+      },
+      "ResultPath": "$.on_failure",
+      "TimeoutSeconds": 900,
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException",
+            "Lambda.TooManyRequestsException"
+          ],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 4,
+          "BackoffRate": 2
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "ResultPath": "$.on_failure_error",
+          "Next": "PipelineFailed"
+        }
+      ],
+      "Next": "PipelineFailed"
+    },
+    "PipelineFailed": {
+      "Type": "Fail",
+      "Error": "PipelineFailed",
+      "CausePath": "States.JsonToString($.error)"
+    },
+    "LoadFailed": {
+      "Type": "Fail",
+      "Error": "LoadFailed",
+      "CausePath": "States.Format('The load ended with status {}.', $.status)"
+    },
+    "BadEvent": {
+      "Type": "Fail",
+      "Error": "BadEvent",
+      "CausePath": "States.JsonToString($.error)"
+    },
+    "Quarantined": {
+      "Type": "Succeed",
+      "Comment": "The file was rejected by validation, profiling or the quality gate. That is a correct outcome; the manifest and quarantine/ hold the report."
+    },
+    "Loaded": {
+      "Type": "Succeed"
+    }
+  }
+}

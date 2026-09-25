@@ -1,0 +1,55 @@
+version: 2
+
+models:
+  - name: fct_loads
+    description: One row per pipeline load, from the manifests.
+    columns:
+      - name: load_id
+        tests: [not_null, unique]
+      - name: status
+        tests:
+          - accepted_values:
+              arguments:
+                values: [received, running, succeeded, quarantined, failed]
+      - name: mode
+        tests:
+          - accepted_values:
+              arguments:
+                values: [replace, append, merge]
+      - name: project_id
+        tests: [not_null]
+      - name: dataset
+        tests: [not_null]
+
+  - name: fct_agent_runs
+    description: One row per agent run event.
+    columns:
+      - name: request_id
+        tests: [not_null]
+      - name: ts
+        tests: [not_null]
+
+  - name: agg_daily_pipeline
+    tests:
+      - dbt_utils_free_unique_combination:
+          arguments:
+            combination: [dt, project_id]
+    columns:
+      - name: quarantine_rate
+        tests:
+          - dbt_utils_free_between:
+              arguments:
+                low: 0
+                high: 1
+
+  - name: agg_daily_agent
+    tests:
+      - dbt_utils_free_unique_combination:
+          arguments:
+            combination: [dt, project_id]
+
+  - name: agg_dataset_health
+    tests:
+      - dbt_utils_free_unique_combination:
+          arguments:
+            combination: [project_id, dataset]

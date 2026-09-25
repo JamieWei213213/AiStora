@@ -22,6 +22,7 @@ instance/agent_audit.jsonl
 instance/agent_cancellations/
 instance/sessions/
 instance/*.db
+instance/lake/
 
 # Terraform runtime and sensitive local configuration
 **/.terraform/
@@ -49,3 +50,6 @@ node_modules/
 # Source archives and local scratch
 *.tgz
 *.zip
+
+# Personal documents that don't belong in a public repo
+docs/resume/

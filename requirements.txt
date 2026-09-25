@@ -32,6 +32,17 @@ boto3==1.43.87
 # Model access
 google-genai==2.22.0
 
+# Data platform: Parquet reads for the engine, DuckDB for the gold marts and
+# the local pipeline runner, PyIceberg for curated tables and rollback.
+# The Lambda image has its own pinned list in pipeline/requirements.txt.
+duckdb==1.5.5
+pyarrow==25.0.1
+pyiceberg[glue]==0.12.0
+# The nightly telemetry build runs in-process on the local backend
+# (docker-compose); on AWS it runs from the pipeline image.
+dbt-core==1.12.5
+dbt-duckdb==1.11.0
+
 # Configuration and serving
 python-dotenv==1.2.2
 gunicorn==26.2.0

@@ -1,8 +1,10 @@
 # app.py
 import os
-import time
+import hashlib
+from pathlib import Path
+from werkzeug.exceptions import HTTPException
 
-from flask import Flask, jsonify, request
+from flask import Flask, current_app, jsonify, request
 from flask_migrate import Migrate
 from sqlalchemy import text
 from werkzeug.middleware.proxy_fix import ProxyFix
@@ -20,6 +22,8 @@ from routes.chat import chat_bp
 from routes.databases import databases_bp
 from routes.tables import tables_bp
 from routes.eda import eda_bp
+from routes.loads import loads_bp
+from routes.connectors import connectors_bp
 
 
 logger = get_logger(__name__)
@@ -77,6 +81,23 @@ def register_error_handlers(app):
     "upload failed" with no mention of the size limit.
     """
 
+    @app.errorhandler(HTTPException)
+    def api_http_error(error):
+        if not request.path.startswith("/api/"):
+            return error
+        messages = {404: "This action could not be found. Refresh the page and try again.",
+                    405: "This action is not supported. Refresh the page and try again."}
+        message = messages.get(error.code, "We couldn't complete this request. Please try again.")
+        return jsonify(success=False, error=message, error_type="request_error"), error.code
+
+    @app.errorhandler(500)
+    def api_server_error(error):
+        db.session.rollback()
+        if not request.path.startswith("/api/"):
+            return error
+        return jsonify(success=False, error="AIStora is temporarily unavailable. Please try again shortly.",
+                       error_type="server_error"), 500
+
     @app.errorhandler(413)
     def request_too_large(_error):
         limit_mb = round(int(app.config.get("MAX_CONTENT_LENGTH", 0) or 0) / (1024 * 1024), 1)
@@ -90,9 +111,40 @@ def register_error_handlers(app):
         }), 413
 
 
+def configure_telemetry(app):
+    """Point the process-wide event sink at the app's lake.
+
+    Telemetry is never load-bearing: with the pipeline disabled, or the
+    lake misconfigured, events are dropped and the app runs as before.
+    """
+    from pipeline import events as pipeline_events
+
+    if not app.config.get("PIPELINE_ENABLED", True) or app.config.get("TESTING"):
+        pipeline_events.configure_sink(None)
+        return
+    try:
+        with app.app_context():
+            from services.load_service import pipeline_context
+
+            ctx = pipeline_context()
+        sink = pipeline_events.EventSink(ctx.settings, ctx.store)
+        pipeline_events.configure_sink(sink)
+    except Exception:
+        logger.exception("Telemetry sink could not be configured; events are disabled")
+        pipeline_events.configure_sink(None)
+
+
 def create_app(config_object=Config):
     app = Flask(__name__)
     app.config.from_object(config_object)
+    # One content version per process/release, rather than a cache-busting timestamp
+    # on every page load. File names also contribute to the digest.
+    digest = hashlib.sha256()
+    for asset in sorted(Path(app.static_folder).rglob("*")):
+        if asset.is_file():
+            digest.update(asset.relative_to(app.static_folder).as_posix().encode())
+            digest.update(asset.read_bytes())
+    app.config["ASSET_VERSION"] = digest.hexdigest()[:16]
     app.wsgi_app = ProxyFix(
         app.wsgi_app,
         x_for=1,
@@ -102,6 +154,8 @@ def create_app(config_object=Config):
 
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
     os.makedirs(app.config["DATASET_CACHE_DIR"], exist_ok=True)
+    if app.config.get("PIPELINE_ENABLED", True) and str(app.config.get("PIPELINE_BACKEND", "local")) == "local":
+        os.makedirs(app.config.get("LAKE_ROOT") or os.path.join("instance", "lake"), exist_ok=True)
 
     db.init_app(app)
     migrate.init_app(app, db)
@@ -120,6 +174,8 @@ def create_app(config_object=Config):
     _warn_about_insecure_settings(app)
 
     register_error_handlers(app)
+    from services.upload_capacity import check_upload_capacity
+    app.before_request(check_upload_capacity)
 
     @app.get("/health")
     def health():
@@ -132,7 +188,7 @@ def create_app(config_object=Config):
     @app.context_processor
     def inject_version():
         """Injects a unique version ID into all templates."""
-        return dict(version_id=int(time.time()))
+        return dict(version_id=app.config["ASSET_VERSION"])
 
     app.register_blueprint(pages_bp)
     app.register_blueprint(auth_bp)
@@ -141,7 +197,10 @@ def create_app(config_object=Config):
     app.register_blueprint(databases_bp)
     app.register_blueprint(tables_bp)
     app.register_blueprint(eda_bp)
+    app.register_blueprint(loads_bp)
+    app.register_blueprint(connectors_bp)
 
+    configure_telemetry(app)
     return app
 
 

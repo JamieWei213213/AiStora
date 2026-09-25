@@ -5,18 +5,22 @@ Deployment completed and verified on **August 3, 2026**.
 This file records what was actually done. The companion
 `AWS_DEPLOYMENT_GUIDE.md` explains the design in more depth.
 
+> Account IDs, ARNs, and bucket names below are redacted (`<AWS_ACCOUNT_ID>`)
+> because this repository is public. Every step, command, and verification
+> result is otherwise unedited.
+
 ## Final result
 
 | Item | Deployed value |
 |---|---|
-| AWS account | `243714546940` |
+| AWS account | `<AWS_ACCOUNT_ID>` |
 | Region | `us-west-2` |
-| Application | <http://aistora-dev-632736863.us-west-2.elb.amazonaws.com> |
-| Health check | <http://aistora-dev-632736863.us-west-2.elb.amazonaws.com/health> |
+| Application | <http://<alb-dns-name>.us-west-2.elb.amazonaws.com> |
+| Health check | <http://<alb-dns-name>.us-west-2.elb.amazonaws.com/health> |
 | ECS cluster/service | `aistora-dev` / `aistora-dev` |
 | Current tested task revision | `aistora-dev:5` |
-| Dataset bucket | `aistora-dev-243714546940-us-west-2-datasets` |
-| Terraform state bucket | `aistora-terraform-state-243714546940-us-west-2` |
+| Dataset bucket | `aistora-dev-<AWS_ACCOUNT_ID>-us-west-2-datasets` |
+| Terraform state bucket | `aistora-terraform-state-<AWS_ACCOUNT_ID>-us-west-2` |
 | RDS | Private PostgreSQL 16, `db.t4g.micro` |
 | ECR repository | `aistora-dev` |
 | CloudWatch log group | `/ecs/aistora-dev` |
@@ -62,8 +66,8 @@ Terraform -----------------------------------> encrypted versioned S3 state
 - Verified the identity immediately before planning and applying:
 
 ```text
-Account: 243714546940
-ARN: arn:aws:iam::243714546940:user/jamie-bootstrap-admin
+Account: <AWS_ACCOUNT_ID>
+ARN: arn:aws:iam::<AWS_ACCOUNT_ID>:user/jamie-bootstrap-admin
 ```
 
 No root access key and no long-lived AWS key for GitHub were created.
@@ -98,7 +102,7 @@ charges after an alert is sent.
 Created:
 
 ```text
-aistora-terraform-state-243714546940-us-west-2
+aistora-terraform-state-<AWS_ACCOUNT_ID>-us-west-2
 ```
 
 Configured:
@@ -129,7 +133,7 @@ terraform init -reconfigure -backend-config=backend.hcl
 The remote state object was verified at:
 
 ```text
-s3://aistora-terraform-state-243714546940-us-west-2/aistora/dev/terraform.tfstate
+s3://aistora-terraform-state-<AWS_ACCOUNT_ID>-us-west-2/aistora/dev/terraform.tfstate
 ```
 
 ### 5. Reviewed the first Terraform plan
@@ -140,7 +144,7 @@ The first approved plan was exactly:
 Plan: 64 to add, 0 to change, 0 to destroy.
 ```
 
-It was verified against account `243714546940`, region `us-west-2`, with no
+It was verified against account `<AWS_ACCOUNT_ID>`, region `us-west-2`, with no
 pre-existing GitHub OIDC provider collision.
 
 ### 6. Applied the infrastructure and handled the RDS restriction
@@ -398,7 +402,7 @@ completely empty demo database is required.
 
 Visit:
 
-<http://aistora-dev-632736863.us-west-2.elb.amazonaws.com>
+<http://<alb-dns-name>.us-west-2.elb.amazonaws.com>
 
 Create an account, create/select a database, upload a CSV, and ask a bounded
 question such as:
@@ -411,7 +415,7 @@ Calculate total sales by region and sort highest to lowest.
 
 ```powershell
 Invoke-RestMethod `
-  http://aistora-dev-632736863.us-west-2.elb.amazonaws.com/health
+  http://<alb-dns-name>.us-west-2.elb.amazonaws.com/health
 ```
 
 ### Check ECS
