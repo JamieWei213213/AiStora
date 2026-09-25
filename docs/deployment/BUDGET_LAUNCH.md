@@ -69,6 +69,10 @@ automated tests. Existing sessions must sign in again after this upgrade.
 
 ## Prepared single-server deployment
 
+Shortcut: `infra/budget/server-setup.sh` performs steps 1-6 below on a fresh Ubuntu
+server (swap, Docker, clone, `.env.budget` prompts, build, health wait). It is
+idempotent; re-run it to deploy a newer `main`.
+
 The standalone docker-compose.budget.yml runs Caddy, the app, PostgreSQL, and
 Redis. Only Caddy publishes ports 80/443. It obtains HTTPS certificates for the
 hostname you control. App and database volumes persist through ordinary
