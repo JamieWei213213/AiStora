@@ -1,4 +1,4 @@
-{% extends "base.html" %} {% block title %}Aistora | App{% endblock %} {% block
+{% extends "base.html" %} {% block title %}{{ page_title or "Aistora | App" }}{% endblock %} {% block
 content %}
 <div id="app" data-pipeline-enabled="{{ 'true' if config.PIPELINE_ENABLED else 'false' }}" class="h-full w-full flex flex-col bg-white">
   <main class="flex-1 flex flex-col h-0 relative">

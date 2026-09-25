@@ -48,8 +48,11 @@ body {
 .auth-primary:hover { background:#076475; }
 .auth-primary:disabled { opacity:.65; cursor:wait; }
 .auth-secondary { border:1px solid #cbd5e1; background:white; color:#284657; }
+a.auth-secondary { display:flex; align-items:center; justify-content:center; text-decoration:none; text-align:center; }
+a.auth-secondary:hover { background:#f8fafc; }
+.auth-secondary.is-disabled { opacity:.65; pointer-events:none; }
 .auth-text-button { justify-self:end; margin-top:-.5rem; font-size:.8rem; color:#076779; }
-.auth-form button:focus-visible,.auth-back:focus-visible { outline:3px solid #0891b2; outline-offset:3px; }
+.auth-form button:focus-visible,.auth-form a:focus-visible,.auth-back:focus-visible { outline:3px solid #0891b2; outline-offset:3px; }
 .auth-hint,.auth-field-error { font-size:.75rem; line-height:1.5; margin:.4rem 0 0; }
 .auth-hint { color:#64748b; }
 .auth-field-error { color:#b42318; }

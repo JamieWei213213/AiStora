@@ -199,6 +199,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Clear old account-specific UI and state after reauthentication.
     if (sessionExpired) { window.location.reload(); return; }
     errorToast?.classList.add("hidden");
+    if (authUI.isAuthPage()) history.replaceState(null, "", "/app");
     await loadDatabases();
   });
 
@@ -2344,8 +2345,10 @@ document.addEventListener("DOMContentLoaded", () => {
       authUI.setRecoveryAvailable(data.passwordResetAvailable);
       if (authUI.isReset()) { showScreen(screens.auth); return; }
       if (data.isLoggedIn) {
+        if (authUI.isAuthPage()) history.replaceState(null, "", "/app");
         await loadDatabases(); // User is logged in, show DB screen
       } else {
+        if (location.pathname === "/app") history.replaceState(null, "", "/login");
         showScreen(screens.auth); // User is not logged in
       }
     } catch (error) {

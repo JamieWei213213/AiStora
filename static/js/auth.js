@@ -41,8 +41,14 @@ window.AIStoraAuth = (() => {
     const notice = el("auth-error"), forgot = el("auth-forgot-password");
     let mode = "login", busy = false, recoveryAvailable = false;
     let resetToken = new URLSearchParams(location.hash.slice(1)).get("reset");
+    // Sign-in and sign-up are separate pages: /signup opens in register mode.
+    const path = location.pathname.replace(/\/+$/, "");
+    const pageMode = path === "/signup" ? "register" : "login";
+    const params = new URLSearchParams(location.search);
+    const justRegistered = params.get("registered") === "1";
     // Reset tokens stay in the fragment: not in server access logs or referrers.
     if (resetToken) history.replaceState(null, "", location.pathname + location.search);
+    else if (justRegistered) history.replaceState(null, "", location.pathname);
     function message(text, tone = "error", title = null, focus = true) {
       notice.dataset.tone = tone;
       el("auth-error-title").textContent = title || (tone === "success" ? "You're all set" : tone === "info" ? "Please note" : "There was a problem");
@@ -71,7 +77,10 @@ window.AIStoraAuth = (() => {
       el("auth-subtitle").textContent = subtitles[mode];
       el("auth-btn-label").textContent = busy ? ({login:"Signing in…", register:"Creating account…", forgot:"Sending link…", reset:"Saving password…"})[mode] : labels[mode];
       toggle.textContent = mode === "login" ? "New to AIStora? Create an account" : "Back to sign in";
-      submit.disabled = toggle.disabled = forgot.disabled = busy;
+      toggle.href = mode === "login" ? "/signup" : "/login";
+      toggle.classList.toggle("is-disabled", busy);
+      toggle.setAttribute("aria-disabled", String(busy));
+      submit.disabled = forgot.disabled = busy;
       email.disabled = password.disabled = busy;
       form.setAttribute("aria-busy", String(busy));
       password.autocomplete = ["register", "reset"].includes(mode) ? "new-password" : "current-password";
@@ -85,7 +94,8 @@ window.AIStoraAuth = (() => {
       reveal.textContent = "Show"; reveal.setAttribute("aria-label", "Show password"); reveal.setAttribute("aria-pressed", "false");
       notice.classList.add("hidden"); clearFields(); render();
     }
-    toggle.addEventListener("click", () => { if (!busy) setMode(mode === "login" ? "register" : "login"); });
+    // The toggle is a real link to /signup or /login; only block it mid-request.
+    toggle.addEventListener("click", event => { if (busy) event.preventDefault(); });
     reveal.addEventListener("click", () => {
       const visible = password.type === "password";
       password.type = visible ? "text" : "password";
@@ -119,7 +129,11 @@ window.AIStoraAuth = (() => {
         const payload = mode === "forgot" ? {email:email.value} : mode === "reset" ? {token:resetToken,password:password.value} : {email:email.value,password:password.value};
         const data = await requestJSON(endpoints[mode], {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
         if (submittedMode === "login") { password.value = ""; await onSignedIn(data); }
-        else if (submittedMode === "register") { setMode("login"); message("Your account is ready. Sign in with your new password.", "success", "Account created"); }
+        else if (submittedMode === "register") {
+          // Hand the address to the sign-in page without putting it in the URL.
+          try { sessionStorage.setItem("aistora:signup-email", email.value); } catch (_) {}
+          location.assign("/login?registered=1"); return;
+        }
         else if (submittedMode === "forgot") message("If that address has an account, we'll send a reset link. Check your inbox and spam folder.", "success", "Check your email");
         else { resetToken = null; setMode("login"); message("Your password has been updated. Sign in with your new password.", "success", "Password updated"); }
       } catch (error) {
@@ -129,8 +143,14 @@ window.AIStoraAuth = (() => {
         else message(text, "error", error.status === 401 ? "We couldn't sign you in" : "There was a problem");
       } finally { busy = false; render(); }
     });
-    setMode(resetToken ? "reset" : "login");
-    return {message, requestJSON, isReset:() => Boolean(resetToken), setRecoveryAvailable: value => { recoveryAvailable = value === true; }};
+    setMode(resetToken ? "reset" : pageMode);
+    if (justRegistered && mode === "login") {
+      try { email.value = sessionStorage.getItem("aistora:signup-email") || ""; sessionStorage.removeItem("aistora:signup-email"); } catch (_) {}
+      message("Your account is ready. Sign in with your new password.", "success", "Account created", false);
+      (email.value ? password : email).focus();
+    }
+    return {message, requestJSON, isReset:() => Boolean(resetToken), isAuthPage:() => path === "/login" || path === "/signup",
+      setRecoveryAvailable: value => { recoveryAvailable = value === true; }};
   }
   return {init, requestJSON};
 })();
