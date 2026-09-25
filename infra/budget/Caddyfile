@@ -2,3 +2,7 @@
     encode zstd gzip
     reverse_proxy web:5000
 }
+
+www.{$AISTORA_DOMAIN} {
+    redir https://{$AISTORA_DOMAIN}{uri} permanent
+}
