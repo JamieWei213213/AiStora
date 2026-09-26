@@ -608,12 +608,31 @@ def _profile_dataframe(
         non_null = rows_scanned - missing[column]
         if not parsed or (non_null and len(parsed) / non_null < 0.8):
             continue
+        earliest, latest = min(parsed), max(parsed)
+        span_days = (latest - earliest).days
+        # Bucket by month for spans over ~3 months, otherwise by day, so the
+        # series is readable for both multi-year ledgers and a two-week log.
+        granularity = "month" if span_days > 92 else "day"
+        counts = {}
+        for value in parsed:
+            key = value.strftime("%Y-%m") if granularity == "month" else value.strftime("%Y-%m-%d")
+            counts[key] = counts.get(key, 0) + 1
+        series = [{"period": key, "rows": counts[key]} for key in sorted(counts)]
+        busiest = max(series, key=lambda item: item["rows"]) if series else None
+        quietest = min(series, key=lambda item: item["rows"]) if series else None
         time_summary.append({
             "column": column,
             "parsed_count": len(parsed),
             "invalid_date_count": time_invalid[column],
-            "min": min(parsed).isoformat(),
-            "max": max(parsed).isoformat(),
+            "min": earliest.isoformat(),
+            "max": latest.isoformat(),
+            "span_days": span_days,
+            "granularity": granularity,
+            "period_count": len(series),
+            "busiest_period": busiest,
+            "quietest_period": quietest,
+            # Capped so a decade of daily data does not bloat the report.
+            "series": series[-120:],
         })
 
     correlations = []

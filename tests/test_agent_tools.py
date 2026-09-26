@@ -172,3 +172,47 @@ def test_audit_log_excludes_filter_values(tmp_path):
     audit_text = audit_path.read_text(encoding="utf-8")
     assert "sensitive-value" not in audit_text
     assert '"tool": "filter_rows"' in audit_text
+
+
+def test_bucket_dates_enables_monthly_trends():
+    dated_rows = [
+        {"order_date": "2025-01-05", "amount": 10},
+        {"order_date": "2025-01-20", "amount": 5},
+        {"order_date": "2025-02-01T09:30:00", "amount": 7},
+        {"order_date": "14 Mar 2025", "amount": 1},
+        {"order_date": "not a date", "amount": 99},
+    ]
+    tools = AgentToolRuntime(
+        schema={"orders": {"types": {"order_date": "str", "amount": "int"}, "row_count": 5}},
+        relationships=[],
+        table_loader=lambda name: DataFrame(dated_rows) if name == "orders" else None,
+        request_id="request-2",
+        user_id=7,
+        audit=Audit(),
+    )
+    bucketed = tools.execute("bucket_dates", {
+        "source": "orders", "column": "order_date", "granularity": "month", "save_as": "monthly",
+    })
+    assert bucketed["columns"] == ["order_date", "amount", "order_date_month"]
+    assert tools.results["monthly"].metadata["unparsed_dates"] == 1
+
+    tools.execute("aggregate_rows", {
+        "source": "monthly", "group_by": "order_date_month", "value_column": "amount",
+        "operation": "sum", "save_as": "amount_by_month",
+    })
+    totals = tools.results["amount_by_month"].value
+    assert totals["2025-01"]["sum_amount"] == 15
+    assert totals["2025-02"]["sum_amount"] == 7
+    assert totals["2025-03"]["sum_amount"] == 1
+    assert None not in totals  # unparsed dates are excluded from groups
+
+    quarters = tools.execute("bucket_dates", {
+        "source": "orders", "column": "order_date", "granularity": "quarter", "save_as": "quarterly",
+    })
+    assert quarters["rows"] == 5
+    assert {row["order_date_quarter"] for row in tools.results["quarterly"].value._get_data()} == {"2025-Q1", None}
+
+    with pytest.raises(Exception):
+        tools.execute("bucket_dates", {
+            "source": "orders", "column": "order_date", "granularity": "decade", "save_as": "x",
+        })

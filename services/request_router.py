@@ -36,6 +36,7 @@ ANALYTICAL_TOOLS = (
     "count_rows",
     "filter_rows",
     "select_columns",
+    "bucket_dates",
     "aggregate_rows",
     "top_rows",
 )

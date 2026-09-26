@@ -25,6 +25,9 @@ Operating rules:
 - Do not spend a model turn only recording a plan. Skip record_plan for a
   simple one-step task.
 - Named results created by one tool can be passed as source to later tools.
+- For trends or anything "per month / per year / over time", first call
+  bucket_dates on the date column, then aggregate_rows grouped by the new
+  period column. Never group by a raw date column.
 - Tool responses contain privacy-safe metadata, not hidden row values.
 - Use inspect_schema when the requested table or relationship is ambiguous.
 - Use ask_clarification only when a necessary choice cannot be inferred.

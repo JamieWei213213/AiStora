@@ -136,6 +136,27 @@ TOOL_DECLARATIONS = [
         },
     },
     {
+        "name": "bucket_dates",
+        "description": (
+            "Add a period column derived from a date column (year, quarter, month, "
+            "week or day, e.g. 2025-03 for month) and save the rows as a new "
+            "DataFrame. Use it before aggregate_rows for trends over time."
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "source": {"type": "string"},
+                "column": {"type": "string", "description": "Date or timestamp column."},
+                "granularity": {
+                    "type": "string",
+                    "enum": ["year", "quarter", "month", "week", "day"],
+                },
+                "save_as": {"type": "string"},
+            },
+            "required": ["source", "column", "granularity", "save_as"],
+        },
+    },
+    {
         "name": "aggregate_rows",
         "description": "Group a DataFrame and calculate count, sum, average, minimum, or maximum.",
         "parameters": {
@@ -634,6 +655,55 @@ class AgentToolRuntime:
             save_as, "dataframe", DataFrame(rows), columns,
             {"rows": len(rows), "left": left, "right": right},
         ))
+
+    def _tool_bucket_dates(self, source, column, granularity, save_as):
+        """Derive ``<column>_<granularity>`` so time series can be grouped.
+
+        Rows whose date cannot be parsed unambiguously get ``None`` for the
+        period and are counted in the metadata rather than dropped, so the
+        caller can see how much of the data the trend covers.
+        """
+        result = self._dataframe(source)
+        self._column(result, column)
+        granularity = str(granularity or "").lower()
+        if granularity not in {"year", "quarter", "month", "week", "day"}:
+            raise AgentToolError("granularity must be year, quarter, month, week or day.")
+        period_column = f"{column}_{granularity}"
+        rows = []
+        unparsed = 0
+        for row_number, row in enumerate(result.value._get_data(), start=1):
+            self._check_row_progress(row_number)
+            parsed = _as_date(row.get(column))
+            if parsed is None:
+                unparsed += 1
+                period = None
+            elif granularity == "year":
+                period = f"{parsed.year:04d}"
+            elif granularity == "quarter":
+                period = f"{parsed.year:04d}-Q{(parsed.month - 1) // 3 + 1}"
+            elif granularity == "month":
+                period = f"{parsed.year:04d}-{parsed.month:02d}"
+            elif granularity == "week":
+                iso_year, iso_week, _ = parsed.isocalendar()
+                period = f"{iso_year:04d}-W{iso_week:02d}"
+            else:
+                period = parsed.strftime("%Y-%m-%d")
+            new_row = dict(row)
+            new_row[period_column] = period
+            rows.append(new_row)
+            if len(rows) > self.limits.max_materialized_rows:
+                raise ResourceLimitExceeded(
+                    f"bucket_dates exceeded {self.limits.max_materialized_rows} materialized rows."
+                )
+        columns = list(result.columns) + [period_column]
+        stored = StoredResult(
+            save_as, "dataframe", DataFrame(rows), columns,
+            {
+                "rows": len(rows), "source": source, "period_column": period_column,
+                "granularity": granularity, "unparsed_dates": unparsed,
+            },
+        )
+        return self._store(stored)
 
     def _tool_aggregate_rows(self, source, group_by, value_column, operation, save_as):
         result = self._dataframe(source)
