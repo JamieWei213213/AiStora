@@ -60,6 +60,57 @@ def detect_encoding(filepath):
     return "latin-1"
 
 
+_DELIMITER_CANDIDATES = (",", ";", "\t", "|")
+_DELIMITER_SAMPLE_LINES = 25
+
+
+def detect_delimiter(filepath, encoding=None):
+    """Pick the field separator from the file's first lines.
+
+    Spreadsheet exports from European locales use ``;`` (because ``,`` is the
+    decimal mark), and database dumps often use tabs or pipes. Parsing those
+    with a comma produced a one-column table whose rows were then discarded as
+    malformed, so an upload "succeeded" with zero rows and nobody was told.
+
+    For each candidate the sample lines are parsed with the csv module (so
+    quoted fields count correctly) and the candidate is scored by how many
+    fields it yields and how consistent that count is across lines. A
+    candidate that splits every line into the same number of fields (>1)
+    wins; ties go to the conventional comma.
+    """
+    encoding = encoding or detect_encoding(filepath)
+    lines = []
+    try:
+        with open(filepath, "r", encoding=encoding, newline="") as handle:
+            for line in handle:
+                if line.strip():
+                    lines.append(line)
+                if len(lines) >= _DELIMITER_SAMPLE_LINES:
+                    break
+    except (UnicodeDecodeError, OSError):
+        return ","
+    if not lines:
+        return ","
+    best, best_score = ",", (0, 0)
+    for candidate in _DELIMITER_CANDIDATES:
+        try:
+            counts = [len(row) for row in csv.reader(lines, delimiter=candidate)]
+        except csv.Error:
+            continue
+        counts = [count for count in counts if count]
+        if not counts:
+            continue
+        header_fields = counts[0]
+        if header_fields < 2:
+            continue
+        consistent = sum(1 for count in counts if count == header_fields)
+        # Score: share of lines matching the header width, then width itself.
+        score = (consistent / len(counts), header_fields)
+        if score > best_score:
+            best, best_score = candidate, score
+    return best
+
+
 def dedupe_header(names):
     """Make header names unique and non-empty.
 
@@ -93,7 +144,7 @@ class CsvParser:
     def __init__(
         self,
         filepath,
-        separator=",",
+        separator=None,
         infer_types=True,
         sample_size=DEFAULT_SAMPLE_SIZE,
         encoding=None,
@@ -101,8 +152,9 @@ class CsvParser:
         if not os.path.exists(filepath):
             raise FileNotFoundError(f"File not found: {filepath}")
         self.filepath = filepath
-        self.separator = separator
         self.encoding = encoding or detect_encoding(filepath)
+        self.separator = separator or detect_delimiter(filepath, self.encoding)
+        self.skipped_rows = 0
         self.header = self._get_header()
         self.column_types = (
             self._infer_types(sample_size)
@@ -220,6 +272,7 @@ class CsvParser:
 
     def parse(self, cast=True):
         skipped = 0
+        self.skipped_rows = 0
         try:
             with self._open() as source:
                 reader = self._reader(source)
@@ -256,6 +309,7 @@ class CsvParser:
             # Raising here is the point: a swallowed error meant the upload
             # reported fewer rows than the file held and nobody was told.
             raise CsvParseError(f"The CSV file could not be parsed: {exc}") from exc
+        self.skipped_rows = skipped
         if skipped:
             logger.warning(
                 "Skipped %s malformed rows in %s", skipped, os.path.basename(self.filepath)
