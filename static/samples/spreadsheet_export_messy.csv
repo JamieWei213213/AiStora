@@ -1,0 +1,63 @@
+﻿Customer Name ,Amount Paid,Payment Date,Renewed?,Churn Risk %,,Region
+ Priya Cohen ,2078.90,4/17/2025,,,,LA
+ Chen Nguyen ,1805.58,"March 3, 2025",No,0.12,,LA
+ Sofia Dubois ,1123.44,,yes,0.12,,Los Angeles 
+ Isla Silva ,,"March 3, 2025",,7.5 %,,Los Angeles 
+ Chen Novak ,,14 Mar 2025,Y,,,los angeles
+ Noah O'Brien ,USD 954,,n/a,12%,,LA
+ Ava Cohen ,1788.58,3/7/2025,Yes,,,LA
+ Priya Johnson ,,14 Mar 2025,,,,LA
+ Chen Ivanova ,"$2,468.87",7/2/2025,,,,los angeles
+ Ava Lee ,USD 1909,"March 3, 2025",n/a,0.12,,Los Angeles
+ Lucas Patel ,,2025-03-14,n/a,12%,,LA
+ Priya O'Brien ,"$1,767.86",2025-03-14,no,,,Los Angeles 
+ Emma Silva ,372.68,2025-03-14,Yes,12%,,Los Angeles
+ Chen Ivanova ,,"March 3, 2025",yes,,,los angeles
+ Chen Haddad ,,14 Mar 2025,,,,LA
+ Kai Smith ,"$1,882.39","March 3, 2025",TRUE,7.5 %,,LA
+ Ethan Tanaka ,,12/10/2025,Y,,,Los Angeles
+ Liam Okafor ,,14 Mar 2025,,7.5 %,,los angeles
+ José Patel ,470.07,2025-03-14,yes,,,Seattle
+ Isla Adeyemi ,$468.17,2025-03-14,no,,,Los Angeles 
+ Sofia O'Brien ,"$2,282.86",11/6/2025,no,12%,,Los Angeles 
+ Priya Kim ,USD 696,2025-03-14,n/a,,,Los Angeles
+ Priya Rossi ,$157.34,11/19/2025,yes,7.5 %,,Seattle
+ Sofia Rossi ,N/A,,TRUE,,,Los Angeles 
+ Chen Haddad ,USD 930,2025-03-14,TRUE,,,Los Angeles 
+ Ethan Dubois ,USD 148,6/26/2025,Yes,,,Los Angeles 
+ Emma Cohen ,$69.07,2025-03-14,TRUE,,,Seattle
+ Priya Adeyemi ,,2025-03-14,Yes,0.12,,Los Angeles
+ José García ,$903.71,,No,,,Los Angeles 
+ Owen Brown ,"$1,849.32",,yes,,,LA
+ Hannah Novak ,491.72,"March 3, 2025",Yes,7.5 %,,Los Angeles 
+ Fatima Brown ,N/A,,yes,,,Seattle
+ Kai Lee ,612.17,11/23/2025,yes,,,Los Angeles
+ Chen Adeyemi ,USD 2323,14 Mar 2025,No,0.12,,Los Angeles 
+ Ethan Johnson ,312.13,,yes,0.12,,los angeles
+ Sofia Dubois ,N/A,14 Mar 2025,,,,Seattle
+ Hannah Nguyen ,2022.08,14 Mar 2025,yes,12%,,Los Angeles
+ Fatima Nguyen ,1852.75,"March 3, 2025",TRUE,7.5 %,,LA
+ Kai Brown ,"$1,444.41","March 3, 2025",No,,,Los Angeles 
+ Olivia O'Brien ,1929.35,"March 3, 2025",No,12%,,Los Angeles 
+ Priya Rossi ,,14 Mar 2025,No,,,Los Angeles 
+ Mia Smith ,1505.66,12/22/2025,TRUE,0.12,,Seattle
+ Mia Silva ,N/A,2025-03-14,n/a,0.12,,Los Angeles 
+ Priya Ivanova ,USD 2453,2025-03-14,No,12%,,los angeles
+ Mia Johnson ,USD 1820,2025-03-14,Yes,,,Los Angeles 
+ Chen Haddad ,,,,12%,,Seattle
+ Zoë Johnson ,709.50,"March 3, 2025",,12%,,los angeles
+ José Dubois ,N/A,14 Mar 2025,n/a,7.5 %,,Seattle
+ Emma Cohen ,,2025-03-14,No,7.5 %,,Los Angeles
+ Yusuf Okafor ,N/A,2025-03-14,,,,los angeles
+ Chen Müller ,,3/2/2025,TRUE,,,Los Angeles 
+ Owen O'Brien ,,4/2/2025,No,,,Los Angeles 
+ Ethan Patel ,1721.52,,yes,,,Los Angeles 
+ Ava Tanaka ,,6/1/2025,yes,12%,,Los Angeles
+ Priya Johnson ,N/A,"March 3, 2025",n/a,0.12,,Los Angeles
+ Lucas Johnson ,,,no,,,los angeles
+ Ethan O'Brien ,N/A,3/13/2025,,,,Seattle
+ Ethan Brown ,N/A,10/18/2025,No,12%,,los angeles
+ Yusuf Brown ,"$1,739.56",14 Mar 2025,yes,12%,,los angeles
+ Sofia Dubois ,519.54,14 Mar 2025,Yes,12%,,Los Angeles
+ Isla Silva ,,"March 3, 2025",,7.5 %,,Los Angeles 
+ Priya Johnson ,,14 Mar 2025,,,,LA

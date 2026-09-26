@@ -1,0 +1,1201 @@
+order_id,order_date,customer_id,product_id,quantity,discount_pct,order_total,status,channel,ship_state
+5001,2023-01-30,71,111,3,0,102.36,delivered,mobile app,GA
+5002,2023-02-05,101,111,2,0,68.24,shipped,web,GA
+5003,2023-02-24,126,106,2,0,72.5,delivered,web,OR
+5004,2023-03-14,44,103,1,0,13.45,delivered,web,WA
+5005,2023-03-18,126,107,6,0,376.26,delivered,web,OR
+5006,2023-03-18,67,106,1,15,30.81,delivered,mobile app,GA
+5007,2023-04-06,71,112,2,5,35.15,cancelled,web,GA
+5008,2023-04-10,150,110,6,10,207.68,delivered,web,GA
+5009,2023-04-10,179,102,1,0,15.08,delivered,wholesale,CA
+5010,2023-04-11,46,106,1,0,36.25,delivered,retail store,FL
+5011,2023-04-18,96,101,3,15,123.73,cancelled,web,WA
+5012,2023-04-26,123,108,1,0,59.7,shipped,web,GA
+5013,2023-04-29,47,105,1,0,64.99,delivered,web,FL
+5014,2023-05-03,47,110,2,0,76.92,delivered,web,FL
+5015,2023-05-03,39,104,4,0,112.48,delivered,wholesale,AZ
+5016,2023-05-10,67,102,3,0,45.24,delivered,web,GA
+5017,2023-05-12,97,102,2,15,25.64,delivered,mobile app,WA
+5018,2023-05-15,123,113,2,0,50.9,shipped,mobile app,GA
+5019,2023-05-15,96,111,1,10,30.71,delivered,web,WA
+5020,2023-05-17,163,102,1,5,14.33,shipped,mobile app,WA
+5021,2023-05-27,19,101,1,15,41.24,returned,web,OR
+5022,2023-05-31,44,102,1,15,12.82,delivered,web,WA
+5023,2023-06-02,19,105,2,15,110.48,delivered,web,OR
+5024,2023-06-10,27,113,1,15,21.63,cancelled,web,GA
+5025,2023-06-10,75,111,2,0,68.24,delivered,web,CO
+5026,2023-06-14,170,108,1,0,59.7,delivered,mobile app,GA
+5027,2023-06-18,115,109,1,10,76.54,delivered,wholesale,CA
+5028,2023-06-20,40,107,2,10,112.88,delivered,mobile app,AZ
+5029,2023-06-23,67,103,2,0,26.9,shipped,wholesale,GA
+5030,2023-06-24,170,107,1,0,62.71,delivered,retail store,GA
+5031,2023-06-25,46,104,1,0,28.12,delivered,mobile app,FL
+5032,2023-07-01,67,103,1,0,13.45,delivered,wholesale,GA
+5033,2023-07-05,163,108,1,0,59.7,delivered,mobile app,WA
+5034,2023-07-06,179,109,2,0,170.08,delivered,web,CA
+5035,2023-07-10,22,108,1,15,50.75,delivered,mobile app,CO
+5036,2023-07-13,14,104,6,0,168.72,shipped,web,OR
+5037,2023-07-20,179,108,1,15,50.75,delivered,wholesale,CA
+5038,2023-07-23,57,101,1,0,48.52,delivered,wholesale,CO
+5039,2023-07-25,11,107,2,0,125.42,delivered,mobile app,TX
+5040,2023-07-26,149,106,4,10,130.5,delivered,web,CA
+5041,2023-07-26,67,102,2,10,27.14,cancelled,wholesale,GA
+5042,2023-07-26,39,107,1,5,59.57,delivered,web,AZ
+5043,2023-07-29,115,112,1,0,18.5,delivered,mobile app,CA
+5044,2023-07-30,10,110,1,5,36.54,delivered,web,TX
+5045,2023-07-31,19,106,1,0,36.25,returned,mobile app,OR
+5046,2023-07-31,113,103,1,5,12.78,shipped,wholesale,OR
+5047,2023-08-02,39,101,4,0,194.08,cancelled,mobile app,AZ
+5048,2023-08-02,160,109,1,0,85.04,delivered,mobile app,AZ
+5049,2023-08-12,47,103,1,5,12.78,delivered,web,FL
+5050,2023-08-13,123,105,1,0,64.99,delivered,web,GA
+5051,2023-08-13,126,110,2,0,76.92,delivered,web,OR
+5052,2023-08-15,160,103,1,5,12.78,delivered,mobile app,AZ
+5053,2023-08-17,126,103,2,5,25.55,delivered,mobile app,OR
+5054,2023-08-19,136,112,3,0,55.5,delivered,mobile app,GA
+5055,2023-08-20,113,103,1,0,13.45,shipped,web,OR
+5056,2023-08-23,112,106,3,10,97.88,delivered,mobile app,AZ
+5057,2023-08-27,123,110,1,10,34.61,shipped,web,GA
+5058,2023-08-28,46,112,1,0,18.5,shipped,wholesale,FL
+5059,2023-08-29,149,112,2,15,31.45,delivered,web,CA
+5060,2023-08-30,126,108,1,5,56.72,delivered,mobile app,OR
+5061,2023-08-31,42,104,1,15,23.9,delivered,mobile app,TX
+5062,2023-09-02,97,106,3,0,108.75,delivered,mobile app,WA
+5063,2023-09-05,22,103,2,10,24.21,delivered,web,CO
+5064,2023-09-06,39,106,1,15,30.81,shipped,web,AZ
+5065,2023-09-06,150,107,1,5,59.57,delivered,web,GA
+5066,2023-09-10,153,104,1,0,28.12,delivered,web,IL
+5067,2023-09-21,67,104,1,0,28.12,shipped,wholesale,GA
+5068,2023-09-22,94,101,1,5,46.09,delivered,web,IL
+5069,2023-09-22,39,102,2,15,25.64,delivered,web,AZ
+5070,2023-09-23,11,113,1,5,24.18,delivered,mobile app,TX
+5071,2023-09-23,47,101,1,15,41.24,delivered,web,FL
+5072,2023-09-23,94,109,1,0,85.04,delivered,mobile app,IL
+5073,2023-09-23,130,112,3,0,55.5,delivered,mobile app,MA
+5074,2023-09-24,64,103,1,15,11.43,delivered,web,WA
+5075,2023-09-27,17,111,1,5,32.41,delivered,web,CA
+5076,2023-09-27,35,101,3,0,145.56,delivered,wholesale,IL
+5077,2023-09-29,42,109,1,10,76.54,delivered,web,TX
+5078,2023-09-30,113,112,1,15,15.72,delivered,web,OR
+5079,2023-10-04,2,101,2,15,82.48,delivered,web,WA
+5080,2023-10-06,179,112,1,15,15.72,shipped,mobile app,CA
+5081,2023-10-06,160,103,4,10,48.42,cancelled,wholesale,AZ
+5082,2023-10-08,11,105,1,10,58.49,delivered,web,TX
+5083,2023-10-08,46,102,3,10,40.72,shipped,web,FL
+5084,2023-10-12,149,104,3,0,84.36,delivered,retail store,CA
+5085,2023-10-15,39,103,1,15,11.43,shipped,web,AZ
+5086,2023-10-15,144,113,1,10,22.91,delivered,wholesale,IL
+5087,2023-10-17,5,105,1,10,58.49,cancelled,mobile app,TX
+5088,2023-10-21,11,101,1,0,48.52,delivered,retail store,TX
+5089,2023-10-22,136,103,1,0,13.45,cancelled,mobile app,GA
+5090,2023-10-26,17,113,1,10,22.91,delivered,wholesale,CA
+5091,2023-10-26,49,105,1,10,58.49,delivered,web,MA
+5092,2023-10-26,163,102,3,0,45.24,delivered,mobile app,WA
+5093,2023-10-29,149,112,1,5,17.57,shipped,mobile app,CA
+5094,2023-11-02,140,111,4,15,116.01,delivered,web,WA
+5095,2023-11-09,44,101,2,15,82.48,delivered,web,WA
+5096,2023-11-12,75,102,2,0,30.16,delivered,web,CO
+5097,2023-11-14,57,102,3,0,45.24,delivered,web,CO
+5098,2023-11-14,156,106,1,0,36.25,cancelled,web,WA
+5099,2023-11-15,134,101,2,0,97.04,shipped,web,GA
+5100,2023-11-16,113,107,2,0,125.42,shipped,web,OR
+5101,2023-11-16,17,111,1,15,29.0,delivered,mobile app,CA
+5102,2023-11-19,128,103,3,0,40.35,delivered,mobile app,CA
+5103,2023-11-20,96,103,2,0,26.9,delivered,web,WA
+5104,2023-11-25,118,110,2,10,69.23,delivered,web,TX
+5105,2023-11-27,47,103,1,15,11.43,delivered,web,FL
+5106,2023-11-28,10,108,1,15,50.75,delivered,mobile app,TX
+5107,2023-11-30,27,102,1,15,12.82,delivered,web,GA
+5108,2023-12-02,5,107,1,0,62.71,delivered,retail store,TX
+5109,2023-12-04,150,109,1,0,85.04,shipped,wholesale,GA
+5110,2023-12-05,47,109,1,0,85.04,delivered,web,FL
+5111,2023-12-06,163,101,2,0,97.04,shipped,retail store,WA
+5112,2023-12-06,166,113,2,15,43.27,cancelled,web,WA
+5113,2023-12-06,156,101,1,5,46.09,delivered,mobile app,WA
+5114,2023-12-07,112,101,2,0,97.04,delivered,web,AZ
+5115,2023-12-07,176,112,1,0,18.5,returned,mobile app,CA
+5116,2023-12-08,163,108,2,5,113.43,shipped,mobile app,WA
+5117,2023-12-10,71,105,2,0,129.98,returned,mobile app,GA
+5118,2023-12-11,179,109,4,0,340.16,shipped,web,CA
+5119,2023-12-14,17,110,1,0,38.46,delivered,retail store,CA
+5120,2023-12-14,156,103,4,5,51.11,shipped,web,WA
+5121,2023-12-15,31,108,1,0,59.7,delivered,web,FL
+5122,2023-12-17,144,112,3,0,55.5,delivered,mobile app,IL
+5123,2023-12-17,39,109,1,5,80.79,delivered,web,AZ
+5124,2023-12-18,162,108,1,5,56.72,delivered,mobile app,WA
+5125,2023-12-23,166,109,2,15,144.57,delivered,mobile app,WA
+5126,2023-12-24,169,101,2,0,97.04,delivered,mobile app,IL
+5127,2023-12-24,110,108,1,0,59.7,delivered,web,MA
+5128,2023-12-26,149,110,1,0,38.46,delivered,web,CA
+5129,2023-12-27,97,110,3,0,115.38,delivered,web,WA
+5130,2023-12-28,31,108,1,0,59.7,delivered,mobile app,FL
+5131,2023-12-30,162,111,2,0,68.24,delivered,web,WA
+5132,2024-01-02,130,111,2,0,68.24,delivered,mobile app,MA
+5133,2024-01-04,110,102,1,0,15.08,delivered,web,MA
+5134,2024-01-04,10,106,2,10,65.25,delivered,mobile app,TX
+5135,2024-01-09,169,107,3,15,159.91,delivered,mobile app,IL
+5136,2024-01-13,140,105,1,10,58.49,delivered,wholesale,WA
+5137,2024-01-16,49,107,1,5,59.57,delivered,web,MA
+5138,2024-01-17,111,102,2,0,30.16,delivered,mobile app,WA
+5139,2024-01-18,101,113,1,0,25.45,delivered,web,GA
+5140,2024-01-19,14,113,3,10,68.72,delivered,web,OR
+5141,2024-01-22,39,103,2,0,26.9,delivered,web,AZ
+5142,2024-01-22,153,109,1,5,80.79,delivered,web,IL
+5143,2024-01-22,97,104,3,0,84.36,shipped,web,WA
+5144,2024-01-22,43,110,1,15,32.69,delivered,wholesale,TX
+5145,2024-01-23,40,112,1,0,18.5,delivered,mobile app,AZ
+5146,2024-01-23,111,113,1,0,25.45,shipped,web,WA
+5147,2024-01-23,78,106,1,0,36.25,shipped,web,GA
+5148,2024-01-24,111,109,1,0,85.04,cancelled,wholesale,WA
+5149,2024-01-27,179,110,1,0,38.46,delivered,retail store,CA
+5150,2024-01-28,130,113,1,15,21.63,delivered,web,MA
+5151,2024-01-30,40,105,1,15,55.24,delivered,web,AZ
+5152,2024-02-02,42,103,1,5,12.78,delivered,web,TX
+5153,2024-02-03,71,107,2,0,125.42,cancelled,wholesale,GA
+5154,2024-02-03,40,105,2,0,129.98,delivered,mobile app,AZ
+5155,2024-02-04,144,110,1,0,38.46,delivered,wholesale,IL
+5156,2024-02-06,3,109,1,5,80.79,delivered,web,AZ
+5157,2024-02-06,118,109,1,10,76.54,shipped,web,TX
+5158,2024-02-06,111,103,6,0,80.7,delivered,web,WA
+5159,2024-02-10,31,106,1,0,36.25,delivered,mobile app,FL
+5160,2024-02-10,78,101,1,0,48.52,delivered,web,GA
+5161,2024-02-11,47,105,1,0,64.99,delivered,mobile app,FL
+5162,2024-02-11,162,104,2,5,53.43,delivered,mobile app,WA
+5163,2024-02-11,3,104,4,0,112.48,delivered,mobile app,AZ
+5164,2024-02-13,64,108,1,15,50.75,delivered,web,WA
+5165,2024-02-13,140,105,1,0,64.99,shipped,web,WA
+5166,2024-02-13,42,108,6,10,322.38,returned,mobile app,TX
+5167,2024-02-15,170,102,1,10,13.57,returned,web,GA
+5168,2024-02-18,31,107,1,0,62.71,shipped,mobile app,FL
+5169,2024-02-18,134,111,4,10,122.83,shipped,web,GA
+5170,2024-02-18,35,105,3,0,194.97,delivered,web,IL
+5171,2024-02-18,140,106,1,15,30.81,delivered,wholesale,WA
+5172,2024-02-19,115,107,3,15,159.91,delivered,web,CA
+5173,2024-02-19,128,102,6,15,76.91,delivered,mobile app,CA
+5174,2024-02-22,64,101,1,0,48.52,delivered,web,WA
+5175,2024-02-24,180,109,3,0,255.12,shipped,mobile app,MA
+5176,2024-02-26,85,112,1,10,16.65,delivered,web,TX
+5177,2024-02-28,134,101,2,0,97.04,shipped,web,GA
+5178,2024-02-29,97,102,2,5,28.65,delivered,web,WA
+5179,2024-03-01,6,104,4,5,106.86,shipped,mobile app,MA
+5180,2024-03-02,115,104,1,0,28.12,delivered,mobile app,CA
+5181,2024-03-02,96,106,2,15,61.62,shipped,web,WA
+5182,2024-03-03,11,109,1,0,85.04,delivered,web,TX
+5183,2024-03-05,128,108,2,0,119.4,delivered,wholesale,CA
+5184,2024-03-06,179,109,1,10,76.54,delivered,web,CA
+5185,2024-03-10,136,113,1,5,24.18,delivered,web,GA
+5186,2024-03-12,1,101,1,0,48.52,delivered,web,OR
+5187,2024-03-14,161,112,1,5,17.57,delivered,mobile app,OR
+5188,2024-03-14,14,112,1,15,15.72,delivered,web,OR
+5189,2024-03-15,150,109,1,15,72.28,delivered,web,GA
+5190,2024-03-16,57,113,3,0,76.35,returned,web,CO
+5191,2024-03-17,154,107,4,15,213.21,delivered,web,GA
+5192,2024-03-19,47,101,4,0,194.08,shipped,web,FL
+5193,2024-03-19,158,104,1,0,28.12,delivered,web,WA
+5194,2024-03-20,1,108,2,5,113.43,delivered,mobile app,OR
+5195,2024-03-20,42,111,2,0,68.24,delivered,web,TX
+5196,2024-03-20,40,113,1,0,25.45,delivered,wholesale,AZ
+5197,2024-03-20,6,102,1,10,13.57,delivered,mobile app,MA
+5198,2024-03-21,153,107,2,0,125.42,delivered,web,IL
+5199,2024-03-21,136,111,1,0,34.12,shipped,web,GA
+5200,2024-03-22,46,101,2,10,87.34,delivered,wholesale,FL
+5201,2024-03-23,101,112,1,0,18.5,shipped,retail store,GA
+5202,2024-03-23,169,109,1,0,85.04,shipped,mobile app,IL
+5203,2024-03-25,69,108,1,0,59.7,delivered,web,OR
+5204,2024-03-26,162,112,1,0,18.5,delivered,web,WA
+5205,2024-03-26,126,102,1,0,15.08,delivered,retail store,OR
+5206,2024-03-27,81,101,2,0,97.04,delivered,web,MA
+5207,2024-03-28,130,110,1,0,38.46,delivered,web,MA
+5208,2024-03-28,2,104,1,0,28.12,delivered,retail store,WA
+5209,2024-03-28,111,112,6,0,111.0,shipped,mobile app,WA
+5210,2024-03-30,55,112,1,0,18.5,delivered,web,FL
+5211,2024-03-31,159,112,2,0,37.0,cancelled,mobile app,GA
+5212,2024-03-31,112,106,1,0,36.25,delivered,web,AZ
+5213,2024-04-01,169,111,1,0,34.12,cancelled,wholesale,IL
+5214,2024-04-02,133,108,2,15,101.49,cancelled,mobile app,OR
+5215,2024-04-02,48,108,1,0,59.7,returned,web,WA
+5216,2024-04-04,96,105,6,5,370.44,delivered,web,WA
+5217,2024-04-05,150,102,1,5,14.33,shipped,web,GA
+5218,2024-04-05,78,105,2,5,123.48,delivered,mobile app,GA
+5219,2024-04-07,162,113,1,5,24.18,delivered,retail store,WA
+5220,2024-04-08,14,101,4,10,174.67,delivered,mobile app,OR
+5221,2024-04-10,9,106,1,10,32.62,delivered,web,FL
+5222,2024-04-10,166,101,1,0,48.52,delivered,web,WA
+5223,2024-04-11,111,108,4,0,238.8,delivered,wholesale,WA
+5224,2024-04-11,160,113,1,0,25.45,delivered,web,AZ
+5225,2024-04-12,5,103,1,15,11.43,delivered,web,TX
+5226,2024-04-16,42,111,1,0,34.12,cancelled,web,TX
+5227,2024-04-16,113,112,2,0,37.0,delivered,web,OR
+5228,2024-04-16,39,107,3,15,159.91,delivered,wholesale,AZ
+5229,2024-04-16,109,109,1,0,85.04,shipped,wholesale,WA
+5230,2024-04-17,55,107,1,0,62.71,delivered,mobile app,FL
+5231,2024-04-18,78,112,2,0,37.0,delivered,web,GA
+5232,2024-04-19,63,108,4,0,238.8,delivered,mobile app,CO
+5233,2024-04-19,115,103,6,10,72.63,delivered,web,CA
+5234,2024-04-19,96,105,1,0,64.99,shipped,web,WA
+5235,2024-04-20,159,106,2,0,72.5,shipped,wholesale,GA
+5236,2024-04-21,169,107,1,0,62.71,shipped,retail store,IL
+5237,2024-04-22,54,108,1,5,56.72,delivered,web,AZ
+5238,2024-04-23,147,111,1,5,32.41,delivered,mobile app,MA
+5239,2024-04-25,159,111,1,15,29.0,cancelled,mobile app,GA
+5240,2024-04-26,9,113,1,5,24.18,shipped,wholesale,FL
+5241,2024-04-26,136,110,1,0,38.46,delivered,web,GA
+5242,2024-04-27,22,113,2,0,50.9,delivered,web,CO
+5243,2024-04-28,110,102,1,15,12.82,cancelled,mobile app,MA
+5244,2024-04-29,35,109,3,0,255.12,delivered,web,IL
+5245,2024-04-29,84,113,1,0,25.45,delivered,web,OR
+5246,2024-05-01,94,102,2,10,27.14,shipped,retail store,IL
+5247,2024-05-02,180,109,1,0,85.04,delivered,web,MA
+5248,2024-05-03,147,101,1,0,48.52,delivered,web,MA
+5249,2024-05-05,81,104,2,0,56.24,delivered,wholesale,MA
+5250,2024-05-05,89,111,2,5,64.83,delivered,mobile app,AZ
+5251,2024-05-06,35,102,1,0,15.08,shipped,web,IL
+5252,2024-05-07,159,105,2,10,116.98,delivered,retail store,GA
+5253,2024-05-08,7,110,2,0,76.92,delivered,web,TX
+5254,2024-05-09,38,111,1,0,34.12,delivered,web,CA
+5255,2024-05-09,137,102,2,0,30.16,delivered,mobile app,CA
+5256,2024-05-10,179,106,2,0,72.5,delivered,retail store,CA
+5257,2024-05-10,113,110,2,0,76.92,delivered,mobile app,OR
+5258,2024-05-11,159,112,2,15,31.45,delivered,mobile app,GA
+5259,2024-05-11,57,113,1,10,22.91,delivered,wholesale,CO
+5260,2024-05-13,130,102,1,0,15.08,delivered,web,MA
+5261,2024-05-14,48,112,1,5,17.57,shipped,mobile app,WA
+5262,2024-05-15,34,101,2,10,87.34,shipped,web,FL
+5263,2024-05-15,109,103,2,0,26.9,shipped,web,WA
+5264,2024-05-17,54,101,3,15,123.73,shipped,web,AZ
+5265,2024-05-17,112,111,1,0,34.12,delivered,web,AZ
+5266,2024-05-19,139,104,3,0,84.36,delivered,mobile app,AZ
+5267,2024-05-20,180,106,1,15,30.81,delivered,web,MA
+5268,2024-05-20,81,113,1,5,24.18,shipped,web,MA
+5269,2024-05-20,166,105,1,0,64.99,delivered,web,WA
+5270,2024-05-22,25,101,4,0,194.08,delivered,mobile app,MA
+5271,2024-05-22,140,101,1,0,48.52,delivered,wholesale,WA
+5272,2024-05-22,38,111,2,0,68.24,delivered,mobile app,CA
+5273,2024-05-24,163,103,6,0,80.7,delivered,web,WA
+5274,2024-05-24,66,101,1,0,48.52,delivered,web,MA
+5275,2024-05-24,123,106,1,15,30.81,delivered,web,GA
+5276,2024-05-25,109,102,1,0,15.08,shipped,mobile app,WA
+5277,2024-05-26,139,110,3,0,115.38,shipped,mobile app,AZ
+5278,2024-05-26,118,113,2,0,50.9,delivered,retail store,TX
+5279,2024-05-27,27,105,4,0,259.96,delivered,web,GA
+5280,2024-05-28,177,109,4,0,340.16,delivered,mobile app,FL
+5281,2024-05-29,128,112,1,0,18.5,shipped,web,CA
+5282,2024-06-01,84,112,2,5,35.15,delivered,mobile app,OR
+5283,2024-06-02,166,104,1,0,28.12,delivered,web,WA
+5284,2024-06-03,180,108,1,0,59.7,delivered,web,MA
+5285,2024-06-04,133,105,2,15,110.48,delivered,mobile app,OR
+5286,2024-06-07,2,113,4,0,101.8,delivered,mobile app,WA
+5287,2024-06-07,19,103,1,0,13.45,delivered,mobile app,OR
+5288,2024-06-08,31,110,2,10,69.23,delivered,web,FL
+5289,2024-06-08,141,110,1,5,36.54,delivered,web,FL
+5290,2024-06-09,54,112,1,0,18.5,delivered,web,AZ
+5291,2024-06-10,101,102,2,0,30.16,delivered,web,GA
+5292,2024-06-10,66,105,2,0,129.98,delivered,mobile app,MA
+5293,2024-06-12,149,104,1,0,28.12,delivered,mobile app,CA
+5294,2024-06-12,96,101,1,0,48.52,delivered,retail store,WA
+5295,2024-06-12,27,113,1,0,25.45,delivered,web,GA
+5296,2024-06-15,136,107,3,10,169.32,cancelled,mobile app,GA
+5297,2024-06-17,81,101,2,10,87.34,delivered,web,MA
+5298,2024-06-19,141,111,3,5,97.24,delivered,web,FL
+5299,2024-06-20,16,104,2,0,56.24,delivered,web,OR
+5300,2024-06-20,170,111,2,0,68.24,shipped,web,GA
+5301,2024-06-21,66,106,4,0,145.0,delivered,web,MA
+5302,2024-06-21,55,102,1,0,15.08,shipped,mobile app,FL
+5303,2024-06-23,126,102,2,15,25.64,delivered,retail store,OR
+5304,2024-06-24,14,113,1,0,25.45,delivered,mobile app,OR
+5305,2024-06-24,2,104,1,0,28.12,returned,mobile app,WA
+5306,2024-06-24,126,112,6,15,94.35,delivered,mobile app,OR
+5307,2024-06-25,76,109,1,15,72.28,delivered,retail store,GA
+5308,2024-06-29,138,109,1,0,85.04,delivered,mobile app,IL
+5309,2024-06-29,163,111,2,5,64.83,delivered,wholesale,WA
+5310,2024-06-29,17,104,6,10,151.85,delivered,mobile app,CA
+5311,2024-07-01,71,108,1,0,59.7,cancelled,retail store,GA
+5312,2024-07-02,100,102,3,10,40.72,delivered,web,WA
+5313,2024-07-03,96,111,2,0,68.24,delivered,mobile app,WA
+5314,2024-07-03,171,107,1,0,62.71,delivered,wholesale,CO
+5315,2024-07-05,133,108,1,0,59.7,delivered,mobile app,OR
+5316,2024-07-05,110,106,1,0,36.25,shipped,web,MA
+5317,2024-07-05,31,112,2,15,31.45,cancelled,mobile app,FL
+5318,2024-07-06,17,101,2,10,87.34,shipped,web,CA
+5319,2024-07-07,72,106,3,0,108.75,delivered,mobile app,TX
+5320,2024-07-11,133,107,1,0,62.71,delivered,wholesale,OR
+5321,2024-07-13,156,104,1,0,28.12,delivered,web,WA
+5322,2024-07-13,179,113,1,0,25.45,delivered,web,CA
+5323,2024-07-15,44,102,1,0,15.08,delivered,web,WA
+5324,2024-07-15,138,102,4,0,60.32,delivered,retail store,IL
+5325,2024-07-17,26,107,2,0,125.42,delivered,mobile app,AZ
+5326,2024-07-18,105,102,1,15,12.82,delivered,retail store,MA
+5327,2024-07-19,162,103,4,5,51.11,cancelled,mobile app,WA
+5328,2024-07-20,43,111,1,0,34.12,delivered,web,TX
+5329,2024-07-22,43,106,1,15,30.81,cancelled,web,TX
+5330,2024-07-22,17,108,2,5,113.43,cancelled,web,CA
+5331,2024-07-22,161,102,2,0,30.16,delivered,web,OR
+5332,2024-07-22,43,103,1,15,11.43,delivered,web,TX
+5333,2024-07-23,161,106,1,10,32.62,delivered,web,OR
+5334,2024-07-23,3,111,2,0,68.24,delivered,retail store,AZ
+5335,2024-07-25,25,113,1,0,25.45,delivered,web,MA
+5336,2024-07-25,88,102,1,0,15.08,returned,retail store,WA
+5337,2024-07-26,89,113,2,10,45.81,shipped,mobile app,AZ
+5338,2024-07-28,64,112,2,0,37.0,delivered,web,WA
+5339,2024-07-30,110,113,3,0,76.35,delivered,web,MA
+5340,2024-07-30,130,101,1,15,41.24,shipped,web,MA
+5341,2024-08-01,141,103,1,0,13.45,delivered,web,FL
+5342,2024-08-01,154,102,1,0,15.08,delivered,mobile app,GA
+5343,2024-08-02,1,109,1,15,72.28,delivered,web,OR
+5344,2024-08-03,2,105,2,0,129.98,delivered,mobile app,WA
+5345,2024-08-03,78,111,1,0,34.12,shipped,wholesale,GA
+5346,2024-08-03,128,110,1,0,38.46,delivered,web,CA
+5347,2024-08-04,139,111,1,0,34.12,shipped,web,AZ
+5348,2024-08-05,164,104,1,0,28.12,shipped,wholesale,CA
+5349,2024-08-05,110,102,1,5,14.33,delivered,mobile app,MA
+5350,2024-08-06,49,110,2,0,76.92,delivered,retail store,MA
+5351,2024-08-07,112,109,2,0,170.08,shipped,web,AZ
+5352,2024-08-07,85,109,1,0,85.04,delivered,web,TX
+5353,2024-08-08,69,113,3,0,76.35,delivered,web,OR
+5354,2024-08-08,162,102,1,0,15.08,delivered,mobile app,WA
+5355,2024-08-09,96,105,1,10,58.49,delivered,web,WA
+5356,2024-08-10,93,107,4,0,250.84,delivered,mobile app,IL
+5357,2024-08-11,167,112,2,0,37.0,delivered,mobile app,FL
+5358,2024-08-12,72,105,1,0,64.99,shipped,retail store,TX
+5359,2024-08-14,6,110,1,0,38.46,returned,web,MA
+5360,2024-08-14,91,111,1,0,34.12,delivered,web,CO
+5361,2024-08-15,126,104,1,0,28.12,delivered,mobile app,OR
+5362,2024-08-15,3,113,2,0,50.9,delivered,web,AZ
+5363,2024-08-15,113,111,2,0,68.24,delivered,web,OR
+5364,2024-08-17,49,103,1,0,13.45,delivered,web,MA
+5365,2024-08-18,133,103,1,0,13.45,delivered,retail store,OR
+5366,2024-08-18,11,106,4,15,123.25,delivered,mobile app,TX
+5367,2024-08-20,9,104,1,10,25.31,shipped,web,FL
+5368,2024-08-21,179,104,1,0,28.12,delivered,mobile app,CA
+5369,2024-08-21,137,109,2,0,170.08,delivered,web,CA
+5370,2024-08-23,95,109,1,5,80.79,delivered,web,OR
+5371,2024-08-25,93,101,1,0,48.52,cancelled,wholesale,IL
+5372,2024-08-27,134,105,2,0,129.98,delivered,wholesale,GA
+5373,2024-08-29,115,104,2,5,53.43,delivered,wholesale,CA
+5374,2024-08-30,69,107,2,15,106.61,delivered,web,OR
+5375,2024-08-31,49,109,1,10,76.54,delivered,web,MA
+5376,2024-08-31,75,103,1,0,13.45,shipped,mobile app,CO
+5377,2024-09-01,161,102,1,0,15.08,delivered,mobile app,OR
+5378,2024-09-01,123,108,1,5,56.72,delivered,web,GA
+5379,2024-09-01,35,108,1,15,50.75,cancelled,web,IL
+5380,2024-09-03,134,109,1,0,85.04,delivered,web,GA
+5381,2024-09-03,123,101,1,0,48.52,delivered,mobile app,GA
+5382,2024-09-03,39,103,1,0,13.45,delivered,web,AZ
+5383,2024-09-03,93,104,1,0,28.12,delivered,retail store,IL
+5384,2024-09-03,7,111,1,0,34.12,delivered,mobile app,TX
+5385,2024-09-06,162,111,1,0,34.12,delivered,mobile app,WA
+5386,2024-09-06,43,111,1,0,34.12,delivered,web,TX
+5387,2024-09-09,57,101,3,0,145.56,shipped,web,CO
+5388,2024-09-09,160,106,1,0,36.25,delivered,web,AZ
+5389,2024-09-09,129,104,2,0,56.24,delivered,web,CO
+5390,2024-09-10,84,113,1,0,25.45,delivered,mobile app,OR
+5391,2024-09-10,19,113,1,5,24.18,delivered,web,OR
+5392,2024-09-12,42,107,1,10,56.44,delivered,wholesale,TX
+5393,2024-09-13,106,106,1,10,32.62,delivered,mobile app,MA
+5394,2024-09-14,154,104,4,0,112.48,delivered,web,GA
+5395,2024-09-15,123,106,2,10,65.25,shipped,retail store,GA
+5396,2024-09-16,81,102,1,0,15.08,returned,wholesale,MA
+5397,2024-09-18,16,104,4,5,106.86,delivered,retail store,OR
+5398,2024-09-19,26,110,4,0,153.84,shipped,mobile app,AZ
+5399,2024-09-19,17,111,1,15,29.0,shipped,web,CA
+5400,2024-09-20,42,112,1,0,18.5,delivered,web,TX
+5401,2024-09-21,65,113,1,5,24.18,shipped,mobile app,TX
+5402,2024-09-21,134,106,1,10,32.62,returned,wholesale,GA
+5403,2024-09-23,57,102,3,0,45.24,returned,web,CO
+5404,2024-09-23,43,112,2,0,37.0,delivered,web,TX
+5405,2024-09-25,83,113,1,10,22.91,delivered,web,MA
+5406,2024-09-26,17,107,6,5,357.45,delivered,web,CA
+5407,2024-09-26,84,109,3,0,255.12,delivered,web,OR
+5408,2024-09-26,48,109,1,0,85.04,delivered,web,WA
+5409,2024-09-26,27,104,2,0,56.24,delivered,mobile app,GA
+5410,2024-09-28,153,102,1,15,12.82,delivered,web,IL
+5411,2024-09-28,160,106,1,0,36.25,delivered,web,AZ
+5412,2024-09-28,101,103,2,0,26.9,delivered,web,GA
+5413,2024-09-29,9,110,1,5,36.54,delivered,web,FL
+5414,2024-09-30,94,104,3,0,84.36,shipped,web,IL
+5415,2024-10-02,170,105,1,0,64.99,delivered,web,GA
+5416,2024-10-02,89,103,1,0,13.45,delivered,web,AZ
+5417,2024-10-05,106,112,1,5,17.57,returned,web,MA
+5418,2024-10-06,19,110,1,10,34.61,delivered,web,OR
+5419,2024-10-07,157,102,3,0,45.24,shipped,web,CA
+5420,2024-10-08,138,110,2,15,65.38,delivered,mobile app,IL
+5421,2024-10-08,13,111,1,0,34.12,cancelled,retail store,WA
+5422,2024-10-08,34,112,4,0,74.0,delivered,wholesale,FL
+5423,2024-10-10,48,110,2,0,76.92,delivered,mobile app,WA
+5424,2024-10-11,34,102,1,15,12.82,delivered,mobile app,FL
+5425,2024-10-13,163,104,4,10,101.23,delivered,web,WA
+5426,2024-10-13,99,107,1,15,53.3,shipped,web,GA
+5427,2024-10-14,133,101,2,15,82.48,delivered,mobile app,OR
+5428,2024-10-15,72,108,1,5,56.72,delivered,web,TX
+5429,2024-10-15,123,112,1,15,15.72,shipped,mobile app,GA
+5430,2024-10-15,113,103,3,0,40.35,delivered,wholesale,OR
+5431,2024-10-15,54,113,6,0,152.7,delivered,web,AZ
+5432,2024-10-18,31,104,1,0,28.12,delivered,wholesale,FL
+5433,2024-10-19,140,104,1,5,26.71,delivered,web,WA
+5434,2024-10-20,35,104,2,10,50.62,delivered,web,IL
+5435,2024-10-21,19,102,1,15,12.82,delivered,web,OR
+5436,2024-10-22,128,113,1,0,25.45,delivered,web,CA
+5437,2024-10-22,177,109,1,15,72.28,delivered,web,FL
+5438,2024-10-22,27,108,3,10,161.19,delivered,web,GA
+5439,2024-10-23,83,104,1,10,25.31,delivered,web,MA
+5440,2024-10-24,155,109,1,0,85.04,delivered,web,WA
+5441,2024-10-25,101,112,3,0,55.5,cancelled,web,GA
+5442,2024-10-25,84,107,2,0,125.42,delivered,web,OR
+5443,2024-10-26,180,101,1,10,43.67,delivered,wholesale,MA
+5444,2024-10-26,84,103,1,10,12.11,shipped,mobile app,OR
+5445,2024-10-27,169,106,1,5,34.44,delivered,web,IL
+5446,2024-10-29,101,108,1,0,59.7,delivered,retail store,GA
+5447,2024-10-30,93,102,2,0,30.16,returned,web,IL
+5448,2024-10-31,174,107,1,0,62.71,delivered,retail store,IL
+5449,2024-10-31,163,106,2,5,68.88,delivered,wholesale,WA
+5450,2024-11-01,167,107,1,10,56.44,shipped,mobile app,FL
+5451,2024-11-02,88,107,2,15,106.61,delivered,web,WA
+5452,2024-11-02,81,105,1,10,58.49,returned,mobile app,MA
+5453,2024-11-02,104,106,1,5,34.44,shipped,wholesale,GA
+5454,2024-11-04,118,108,1,10,53.73,delivered,mobile app,TX
+5455,2024-11-04,136,102,2,0,30.16,delivered,web,GA
+5456,2024-11-04,94,111,2,0,68.24,delivered,mobile app,IL
+5457,2024-11-05,109,111,1,5,32.41,delivered,mobile app,WA
+5458,2024-11-05,40,107,3,0,188.13,delivered,wholesale,AZ
+5459,2024-11-06,94,104,3,0,84.36,shipped,web,IL
+5460,2024-11-06,2,105,2,0,129.98,returned,web,WA
+5461,2024-11-06,105,111,2,0,68.24,delivered,web,MA
+5462,2024-11-06,75,104,2,0,56.24,delivered,retail store,CO
+5463,2024-11-07,40,111,1,0,34.12,shipped,mobile app,AZ
+5464,2024-11-08,164,113,2,0,50.9,delivered,mobile app,CA
+5465,2024-11-09,133,105,1,15,55.24,delivered,retail store,OR
+5466,2024-11-11,49,109,1,0,85.04,delivered,mobile app,MA
+5467,2024-11-11,78,110,6,0,230.76,shipped,mobile app,GA
+5468,2024-11-12,6,104,1,10,25.31,delivered,mobile app,MA
+5469,2024-11-12,25,105,1,0,64.99,returned,web,MA
+5470,2024-11-13,174,112,1,10,16.65,delivered,web,IL
+5471,2024-11-13,16,107,1,15,53.3,shipped,mobile app,OR
+5472,2024-11-13,26,102,2,15,25.64,shipped,mobile app,AZ
+5473,2024-11-14,136,108,1,0,59.7,delivered,web,GA
+5474,2024-11-14,167,102,2,0,30.16,delivered,web,FL
+5475,2024-11-15,161,112,1,0,18.5,delivered,mobile app,OR
+5476,2024-11-17,64,107,3,0,188.13,delivered,web,WA
+5477,2024-11-17,49,101,3,15,123.73,delivered,web,MA
+5478,2024-11-18,167,112,2,0,37.0,delivered,web,FL
+5479,2024-11-19,46,108,1,15,50.75,delivered,web,FL
+5480,2024-11-21,75,104,1,0,28.12,delivered,web,CO
+5481,2024-11-23,63,113,2,10,45.81,delivered,web,CO
+5482,2024-11-23,76,113,1,0,25.45,delivered,mobile app,GA
+5483,2024-11-24,38,105,2,0,129.98,delivered,mobile app,CA
+5484,2024-11-25,30,108,1,0,59.7,delivered,mobile app,GA
+5485,2024-11-25,48,107,2,0,125.42,delivered,wholesale,WA
+5486,2024-11-26,156,112,1,0,18.5,returned,web,WA
+5487,2024-11-27,54,110,1,0,38.46,delivered,mobile app,AZ
+5488,2024-11-27,81,106,2,0,72.5,delivered,web,MA
+5489,2024-11-28,164,107,2,0,125.42,delivered,web,CA
+5490,2024-11-28,42,106,1,0,36.25,delivered,web,TX
+5491,2024-11-29,143,103,1,5,12.78,delivered,web,CO
+5492,2024-11-29,133,102,1,0,15.08,delivered,web,OR
+5493,2024-11-29,96,105,1,0,64.99,delivered,mobile app,WA
+5494,2024-11-30,81,108,1,10,53.73,returned,mobile app,MA
+5495,2024-12-01,170,109,1,0,85.04,delivered,mobile app,GA
+5496,2024-12-03,115,113,3,0,76.35,delivered,wholesale,CA
+5497,2024-12-04,166,104,1,5,26.71,delivered,web,WA
+5498,2024-12-06,167,101,1,15,41.24,shipped,web,FL
+5499,2024-12-07,56,105,2,0,129.98,delivered,mobile app,IL
+5500,2024-12-07,44,107,2,10,112.88,delivered,mobile app,WA
+5501,2024-12-07,5,104,1,15,23.9,delivered,mobile app,TX
+5502,2024-12-08,62,113,4,0,101.8,shipped,mobile app,MA
+5503,2024-12-09,128,104,4,15,95.61,shipped,web,CA
+5504,2024-12-09,43,101,4,0,194.08,delivered,web,TX
+5505,2024-12-10,176,103,1,0,13.45,delivered,mobile app,CA
+5506,2024-12-10,179,103,1,0,13.45,delivered,mobile app,CA
+5507,2024-12-12,104,103,1,0,13.45,delivered,mobile app,GA
+5508,2024-12-13,115,104,1,5,26.71,delivered,web,CA
+5509,2024-12-13,3,112,1,0,18.5,delivered,web,AZ
+5510,2024-12-13,163,106,1,0,36.25,delivered,web,WA
+5511,2024-12-14,84,113,6,0,152.7,delivered,mobile app,OR
+5512,2024-12-14,136,104,1,0,28.12,cancelled,web,GA
+5513,2024-12-15,160,103,3,5,38.33,shipped,web,AZ
+5514,2024-12-16,97,111,1,0,34.12,cancelled,web,WA
+5515,2024-12-19,14,104,2,0,56.24,returned,mobile app,OR
+5516,2024-12-19,170,112,2,5,35.15,delivered,retail store,GA
+5517,2024-12-20,99,107,2,10,112.88,delivered,mobile app,GA
+5518,2024-12-20,75,110,1,5,36.54,delivered,mobile app,CO
+5519,2024-12-21,17,112,1,0,18.5,delivered,web,CA
+5520,2024-12-21,111,103,2,0,26.9,shipped,web,WA
+5521,2024-12-21,6,103,1,5,12.78,delivered,wholesale,MA
+5522,2024-12-22,170,105,4,0,259.96,delivered,web,GA
+5523,2024-12-22,44,111,1,0,34.12,shipped,wholesale,WA
+5524,2024-12-22,43,101,3,0,145.56,delivered,wholesale,TX
+5525,2024-12-23,106,109,1,0,85.04,delivered,wholesale,MA
+5526,2024-12-23,71,113,2,15,43.27,delivered,web,GA
+5527,2024-12-24,141,104,6,0,168.72,delivered,web,FL
+5528,2024-12-24,72,111,3,0,102.36,delivered,web,TX
+5529,2024-12-25,133,113,1,0,25.45,delivered,web,OR
+5530,2024-12-25,30,102,6,0,90.48,returned,web,GA
+5531,2024-12-26,175,111,1,0,34.12,shipped,web,GA
+5532,2024-12-27,3,113,1,0,25.45,delivered,mobile app,AZ
+5533,2024-12-27,166,106,1,15,30.81,delivered,web,WA
+5534,2024-12-28,44,105,3,15,165.72,shipped,wholesale,WA
+5535,2024-12-29,105,107,2,5,119.15,delivered,web,MA
+5536,2024-12-30,43,105,4,0,259.96,delivered,mobile app,TX
+5537,2024-12-31,84,105,1,5,61.74,delivered,web,OR
+5538,2025-01-01,131,103,4,5,51.11,cancelled,web,IL
+5539,2025-01-04,174,112,1,5,17.57,delivered,web,IL
+5540,2025-01-05,163,108,2,0,119.4,delivered,wholesale,WA
+5541,2025-01-06,1,110,1,5,36.54,delivered,mobile app,OR
+5542,2025-01-06,173,106,4,0,145.0,delivered,web,WA
+5543,2025-01-07,131,102,2,0,30.16,delivered,web,IL
+5544,2025-01-07,93,112,1,0,18.5,delivered,mobile app,IL
+5545,2025-01-07,180,102,1,5,14.33,shipped,web,MA
+5546,2025-01-08,59,108,2,10,107.46,shipped,web,CO
+5547,2025-01-08,47,105,1,0,64.99,delivered,wholesale,FL
+5548,2025-01-09,91,103,1,0,13.45,returned,web,CO
+5549,2025-01-11,24,106,1,15,30.81,delivered,wholesale,CO
+5550,2025-01-11,170,103,1,0,13.45,shipped,wholesale,GA
+5551,2025-01-13,13,107,4,0,250.84,delivered,retail store,WA
+5552,2025-01-15,57,106,1,0,36.25,returned,mobile app,CO
+5553,2025-01-16,16,108,2,0,119.4,delivered,mobile app,OR
+5554,2025-01-16,153,112,1,0,18.5,delivered,web,IL
+5555,2025-01-16,143,105,2,10,116.98,shipped,web,CO
+5556,2025-01-17,137,101,4,0,194.08,delivered,web,CA
+5557,2025-01-19,25,108,1,0,59.7,delivered,web,MA
+5558,2025-01-21,141,108,1,0,59.7,delivered,mobile app,FL
+5559,2025-01-21,26,104,3,0,84.36,delivered,mobile app,AZ
+5560,2025-01-21,5,109,1,5,80.79,delivered,web,TX
+5561,2025-01-22,59,102,1,0,15.08,delivered,retail store,CO
+5562,2025-01-24,89,112,2,0,37.0,delivered,mobile app,AZ
+5563,2025-01-27,78,105,4,5,246.96,delivered,web,GA
+5564,2025-01-28,152,109,1,0,85.04,delivered,web,TX
+5565,2025-01-29,55,108,1,0,59.7,shipped,retail store,FL
+5566,2025-02-01,76,105,2,0,129.98,delivered,mobile app,GA
+5567,2025-02-01,149,106,2,0,72.5,delivered,mobile app,CA
+5568,2025-02-02,131,102,2,0,30.16,delivered,web,IL
+5569,2025-02-03,81,103,1,0,13.45,delivered,web,MA
+5570,2025-02-03,151,109,1,5,80.79,returned,wholesale,WA
+5571,2025-02-05,91,110,1,0,38.46,shipped,retail store,CO
+5572,2025-02-05,109,108,2,10,107.46,shipped,mobile app,WA
+5573,2025-02-05,49,101,1,5,46.09,delivered,retail store,MA
+5574,2025-02-06,65,106,1,10,32.62,delivered,wholesale,TX
+5575,2025-02-07,55,104,1,10,25.31,delivered,web,FL
+5576,2025-02-08,130,106,1,0,36.25,cancelled,web,MA
+5577,2025-02-09,151,101,3,5,138.28,shipped,mobile app,WA
+5578,2025-02-11,87,106,1,0,36.25,delivered,web,AZ
+5579,2025-02-12,124,101,1,15,41.24,delivered,retail store,TX
+5580,2025-02-12,24,109,2,15,144.57,shipped,web,CO
+5581,2025-02-12,17,107,1,10,56.44,delivered,web,CA
+5582,2025-02-12,39,101,1,0,48.52,cancelled,mobile app,AZ
+5583,2025-02-13,19,101,2,0,97.04,delivered,mobile app,OR
+5584,2025-02-14,139,109,2,0,170.08,delivered,web,AZ
+5585,2025-02-15,154,105,1,0,64.99,shipped,web,GA
+5586,2025-02-15,17,113,1,0,25.45,cancelled,web,CA
+5587,2025-02-16,175,112,1,0,18.5,delivered,web,GA
+5588,2025-02-17,124,113,3,0,76.35,delivered,web,TX
+5589,2025-02-18,130,112,3,10,49.95,returned,mobile app,MA
+5590,2025-02-19,52,101,2,5,92.19,shipped,wholesale,MA
+5591,2025-02-19,134,108,2,15,101.49,delivered,mobile app,GA
+5592,2025-02-19,8,102,2,5,28.65,delivered,mobile app,AZ
+5593,2025-02-21,137,102,1,5,14.33,shipped,web,CA
+5594,2025-02-21,110,106,2,0,72.5,delivered,web,MA
+5595,2025-02-22,65,105,1,0,64.99,delivered,web,TX
+5596,2025-02-22,137,113,2,0,50.9,delivered,web,CA
+5597,2025-02-23,177,107,1,0,62.71,shipped,web,FL
+5598,2025-02-24,180,105,2,0,129.98,shipped,mobile app,MA
+5599,2025-02-24,88,112,1,10,16.65,delivered,web,WA
+5600,2025-02-25,22,105,2,0,129.98,shipped,mobile app,CO
+5601,2025-02-25,55,106,3,0,108.75,returned,web,FL
+5602,2025-02-26,61,106,2,0,72.5,shipped,web,OR
+5603,2025-02-27,58,110,3,15,98.07,shipped,mobile app,MA
+5604,2025-02-28,21,105,2,0,129.98,delivered,web,WA
+5605,2025-03-01,17,108,1,0,59.7,returned,web,CA
+5606,2025-03-02,177,106,1,10,32.62,delivered,web,FL
+5607,2025-03-02,49,110,1,0,38.46,delivered,mobile app,MA
+5608,2025-03-02,162,104,1,5,26.71,delivered,web,WA
+5609,2025-03-02,165,113,6,10,137.43,delivered,mobile app,MA
+5610,2025-03-02,142,105,2,15,110.48,delivered,web,FL
+5611,2025-03-02,136,105,4,0,259.96,shipped,retail store,GA
+5612,2025-03-04,8,104,2,0,56.24,delivered,web,AZ
+5613,2025-03-05,155,104,1,10,25.31,delivered,mobile app,WA
+5614,2025-03-06,81,102,1,0,15.08,delivered,mobile app,MA
+5615,2025-03-06,62,113,1,5,24.18,delivered,mobile app,MA
+5616,2025-03-07,158,105,1,5,61.74,returned,web,WA
+5617,2025-03-07,38,111,1,0,34.12,delivered,web,CA
+5618,2025-03-08,59,105,4,10,233.96,returned,mobile app,CO
+5619,2025-03-08,79,113,1,0,25.45,delivered,retail store,CO
+5620,2025-03-09,116,102,2,15,25.64,delivered,web,TX
+5621,2025-03-10,30,106,1,0,36.25,delivered,web,GA
+5622,2025-03-10,48,111,1,0,34.12,delivered,mobile app,WA
+5623,2025-03-11,28,101,1,0,48.52,delivered,mobile app,AZ
+5624,2025-03-11,100,110,2,15,65.38,delivered,web,WA
+5625,2025-03-11,166,106,1,15,30.81,cancelled,mobile app,WA
+5626,2025-03-12,159,113,3,15,64.9,returned,web,GA
+5627,2025-03-12,77,104,2,0,56.24,delivered,web,GA
+5628,2025-03-12,109,104,2,5,53.43,delivered,web,WA
+5629,2025-03-13,58,102,3,10,40.72,delivered,web,MA
+5630,2025-03-14,80,104,1,0,28.12,shipped,web,CA
+5631,2025-03-14,60,111,4,10,122.83,cancelled,web,TX
+5632,2025-03-15,13,107,1,0,62.71,delivered,wholesale,WA
+5633,2025-03-16,48,112,1,5,17.57,delivered,web,WA
+5634,2025-03-16,21,101,2,0,97.04,delivered,wholesale,WA
+5635,2025-03-16,167,109,1,0,85.04,shipped,web,FL
+5636,2025-03-17,77,113,2,0,50.9,delivered,mobile app,GA
+5637,2025-03-17,63,103,2,0,26.9,delivered,mobile app,CO
+5638,2025-03-18,14,107,1,0,62.71,delivered,web,OR
+5639,2025-03-19,180,103,1,0,13.45,delivered,web,MA
+5640,2025-03-20,69,103,1,10,12.11,delivered,web,OR
+5641,2025-03-21,149,108,4,10,214.92,returned,web,CA
+5642,2025-03-21,7,104,1,0,28.12,returned,mobile app,TX
+5643,2025-03-23,102,104,2,10,50.62,cancelled,web,CO
+5644,2025-03-24,158,104,1,0,28.12,delivered,web,WA
+5645,2025-03-24,15,113,1,5,24.18,delivered,web,AZ
+5646,2025-03-25,165,103,1,15,11.43,returned,mobile app,MA
+5647,2025-03-25,60,111,2,0,68.24,delivered,web,TX
+5648,2025-03-25,76,109,2,15,144.57,shipped,web,GA
+5649,2025-03-25,147,106,2,5,68.88,delivered,mobile app,MA
+5650,2025-03-26,77,113,3,0,76.35,returned,mobile app,GA
+5651,2025-03-28,11,103,1,0,13.45,shipped,wholesale,TX
+5652,2025-03-28,95,112,1,15,15.72,delivered,wholesale,OR
+5653,2025-03-29,94,104,1,15,23.9,shipped,web,IL
+5654,2025-03-29,131,104,2,0,56.24,delivered,web,IL
+5655,2025-03-29,22,107,1,0,62.71,cancelled,web,CO
+5656,2025-03-30,141,112,1,10,16.65,delivered,mobile app,FL
+5657,2025-03-31,90,106,1,0,36.25,returned,web,IL
+5658,2025-04-01,11,101,2,10,87.34,delivered,mobile app,TX
+5659,2025-04-01,43,103,1,0,13.45,delivered,web,TX
+5660,2025-04-04,106,102,2,0,30.16,delivered,mobile app,MA
+5661,2025-04-05,155,110,1,5,36.54,delivered,wholesale,WA
+5662,2025-04-05,169,102,2,15,25.64,cancelled,mobile app,IL
+5663,2025-04-07,52,109,1,15,72.28,delivered,mobile app,MA
+5664,2025-04-07,149,103,1,15,11.43,delivered,web,CA
+5665,2025-04-08,77,111,2,0,68.24,cancelled,web,GA
+5666,2025-04-09,174,112,2,0,37.0,delivered,web,IL
+5667,2025-04-09,127,110,1,15,32.69,shipped,mobile app,MA
+5668,2025-04-09,69,107,1,10,56.44,delivered,mobile app,OR
+5669,2025-04-10,104,101,4,0,194.08,shipped,wholesale,GA
+5670,2025-04-10,125,104,1,5,26.71,shipped,web,GA
+5671,2025-04-11,16,106,1,0,36.25,cancelled,wholesale,OR
+5672,2025-04-12,151,106,1,15,30.81,delivered,web,WA
+5673,2025-04-12,152,110,1,15,32.69,delivered,wholesale,TX
+5674,2025-04-14,177,106,2,5,68.88,delivered,wholesale,FL
+5675,2025-04-15,25,104,2,10,50.62,delivered,web,MA
+5676,2025-04-20,159,104,2,0,56.24,delivered,web,GA
+5677,2025-04-22,43,105,1,0,64.99,returned,web,TX
+5678,2025-04-23,36,108,2,0,119.4,shipped,wholesale,TX
+5679,2025-04-26,55,109,1,0,85.04,delivered,retail store,FL
+5680,2025-04-26,64,112,6,0,111.0,delivered,mobile app,WA
+5681,2025-04-26,78,106,2,0,72.5,returned,mobile app,GA
+5682,2025-04-26,106,102,3,0,45.24,delivered,mobile app,MA
+5683,2025-04-26,78,105,1,10,58.49,shipped,retail store,GA
+5684,2025-04-28,14,111,1,0,34.12,cancelled,mobile app,OR
+5685,2025-04-28,162,111,1,0,34.12,delivered,mobile app,WA
+5686,2025-04-30,5,111,2,10,61.42,delivered,web,TX
+5687,2025-04-30,26,101,1,0,48.52,delivered,web,AZ
+5688,2025-04-30,61,107,4,0,250.84,delivered,mobile app,OR
+5689,2025-04-30,111,107,1,10,56.44,delivered,mobile app,WA
+5690,2025-05-01,175,110,1,15,32.69,cancelled,web,GA
+5691,2025-05-04,24,111,2,15,58.0,returned,mobile app,CO
+5692,2025-05-06,61,106,1,0,36.25,shipped,web,OR
+5693,2025-05-06,93,103,3,0,40.35,delivered,wholesale,IL
+5694,2025-05-06,29,113,2,0,50.9,delivered,web,WA
+5695,2025-05-07,11,110,1,0,38.46,delivered,mobile app,TX
+5696,2025-05-07,122,104,2,0,56.24,delivered,web,MA
+5697,2025-05-09,16,109,3,0,255.12,delivered,mobile app,OR
+5698,2025-05-10,161,101,1,10,43.67,delivered,retail store,OR
+5699,2025-05-10,29,105,2,10,116.98,delivered,mobile app,WA
+5700,2025-05-11,63,108,3,0,179.1,delivered,mobile app,CO
+5701,2025-05-11,56,109,1,15,72.28,delivered,web,IL
+5702,2025-05-12,164,102,1,0,15.08,shipped,web,CA
+5703,2025-05-14,16,103,1,10,12.11,delivered,mobile app,OR
+5704,2025-05-14,171,104,6,0,168.72,shipped,web,CO
+5705,2025-05-15,176,107,1,0,62.71,returned,mobile app,CA
+5706,2025-05-15,61,112,3,10,49.95,cancelled,retail store,OR
+5707,2025-05-17,116,111,4,0,136.48,shipped,mobile app,TX
+5708,2025-05-17,111,113,1,0,25.45,shipped,mobile app,WA
+5709,2025-05-18,24,103,1,0,13.45,delivered,mobile app,CO
+5710,2025-05-19,174,113,1,15,21.63,shipped,mobile app,IL
+5711,2025-05-20,117,106,1,0,36.25,delivered,web,OR
+5712,2025-05-22,174,104,3,0,84.36,shipped,mobile app,IL
+5713,2025-05-22,88,101,1,5,46.09,delivered,web,WA
+5714,2025-05-23,84,104,1,0,28.12,shipped,retail store,OR
+5715,2025-05-25,136,101,3,15,123.73,shipped,mobile app,GA
+5716,2025-05-25,148,106,1,15,30.81,delivered,retail store,OR
+5717,2025-05-27,122,103,1,0,13.45,delivered,mobile app,MA
+5718,2025-05-27,79,111,2,10,61.42,shipped,web,CO
+5719,2025-05-28,91,102,2,10,27.14,delivered,web,CO
+5720,2025-05-28,34,106,3,0,108.75,delivered,web,FL
+5721,2025-05-28,34,109,1,0,85.04,delivered,web,FL
+5722,2025-05-29,59,102,1,0,15.08,delivered,web,CO
+5723,2025-05-30,64,113,2,0,50.9,shipped,web,WA
+5724,2025-05-30,49,109,1,0,85.04,delivered,mobile app,MA
+5725,2025-05-31,116,109,1,0,85.04,delivered,web,TX
+5726,2025-05-31,26,107,1,10,56.44,delivered,wholesale,AZ
+5727,2025-05-31,66,105,1,10,58.49,delivered,web,MA
+5728,2025-06-03,109,108,1,15,50.75,shipped,mobile app,WA
+5729,2025-06-03,147,109,4,10,306.14,delivered,retail store,MA
+5730,2025-06-05,161,102,6,0,90.48,delivered,web,OR
+5731,2025-06-05,103,102,3,0,45.24,delivered,web,TX
+5732,2025-06-05,124,111,2,0,68.24,delivered,web,TX
+5733,2025-06-06,162,107,1,10,56.44,delivered,web,WA
+5734,2025-06-06,84,101,2,0,97.04,delivered,web,OR
+5735,2025-06-08,151,103,1,15,11.43,shipped,web,WA
+5736,2025-06-10,99,103,1,0,13.45,delivered,retail store,GA
+5737,2025-06-10,60,109,1,0,85.04,delivered,retail store,TX
+5738,2025-06-11,87,104,1,0,28.12,delivered,web,AZ
+5739,2025-06-13,102,112,1,10,16.65,delivered,web,CO
+5740,2025-06-13,129,105,1,0,64.99,cancelled,web,CO
+5741,2025-06-16,56,104,2,15,47.8,cancelled,mobile app,IL
+5742,2025-06-16,48,101,1,0,48.52,shipped,mobile app,WA
+5743,2025-06-17,93,107,1,5,59.57,delivered,mobile app,IL
+5744,2025-06-19,176,113,1,10,22.91,delivered,web,CA
+5745,2025-06-20,20,109,6,0,510.24,delivered,retail store,WA
+5746,2025-06-21,109,112,6,0,111.0,delivered,web,WA
+5747,2025-06-21,60,105,1,0,64.99,shipped,retail store,TX
+5748,2025-06-23,60,106,2,0,72.5,delivered,mobile app,TX
+5749,2025-06-24,7,111,1,15,29.0,shipped,web,TX
+5750,2025-06-25,54,102,1,10,13.57,cancelled,web,AZ
+5751,2025-06-26,166,107,3,0,188.13,delivered,mobile app,WA
+5752,2025-06-26,59,106,2,0,72.5,delivered,web,CO
+5753,2025-06-27,59,107,1,10,56.44,shipped,web,CO
+5754,2025-06-28,23,101,1,0,48.52,delivered,wholesale,WA
+5755,2025-06-29,21,109,1,15,72.28,delivered,web,WA
+5756,2025-06-30,34,102,2,0,30.16,delivered,web,FL
+5757,2025-06-30,18,108,1,0,59.7,shipped,mobile app,WA
+5758,2025-06-30,79,105,1,15,55.24,delivered,mobile app,CO
+5759,2025-07-02,174,111,1,10,30.71,delivered,mobile app,IL
+5760,2025-07-03,125,101,1,0,48.52,delivered,web,GA
+5761,2025-07-03,156,106,4,0,145.0,delivered,web,WA
+5762,2025-07-03,55,112,3,10,49.95,delivered,web,FL
+5763,2025-07-03,158,113,3,10,68.72,shipped,mobile app,WA
+5764,2025-07-04,167,102,2,0,30.16,shipped,retail store,FL
+5765,2025-07-05,162,111,4,5,129.66,shipped,web,WA
+5766,2025-07-05,69,113,1,0,25.45,delivered,retail store,OR
+5767,2025-07-06,51,109,1,5,80.79,delivered,web,GA
+5768,2025-07-06,93,109,4,10,306.14,delivered,mobile app,IL
+5769,2025-07-06,23,102,1,5,14.33,returned,wholesale,WA
+5770,2025-07-08,106,108,2,10,107.46,delivered,mobile app,MA
+5771,2025-07-10,136,110,4,15,130.76,shipped,mobile app,GA
+5772,2025-07-12,1,101,1,0,48.52,delivered,retail store,OR
+5773,2025-07-12,62,104,1,15,23.9,shipped,mobile app,MA
+5774,2025-07-13,180,104,1,10,25.31,delivered,web,MA
+5775,2025-07-14,15,109,1,0,85.04,shipped,web,AZ
+5776,2025-07-15,106,110,2,0,76.92,delivered,mobile app,MA
+5777,2025-07-16,139,103,2,5,25.55,delivered,mobile app,AZ
+5778,2025-07-18,122,102,3,0,45.24,returned,web,MA
+5779,2025-07-19,30,112,1,0,18.5,delivered,web,GA
+5780,2025-07-19,66,112,2,0,37.0,delivered,retail store,MA
+5781,2025-07-20,24,109,1,5,80.79,delivered,retail store,CO
+5782,2025-07-20,180,113,1,5,24.18,cancelled,mobile app,MA
+5783,2025-07-22,60,107,1,0,62.71,delivered,web,TX
+5784,2025-07-24,36,113,2,0,50.9,delivered,web,TX
+5785,2025-07-24,110,109,3,0,255.12,delivered,wholesale,MA
+5786,2025-07-25,66,102,2,0,30.16,delivered,web,MA
+5787,2025-07-25,53,107,4,0,250.84,shipped,web,MA
+5788,2025-07-26,53,107,3,10,169.32,delivered,mobile app,MA
+5789,2025-07-26,36,103,1,0,13.45,shipped,web,TX
+5790,2025-07-29,85,112,1,10,16.65,returned,retail store,TX
+5791,2025-07-31,117,111,2,10,61.42,delivered,web,OR
+5792,2025-07-31,8,104,1,0,28.12,delivered,mobile app,AZ
+5793,2025-08-01,119,107,2,0,125.42,delivered,web,IL
+5794,2025-08-03,145,106,1,0,36.25,delivered,web,WA
+5795,2025-08-04,88,107,1,0,62.71,delivered,mobile app,WA
+5796,2025-08-05,25,113,2,10,45.81,delivered,mobile app,MA
+5797,2025-08-06,122,103,1,15,11.43,delivered,mobile app,MA
+5798,2025-08-09,78,106,1,0,36.25,delivered,web,GA
+5799,2025-08-09,32,103,1,5,12.78,delivered,web,IL
+5800,2025-08-10,9,113,1,0,25.45,shipped,web,FL
+5801,2025-08-11,164,113,1,0,25.45,shipped,web,CA
+5802,2025-08-11,99,111,1,10,30.71,returned,web,GA
+5803,2025-08-11,111,111,3,0,102.36,delivered,web,WA
+5804,2025-08-11,151,104,2,5,53.43,delivered,web,WA
+5805,2025-08-12,12,108,2,0,119.4,delivered,web,WA
+5806,2025-08-12,84,108,1,15,50.75,returned,mobile app,OR
+5807,2025-08-13,155,105,1,5,61.74,delivered,web,WA
+5808,2025-08-14,37,112,1,0,18.5,delivered,mobile app,AZ
+5809,2025-08-14,77,108,6,15,304.47,delivered,web,GA
+5810,2025-08-16,87,107,6,0,376.26,delivered,wholesale,AZ
+5811,2025-08-17,29,103,1,0,13.45,delivered,mobile app,WA
+5812,2025-08-17,167,102,2,0,30.16,delivered,web,FL
+5813,2025-08-17,52,112,1,5,17.57,delivered,web,MA
+5814,2025-08-19,56,113,2,5,48.35,delivered,retail store,IL
+5815,2025-08-20,142,107,2,0,125.42,cancelled,mobile app,FL
+5816,2025-08-20,131,112,4,0,74.0,delivered,wholesale,IL
+5817,2025-08-21,161,105,2,10,116.98,delivered,web,OR
+5818,2025-08-22,116,103,6,0,80.7,delivered,mobile app,TX
+5819,2025-08-23,26,110,1,10,34.61,returned,mobile app,AZ
+5820,2025-08-23,147,113,2,5,48.35,shipped,retail store,MA
+5821,2025-08-24,89,105,2,0,129.98,delivered,web,AZ
+5822,2025-08-25,21,108,3,0,179.1,shipped,retail store,WA
+5823,2025-08-28,8,101,3,0,145.56,delivered,web,AZ
+5824,2025-08-29,29,103,1,10,12.11,delivered,mobile app,WA
+5825,2025-08-30,146,111,3,10,92.12,delivered,retail store,MA
+5826,2025-08-30,105,111,1,0,34.12,delivered,web,MA
+5827,2025-09-01,155,109,3,5,242.36,delivered,mobile app,WA
+5828,2025-09-01,16,113,4,5,96.71,shipped,mobile app,OR
+5829,2025-09-05,18,109,2,10,153.07,shipped,wholesale,WA
+5830,2025-09-06,99,111,1,0,34.12,delivered,web,GA
+5831,2025-09-07,157,101,4,0,194.08,delivered,wholesale,CA
+5832,2025-09-07,21,108,1,10,53.73,delivered,web,WA
+5833,2025-09-07,158,107,1,0,62.71,delivered,web,WA
+5834,2025-09-09,54,102,1,5,14.33,delivered,mobile app,AZ
+5835,2025-09-09,131,103,4,5,51.11,delivered,web,IL
+5836,2025-09-09,174,110,1,0,38.46,delivered,web,IL
+5837,2025-09-10,162,102,1,0,15.08,delivered,mobile app,WA
+5838,2025-09-12,87,106,1,5,34.44,delivered,web,AZ
+5839,2025-09-13,66,110,1,5,36.54,delivered,mobile app,MA
+5840,2025-09-13,51,111,1,5,32.41,delivered,retail store,GA
+5841,2025-09-14,158,111,1,5,32.41,delivered,web,WA
+5842,2025-09-14,76,109,1,0,85.04,delivered,wholesale,GA
+5843,2025-09-15,90,109,1,0,85.04,delivered,web,IL
+5844,2025-09-17,50,104,1,0,28.12,cancelled,web,AZ
+5845,2025-09-17,167,112,1,5,17.57,delivered,wholesale,FL
+5846,2025-09-17,43,101,1,0,48.52,cancelled,web,TX
+5847,2025-09-18,121,105,1,5,61.74,shipped,mobile app,GA
+5848,2025-09-19,29,111,2,15,58.0,cancelled,wholesale,WA
+5849,2025-09-19,36,111,1,15,29.0,delivered,mobile app,TX
+5850,2025-09-19,108,110,1,0,38.46,shipped,web,AZ
+5851,2025-09-20,74,106,1,15,30.81,returned,web,AZ
+5852,2025-09-21,155,105,6,0,389.94,delivered,mobile app,WA
+5853,2025-09-21,4,112,1,0,18.5,delivered,retail store,IL
+5854,2025-09-21,54,108,1,0,59.7,shipped,web,AZ
+5855,2025-09-22,76,110,1,0,38.46,delivered,mobile app,GA
+5856,2025-09-23,83,113,2,0,50.9,delivered,wholesale,MA
+5857,2025-09-23,53,106,1,0,36.25,shipped,web,MA
+5858,2025-09-23,41,112,1,5,17.57,delivered,web,CO
+5859,2025-09-24,151,102,1,5,14.33,delivered,web,WA
+5860,2025-09-24,86,101,1,0,48.52,shipped,wholesale,AZ
+5861,2025-09-24,82,101,1,15,41.24,shipped,mobile app,TX
+5862,2025-09-25,50,113,1,15,21.63,delivered,web,AZ
+5863,2025-09-25,164,110,1,0,38.46,shipped,web,CA
+5864,2025-09-26,152,109,1,10,76.54,shipped,web,TX
+5865,2025-09-26,134,103,1,0,13.45,delivered,retail store,GA
+5866,2025-09-27,105,113,1,10,22.91,delivered,web,MA
+5867,2025-09-27,72,105,2,15,110.48,delivered,web,TX
+5868,2025-09-27,175,112,1,5,17.57,delivered,web,GA
+5869,2025-09-28,162,112,3,5,52.72,returned,web,WA
+5870,2025-09-28,161,103,2,0,26.9,delivered,web,OR
+5871,2025-10-02,83,102,2,5,28.65,delivered,mobile app,MA
+5872,2025-10-02,143,110,1,0,38.46,delivered,wholesale,CO
+5873,2025-10-03,102,102,2,10,27.14,delivered,web,CO
+5874,2025-10-03,23,104,1,0,28.12,delivered,mobile app,WA
+5875,2025-10-03,15,112,1,10,16.65,delivered,web,AZ
+5876,2025-10-04,124,104,2,0,56.24,delivered,mobile app,TX
+5877,2025-10-04,131,103,1,15,11.43,shipped,web,IL
+5878,2025-10-05,79,113,1,5,24.18,delivered,mobile app,CO
+5879,2025-10-05,43,101,4,0,194.08,delivered,mobile app,TX
+5880,2025-10-05,45,113,1,10,22.91,delivered,web,IL
+5881,2025-10-06,72,110,1,15,32.69,shipped,mobile app,TX
+5882,2025-10-07,83,103,2,0,26.9,delivered,web,MA
+5883,2025-10-07,30,111,1,5,32.41,delivered,web,GA
+5884,2025-10-08,79,112,6,0,111.0,delivered,wholesale,CO
+5885,2025-10-08,146,104,4,0,112.48,shipped,web,MA
+5886,2025-10-09,70,101,2,15,82.48,delivered,web,TX
+5887,2025-10-09,26,107,2,0,125.42,delivered,web,AZ
+5888,2025-10-09,20,112,4,15,62.9,delivered,wholesale,WA
+5889,2025-10-10,151,113,2,15,43.27,shipped,mobile app,WA
+5890,2025-10-11,8,108,1,0,59.7,shipped,mobile app,AZ
+5891,2025-10-11,95,111,1,0,34.12,delivered,mobile app,OR
+5892,2025-10-12,108,111,1,0,34.12,delivered,web,AZ
+5893,2025-10-13,58,108,4,0,238.8,delivered,retail store,MA
+5894,2025-10-13,52,109,2,0,170.08,delivered,web,MA
+5895,2025-10-13,173,104,1,0,28.12,delivered,web,WA
+5896,2025-10-13,77,109,2,5,161.58,delivered,web,GA
+5897,2025-10-14,174,103,1,10,12.11,delivered,web,IL
+5898,2025-10-16,58,103,6,15,68.59,shipped,mobile app,MA
+5899,2025-10-17,157,103,1,10,12.11,delivered,web,CA
+5900,2025-10-18,141,106,1,10,32.62,delivered,web,FL
+5901,2025-10-19,83,101,1,0,48.52,delivered,mobile app,MA
+5902,2025-10-20,111,111,1,0,34.12,delivered,web,WA
+5903,2025-10-20,61,103,2,0,26.9,delivered,wholesale,OR
+5904,2025-10-21,159,111,2,0,68.24,shipped,web,GA
+5905,2025-10-21,93,112,1,0,18.5,shipped,retail store,IL
+5906,2025-10-21,173,113,2,15,43.27,shipped,mobile app,WA
+5907,2025-10-21,142,104,6,0,168.72,delivered,web,FL
+5908,2025-10-22,178,111,1,0,34.12,delivered,web,CO
+5909,2025-10-22,79,113,1,0,25.45,delivered,mobile app,CO
+5910,2025-10-22,56,108,1,0,59.7,cancelled,web,IL
+5911,2025-10-23,120,113,1,0,25.45,delivered,mobile app,FL
+5912,2025-10-24,53,109,1,0,85.04,delivered,retail store,MA
+5913,2025-10-24,177,102,2,15,25.64,shipped,mobile app,FL
+5914,2025-10-26,70,110,1,15,32.69,delivered,web,TX
+5915,2025-10-28,141,105,1,15,55.24,delivered,web,FL
+5916,2025-10-29,51,105,1,0,64.99,delivered,web,GA
+5917,2025-10-30,68,101,2,5,92.19,delivered,mobile app,MA
+5918,2025-10-30,161,111,3,0,102.36,delivered,web,OR
+5919,2025-10-30,175,113,3,0,76.35,delivered,web,GA
+5920,2025-10-30,87,113,1,15,21.63,delivered,wholesale,AZ
+5921,2025-10-31,45,106,3,10,97.88,delivered,mobile app,IL
+5922,2025-11-02,99,106,2,0,72.5,shipped,wholesale,GA
+5923,2025-11-02,142,111,1,0,34.12,delivered,mobile app,FL
+5924,2025-11-03,99,102,1,10,13.57,shipped,web,GA
+5925,2025-11-04,53,104,1,15,23.9,delivered,wholesale,MA
+5926,2025-11-04,48,109,1,0,85.04,delivered,wholesale,WA
+5927,2025-11-05,7,102,2,0,30.16,shipped,web,TX
+5928,2025-11-06,107,108,2,0,119.4,delivered,mobile app,GA
+5929,2025-11-07,106,107,2,0,125.42,shipped,web,MA
+5930,2025-11-07,108,113,4,10,91.62,delivered,web,AZ
+5931,2025-11-08,21,112,1,5,17.57,delivered,retail store,WA
+5932,2025-11-09,59,102,6,0,90.48,shipped,web,CO
+5933,2025-11-09,102,102,1,15,12.82,delivered,mobile app,CO
+5934,2025-11-10,90,112,1,10,16.65,delivered,mobile app,IL
+5935,2025-11-10,165,102,1,10,13.57,delivered,mobile app,MA
+5936,2025-11-11,51,109,1,0,85.04,delivered,web,GA
+5937,2025-11-12,79,110,1,10,34.61,delivered,web,CO
+5938,2025-11-12,124,109,3,15,216.85,delivered,retail store,TX
+5939,2025-11-14,167,107,1,15,53.3,shipped,retail store,FL
+5940,2025-11-16,9,102,1,10,13.57,returned,mobile app,FL
+5941,2025-11-16,34,102,1,0,15.08,delivered,mobile app,FL
+5942,2025-11-18,80,112,1,15,15.72,returned,mobile app,CA
+5943,2025-11-20,177,108,1,0,59.7,delivered,web,FL
+5944,2025-11-21,141,113,3,0,76.35,returned,mobile app,FL
+5945,2025-11-21,86,101,1,0,48.52,delivered,web,AZ
+5946,2025-11-22,1,110,1,0,38.46,shipped,web,OR
+5947,2025-11-24,127,113,1,0,25.45,delivered,mobile app,MA
+5948,2025-11-24,93,113,2,0,50.9,delivered,mobile app,IL
+5949,2025-11-25,72,109,1,5,80.79,delivered,web,TX
+5950,2025-11-27,15,109,1,15,72.28,returned,web,AZ
+5951,2025-11-28,146,103,1,10,12.11,delivered,mobile app,MA
+5952,2025-11-28,145,101,3,10,131.0,delivered,wholesale,WA
+5953,2025-12-02,132,110,1,10,34.61,delivered,web,TX
+5954,2025-12-03,102,110,6,0,230.76,shipped,web,CO
+5955,2025-12-03,164,113,1,5,24.18,delivered,retail store,CA
+5956,2025-12-04,13,107,1,10,56.44,shipped,mobile app,WA
+5957,2025-12-04,98,105,1,0,64.99,shipped,mobile app,AZ
+5958,2025-12-06,1,108,1,0,59.7,delivered,web,OR
+5959,2025-12-06,161,108,1,0,59.7,returned,wholesale,OR
+5960,2025-12-07,99,103,1,0,13.45,delivered,web,GA
+5961,2025-12-07,25,109,1,5,80.79,delivered,wholesale,MA
+5962,2025-12-11,137,103,3,5,38.33,delivered,mobile app,CA
+5963,2025-12-11,152,110,1,10,34.61,shipped,web,TX
+5964,2025-12-11,132,106,1,0,36.25,delivered,web,TX
+5965,2025-12-11,84,110,1,15,32.69,delivered,web,OR
+5966,2025-12-12,65,113,1,0,25.45,delivered,wholesale,TX
+5967,2025-12-12,12,111,3,0,102.36,delivered,web,WA
+5968,2025-12-13,174,108,1,0,59.7,delivered,web,IL
+5969,2025-12-15,178,110,2,0,76.92,delivered,web,CO
+5970,2025-12-15,20,109,1,0,85.04,delivered,web,WA
+5971,2025-12-15,92,102,2,5,28.65,delivered,web,IL
+5972,2025-12-16,143,104,1,0,28.12,shipped,web,CO
+5973,2025-12-17,56,108,1,0,59.7,delivered,mobile app,IL
+5974,2025-12-18,21,103,1,10,12.11,cancelled,mobile app,WA
+5975,2025-12-20,98,104,1,0,28.12,delivered,mobile app,AZ
+5976,2025-12-20,103,103,1,10,12.11,delivered,web,TX
+5977,2025-12-22,15,113,6,0,152.7,delivered,web,AZ
+5978,2025-12-22,84,109,1,0,85.04,delivered,web,OR
+5979,2025-12-24,23,110,2,10,69.23,delivered,web,WA
+5980,2025-12-24,93,109,4,0,340.16,delivered,web,IL
+5981,2025-12-25,87,103,1,5,12.78,delivered,mobile app,AZ
+5982,2025-12-26,121,109,2,0,170.08,delivered,web,GA
+5983,2025-12-27,161,110,2,10,69.23,delivered,web,OR
+5984,2025-12-27,30,110,2,0,76.92,delivered,mobile app,GA
+5985,2025-12-28,76,101,6,5,276.56,delivered,web,GA
+5986,2025-12-28,70,109,1,15,72.28,delivered,retail store,TX
+5987,2025-12-28,62,109,1,0,85.04,delivered,web,MA
+5988,2025-12-30,60,108,1,0,59.7,delivered,web,TX
+5989,2025-12-30,152,108,4,0,238.8,cancelled,web,TX
+5990,2026-01-01,178,101,1,0,48.52,delivered,mobile app,CO
+5991,2026-01-02,127,104,2,0,56.24,delivered,web,MA
+5992,2026-01-02,8,107,2,0,125.42,returned,mobile app,AZ
+5993,2026-01-03,108,111,1,15,29.0,cancelled,web,AZ
+5994,2026-01-03,129,109,2,15,144.57,delivered,mobile app,CO
+5995,2026-01-07,138,108,2,10,107.46,shipped,mobile app,IL
+5996,2026-01-08,107,108,2,10,107.46,shipped,web,GA
+5997,2026-01-10,172,101,1,15,41.24,delivered,wholesale,GA
+5998,2026-01-12,173,111,1,0,34.12,shipped,retail store,WA
+5999,2026-01-12,114,103,1,0,13.45,delivered,web,OR
+6000,2026-01-12,28,103,2,0,26.9,delivered,web,AZ
+6001,2026-01-13,53,101,1,10,43.67,delivered,web,MA
+6002,2026-01-13,121,105,2,0,129.98,delivered,mobile app,GA
+6003,2026-01-14,32,113,4,10,91.62,delivered,web,IL
+6004,2026-01-15,15,111,1,0,34.12,delivered,mobile app,AZ
+6005,2026-01-15,88,113,1,0,25.45,delivered,web,WA
+6006,2026-01-16,121,106,1,0,36.25,delivered,retail store,GA
+6007,2026-01-18,56,110,1,10,34.61,delivered,mobile app,IL
+6008,2026-01-18,74,102,3,15,38.45,delivered,mobile app,AZ
+6009,2026-01-20,102,110,4,5,146.15,delivered,web,CO
+6010,2026-01-20,20,102,1,0,15.08,shipped,web,WA
+6011,2026-01-22,82,110,2,0,76.92,returned,web,TX
+6012,2026-01-23,151,105,6,15,331.45,delivered,retail store,WA
+6013,2026-01-24,127,107,1,0,62.71,cancelled,web,MA
+6014,2026-01-24,23,107,3,15,159.91,delivered,mobile app,WA
+6015,2026-01-26,51,108,1,0,59.7,delivered,web,GA
+6016,2026-01-26,56,109,4,5,323.15,delivered,web,IL
+6017,2026-01-27,70,112,1,0,18.5,delivered,retail store,TX
+6018,2026-01-27,174,107,2,15,106.61,returned,web,IL
+6019,2026-01-28,129,103,1,5,12.78,delivered,wholesale,CO
+6020,2026-01-30,9,105,2,15,110.48,delivered,retail store,FL
+6021,2026-02-01,116,110,1,0,38.46,shipped,mobile app,TX
+6022,2026-02-05,164,104,1,0,28.12,delivered,web,CA
+6023,2026-02-06,171,112,3,15,47.17,delivered,mobile app,CO
+6024,2026-02-06,55,113,2,15,43.27,delivered,retail store,FL
+6025,2026-02-07,70,103,2,5,25.55,cancelled,web,TX
+6026,2026-02-07,119,108,3,0,179.1,delivered,web,IL
+6027,2026-02-11,152,106,1,0,36.25,delivered,wholesale,TX
+6028,2026-02-11,15,109,3,0,255.12,shipped,web,AZ
+6029,2026-02-13,142,108,2,0,119.4,delivered,mobile app,FL
+6030,2026-02-14,34,107,3,0,188.13,shipped,web,FL
+6031,2026-02-15,41,112,1,15,15.72,cancelled,web,CO
+6032,2026-02-17,45,111,1,0,34.12,delivered,web,IL
+6033,2026-02-18,165,111,3,0,102.36,delivered,web,MA
+6034,2026-02-19,37,101,2,10,87.34,delivered,web,AZ
+6035,2026-02-19,8,107,1,0,62.71,delivered,web,AZ
+6036,2026-02-22,53,104,2,10,50.62,delivered,retail store,MA
+6037,2026-02-22,172,113,1,0,25.45,delivered,mobile app,GA
+6038,2026-02-22,122,108,4,0,238.8,delivered,mobile app,MA
+6039,2026-02-25,127,113,1,0,25.45,delivered,wholesale,MA
+6040,2026-02-27,36,103,2,10,24.21,delivered,web,TX
+6041,2026-02-28,16,112,1,10,16.65,delivered,mobile app,OR
+6042,2026-03-03,45,106,2,0,72.5,shipped,web,IL
+6043,2026-03-03,175,110,2,0,76.92,delivered,web,GA
+6044,2026-03-05,125,111,1,0,34.12,delivered,mobile app,GA
+6045,2026-03-06,12,104,1,10,25.31,delivered,wholesale,WA
+6046,2026-03-07,146,102,2,15,25.64,shipped,web,MA
+6047,2026-03-09,93,103,3,5,38.33,delivered,wholesale,IL
+6048,2026-03-09,32,109,1,15,72.28,delivered,wholesale,IL
+6049,2026-03-09,86,104,1,0,28.12,shipped,web,AZ
+6050,2026-03-09,178,103,1,15,11.43,shipped,mobile app,CO
+6051,2026-03-10,29,112,2,10,33.3,delivered,web,WA
+6052,2026-03-10,52,103,1,5,12.78,delivered,web,MA
+6053,2026-03-12,32,111,6,5,194.48,cancelled,web,IL
+6054,2026-03-12,86,113,1,0,25.45,delivered,web,AZ
+6055,2026-03-13,122,112,1,0,18.5,delivered,retail store,MA
+6056,2026-03-13,129,110,1,0,38.46,shipped,web,CO
+6057,2026-03-14,32,104,1,0,28.12,delivered,web,IL
+6058,2026-03-14,62,101,1,10,43.67,shipped,mobile app,MA
+6059,2026-03-15,84,107,1,5,59.57,delivered,web,OR
+6060,2026-03-15,53,103,2,5,25.55,cancelled,web,MA
+6061,2026-03-15,177,107,1,15,53.3,delivered,web,FL
+6062,2026-03-17,106,102,1,10,13.57,shipped,wholesale,MA
+6063,2026-03-19,91,108,2,5,113.43,shipped,wholesale,CO
+6064,2026-03-20,60,103,1,0,13.45,delivered,retail store,TX
+6065,2026-03-21,58,109,2,10,153.07,cancelled,retail store,MA
+6066,2026-03-23,23,104,1,10,25.31,shipped,web,WA
+6067,2026-03-26,60,103,1,0,13.45,delivered,web,TX
+6068,2026-03-28,36,107,1,0,62.71,delivered,mobile app,TX
+6069,2026-03-28,83,108,1,0,59.7,shipped,web,MA
+6070,2026-03-28,152,106,3,5,103.31,shipped,retail store,TX
+6071,2026-03-29,87,109,1,0,85.04,delivered,mobile app,AZ
+6072,2026-03-30,105,107,2,0,125.42,delivered,web,MA
+6073,2026-03-30,45,107,1,15,53.3,delivered,retail store,IL
+6074,2026-03-31,131,112,2,0,37.0,delivered,web,IL
+6075,2026-03-31,32,110,1,0,38.46,delivered,web,IL
+6076,2026-04-01,28,110,4,10,138.46,shipped,retail store,AZ
+6077,2026-04-04,93,103,1,15,11.43,delivered,retail store,IL
+6078,2026-04-07,74,103,1,0,13.45,shipped,web,AZ
+6079,2026-04-07,26,104,2,10,50.62,delivered,web,AZ
+6080,2026-04-08,116,106,1,5,34.44,delivered,web,TX
+6081,2026-04-08,121,104,6,0,168.72,delivered,web,GA
+6082,2026-04-10,105,105,1,0,64.99,delivered,mobile app,MA
+6083,2026-04-11,60,103,1,0,13.45,returned,web,TX
+6084,2026-04-12,135,104,1,0,28.12,delivered,retail store,GA
+6085,2026-04-13,60,102,2,0,30.16,shipped,mobile app,TX
+6086,2026-04-16,4,103,4,15,45.73,delivered,retail store,IL
+6087,2026-04-16,29,103,2,0,26.9,shipped,mobile app,WA
+6088,2026-04-17,165,102,1,0,15.08,delivered,wholesale,MA
+6089,2026-04-20,62,106,3,5,103.31,shipped,mobile app,MA
+6090,2026-04-21,18,108,3,0,179.1,delivered,mobile app,WA
+6091,2026-04-23,45,109,1,10,76.54,delivered,retail store,IL
+6092,2026-04-25,12,106,1,5,34.44,delivered,mobile app,WA
+6093,2026-04-26,172,105,4,0,259.96,delivered,retail store,GA
+6094,2026-04-26,119,105,1,0,64.99,delivered,mobile app,IL
+6095,2026-04-27,116,113,2,0,50.9,delivered,wholesale,TX
+6096,2026-04-28,59,110,2,0,76.92,shipped,mobile app,CO
+6097,2026-04-28,29,101,1,0,48.52,shipped,mobile app,WA
+6098,2026-04-29,142,112,2,0,37.0,delivered,mobile app,FL
+6099,2026-04-29,114,103,2,0,26.9,shipped,wholesale,OR
+6100,2026-05-01,146,101,2,0,97.04,delivered,mobile app,MA
+6101,2026-05-02,73,113,3,0,76.35,delivered,web,MA
+6102,2026-05-04,152,109,3,0,255.12,shipped,web,TX
+6103,2026-05-05,32,106,2,0,72.5,shipped,mobile app,IL
+6104,2026-05-05,132,106,1,5,34.44,returned,wholesale,TX
+6105,2026-05-06,12,108,1,10,53.73,shipped,web,WA
+6106,2026-05-06,131,109,1,5,80.79,delivered,web,IL
+6107,2026-05-07,73,110,2,0,76.92,shipped,web,MA
+6108,2026-05-07,121,104,2,0,56.24,cancelled,web,GA
+6109,2026-05-09,107,112,1,0,18.5,delivered,web,GA
+6110,2026-05-10,104,108,3,15,152.24,delivered,retail store,GA
+6111,2026-05-10,15,105,1,0,64.99,delivered,mobile app,AZ
+6112,2026-05-13,173,104,3,10,75.92,delivered,mobile app,WA
+6113,2026-05-14,8,109,3,5,242.36,delivered,mobile app,AZ
+6114,2026-05-18,124,101,2,0,97.04,delivered,retail store,TX
+6115,2026-05-18,58,105,4,0,259.96,cancelled,mobile app,MA
+6116,2026-05-19,59,104,1,10,25.31,delivered,retail store,CO
+6117,2026-05-20,116,112,2,0,37.0,delivered,web,TX
+6118,2026-05-21,145,113,3,15,64.9,delivered,web,WA
+6119,2026-05-21,127,110,1,5,36.54,returned,web,MA
+6120,2026-05-22,12,111,3,0,102.36,cancelled,web,WA
+6121,2026-05-26,77,109,3,10,229.61,shipped,web,GA
+6122,2026-05-27,86,104,2,0,56.24,delivered,web,AZ
+6123,2026-05-31,90,110,2,0,76.92,delivered,wholesale,IL
+6124,2026-06-01,106,108,2,10,107.46,delivered,web,MA
+6125,2026-06-01,18,103,1,0,13.45,shipped,mobile app,WA
+6126,2026-06-01,178,107,1,0,62.71,delivered,web,CO
+6127,2026-06-01,45,111,1,0,34.12,delivered,retail store,IL
+6128,2026-06-01,30,112,1,15,15.72,delivered,web,GA
+6129,2026-06-03,164,103,3,10,36.31,delivered,web,CA
+6130,2026-06-03,15,106,1,15,30.81,delivered,mobile app,AZ
+6131,2026-06-05,23,113,2,0,50.9,delivered,retail store,WA
+6132,2026-06-06,36,106,1,0,36.25,delivered,web,TX
+6133,2026-06-07,175,102,1,0,15.08,cancelled,wholesale,GA
+6134,2026-06-09,45,112,1,0,18.5,shipped,mobile app,IL
+6135,2026-06-12,173,106,1,0,36.25,delivered,mobile app,WA
+6136,2026-06-17,129,101,3,5,138.28,shipped,retail store,CO
+6137,2026-06-19,102,108,1,0,59.7,delivered,web,CO
+6138,2026-06-23,106,113,2,5,48.35,delivered,wholesale,MA
+6139,2026-06-25,146,107,1,0,62.71,delivered,retail store,MA
+6140,2026-06-27,164,109,1,15,72.28,delivered,mobile app,CA
+6141,2026-06-27,56,110,3,15,98.07,shipped,web,IL
+6142,2026-06-29,173,112,1,0,18.5,shipped,wholesale,WA
+6143,2026-06-30,143,101,1,5,46.09,delivered,web,CO
+6144,2026-06-30,37,106,1,10,32.62,delivered,mobile app,AZ
+6145,2026-07-01,79,107,6,0,376.26,delivered,retail store,CO
+6146,2026-07-02,68,113,1,5,24.18,returned,mobile app,MA
+6147,2026-07-02,92,107,1,15,53.3,delivered,mobile app,IL
+6148,2026-07-04,152,109,4,0,340.16,delivered,retail store,TX
+6149,2026-07-05,152,108,1,15,50.75,returned,mobile app,TX
+6150,2026-07-06,142,111,6,5,194.48,returned,web,FL
+6151,2026-07-07,106,112,1,0,18.5,delivered,web,MA
+6152,2026-07-07,50,105,2,0,129.98,shipped,web,AZ
+6153,2026-07-08,77,103,1,0,13.45,shipped,mobile app,GA
+6154,2026-07-08,45,112,1,10,16.65,delivered,mobile app,IL
+6155,2026-07-09,4,101,6,0,291.12,cancelled,web,IL
+6156,2026-07-15,23,103,2,0,26.9,delivered,web,WA
+6157,2026-07-17,146,103,1,0,13.45,delivered,web,MA
+6158,2026-07-17,103,113,2,5,48.35,delivered,web,TX
+6159,2026-07-18,30,106,1,15,30.81,shipped,web,GA
+6160,2026-07-18,87,103,3,0,40.35,delivered,wholesale,AZ
+6161,2026-07-21,52,101,1,5,46.09,delivered,web,MA
+6162,2026-07-22,92,110,1,0,38.46,delivered,web,IL
+6163,2026-07-23,90,103,1,0,13.45,delivered,mobile app,IL
+6164,2026-07-27,108,104,1,10,25.31,delivered,web,AZ
+6165,2026-07-27,127,108,1,15,50.75,delivered,web,MA
+6166,2026-07-29,168,104,1,10,25.31,shipped,web,MA
+6167,2026-07-29,60,107,1,0,62.71,cancelled,web,TX
+6168,2026-07-30,142,104,1,0,28.12,delivered,wholesale,FL
+6169,2026-07-31,79,105,2,0,129.98,shipped,wholesale,CO
+6170,2026-08-06,116,105,1,0,64.99,delivered,mobile app,TX
+6171,2026-08-06,145,108,1,0,59.7,delivered,retail store,WA
+6172,2026-08-06,116,102,1,0,15.08,delivered,web,TX
+6173,2026-08-07,102,107,1,0,62.71,shipped,mobile app,CO
+6174,2026-08-08,79,102,2,0,30.16,delivered,mobile app,CO
+6175,2026-08-10,165,113,1,0,25.45,cancelled,web,MA
+6176,2026-08-11,108,113,1,15,21.63,delivered,mobile app,AZ
+6177,2026-08-14,15,103,1,0,13.45,delivered,mobile app,AZ
+6178,2026-08-14,121,110,1,0,38.46,delivered,web,GA
+6179,2026-08-16,119,107,3,0,188.13,delivered,web,IL
+6180,2026-08-17,131,101,2,5,92.19,delivered,mobile app,IL
+6181,2026-08-18,168,105,1,0,64.99,delivered,mobile app,MA
+6182,2026-08-20,18,108,1,10,53.73,delivered,mobile app,WA
+6183,2026-08-21,45,107,2,0,125.42,delivered,wholesale,IL
+6184,2026-08-24,77,109,1,0,85.04,delivered,mobile app,GA
+6185,2026-08-24,4,111,2,10,61.42,delivered,web,IL
+6186,2026-08-27,103,105,4,0,259.96,returned,web,TX
+6187,2026-08-27,45,105,1,0,64.99,cancelled,web,IL
+6188,2026-08-28,52,109,2,10,153.07,shipped,wholesale,MA
+6189,2026-08-28,74,112,1,0,18.5,cancelled,mobile app,AZ
+6190,2026-08-30,148,101,1,0,48.52,delivered,mobile app,OR
+6191,2026-08-31,52,110,3,15,98.07,cancelled,web,MA
+6192,2026-08-31,23,110,1,0,38.46,cancelled,mobile app,WA
+6193,2026-09-03,82,104,2,0,56.24,shipped,mobile app,TX
+6194,2026-09-03,121,110,4,5,146.15,delivered,web,GA
+6195,2026-09-03,90,112,1,0,18.5,delivered,mobile app,IL
+6196,2026-09-07,50,103,1,0,13.45,delivered,web,AZ
+6197,2026-09-11,108,108,1,5,56.72,delivered,mobile app,AZ
+6198,2026-09-14,92,112,1,5,17.57,delivered,web,IL
+6199,2026-09-15,125,105,1,0,64.99,returned,web,GA
+6200,2026-09-17,119,105,6,0,389.94,delivered,web,IL

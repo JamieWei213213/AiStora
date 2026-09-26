@@ -61,6 +61,8 @@ a.auth-secondary:hover { background:#f8fafc; }
 .auth-notice[data-tone="success"] { border-color:#27835b; background:#effbf4; color:#195338; }
 .auth-notice[data-tone="info"] { border-color:#32809a; background:#eef8fc; color:#20566b; }
 .auth-footnote { font-size:.75rem; color:#acc6ce; line-height:1.6; }
+.auth-link { color:#076779; text-decoration:underline; text-underline-offset:2px; }
+.auth-link:hover { color:#054b57; }
 .auth-beta-note { color:#64748b; margin-top:1.7rem; }
 .app-notice { position:fixed; top:1rem; right:1rem; max-width:min(28rem,calc(100vw - 2rem)); z-index:100; background:#fff; color:#80271e; border:1px solid #d26a5f; border-left:4px solid #bd3c2e; border-radius:10px; padding:1rem 3rem 1rem 1rem; box-shadow:0 8px 28px #0f172a20; font-size:.85rem; line-height:1.5; }
 .app-notice strong { display:block; margin-bottom:.25rem; }

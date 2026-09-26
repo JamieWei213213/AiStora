@@ -39,8 +39,18 @@
           class="hidden"
         />
       </div>
-      <p class="text-[11px] text-slate-400">
-        Each CSV will be mapped to a table named after the file.
+      <p class="text-xs text-slate-500">
+        Each CSV becomes a table named after the file. First row must be the header;
+        comma, semicolon and tab separators are detected automatically.
+      </p>
+      <p id="upload-limits-hint" class="text-xs text-slate-400"></p>
+      <p class="text-xs text-slate-500">
+        New here? <a href="/guide" target="_blank" rel="noopener" class="text-sky-700 hover:underline">Read the guide</a>
+        or download the sample CSVs:
+        <a href="/static/samples/coffee_shop/customers.csv" download class="text-sky-700 hover:underline">customers</a>,
+        <a href="/static/samples/coffee_shop/orders.csv" download class="text-sky-700 hover:underline">orders</a>,
+        <a href="/static/samples/coffee_shop/products.csv" download class="text-sky-700 hover:underline">products</a>,
+        <a href="/static/samples/spreadsheet_export_messy.csv" download class="text-sky-700 hover:underline">a messy export</a>.
       </p>
       <div
         id="load-options"

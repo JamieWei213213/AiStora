@@ -215,7 +215,19 @@ document.addEventListener("DOMContentLoaded", () => {
         showScreen(screens.db);
         dbList.innerHTML = "";
         if (data.databases.length === 0) {
-          dbList.innerHTML = `<p class="text-slate-500 text-sm">No databases found. Click "New Database" to create one.</p>`;
+          dbList.innerHTML = `
+            <div class="col-span-full rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center">
+              <div class="mx-auto w-12 h-12 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center mb-3"><i data-lucide="database" class="w-6 h-6"></i></div>
+              <h3 class="text-lg font-semibold text-slate-800">No databases yet</h3>
+              <p class="text-sm text-slate-500 mt-1 max-w-md mx-auto">A database holds related CSV files. Start with the sample coffee-shop data to see how uploads, cleaning, the EDA report and questions work, or create an empty one for your own files.</p>
+              <div class="flex flex-wrap gap-3 justify-center mt-5">
+                <button id="sample-db-empty-btn" class="px-4 py-2.5 bg-violet-600 text-white rounded-xl text-sm font-medium hover:bg-violet-700 transition flex items-center gap-2"><i data-lucide="flask-conical" class="w-4 h-4"></i> Try the sample dataset</button>
+                <button id="create-db-empty-btn" class="px-4 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl text-sm font-medium hover:bg-slate-100 transition flex items-center gap-2"><i data-lucide="plus" class="w-4 h-4"></i> New database</button>
+              </div>
+              <p class="text-xs text-slate-400 mt-4">Not sure where to start? <a href="/guide" target="_blank" rel="noopener" class="text-sky-700 hover:underline">Read the getting-started guide</a>.</p>
+            </div>`;
+          document.getElementById("sample-db-empty-btn")?.addEventListener("click", createSampleDatabase);
+          document.getElementById("create-db-empty-btn")?.addEventListener("click", () => createDbBtn.click());
         }
         data.databases.forEach((db) => {
           dbList.innerHTML += `
@@ -351,16 +363,56 @@ document.addEventListener("DOMContentLoaded", () => {
     );
   }
 
+  async function createSampleDatabase() {
+    showLoading(true, "Loading the sample coffee-shop data...");
+    try {
+      const res = await apiFetch("/api/databases/sample", { method: "POST" });
+      if (!res) return;
+      const data = await res.json();
+      if (!data.success) {
+        showError(data.error || "Could not load the sample dataset.");
+        return;
+      }
+      await applySchema(data.schema, { detect: true });
+      showScreen(screens.upload);
+    } catch (error) {
+      showError("Could not load the sample dataset.");
+    } finally {
+      showLoading(false);
+    }
+  }
+  document.getElementById("sample-db-btn")?.addEventListener("click", createSampleDatabase);
+
+  // Limits come from the server so the hint never contradicts the real caps.
+  (function renderUploadLimits() {
+    const hint = document.getElementById("upload-limits-hint");
+    const app = document.getElementById("app");
+    if (!hint || !app) return;
+    const mb = app.dataset.maxUploadMb, tables = app.dataset.maxTables, dbs = app.dataset.maxDatabases;
+    const parts = [];
+    if (mb) parts.push(`up to ${mb} MB per file`);
+    if (tables && tables !== "0") parts.push(`${tables} tables per database`);
+    if (dbs && dbs !== "0") parts.push(`${dbs} databases per account`);
+    hint.textContent = parts.length ? `Limits: ${parts.join(" · ")}.` : "";
+  })();
+
   if (createDbBtn) {
-    createDbBtn.addEventListener("click", () =>
-      createDbModal.classList.remove("hidden")
-    );
+    createDbBtn.addEventListener("click", () => {
+      createDbModal.classList.remove("hidden");
+      newDbName.focus();
+    });
+    // Enter submits, Escape cancels: the dialog is a one-field form.
+    newDbName.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") { event.preventDefault(); confirmDbBtn.click(); }
+      if (event.key === "Escape") cancelDbBtn.click();
+    });
     cancelDbBtn.addEventListener("click", () =>
       createDbModal.classList.add("hidden")
     );
     confirmDbBtn.addEventListener("click", async () => {
-      const name = newDbName.value;
-      if (!name) return;
+      const name = newDbName.value.trim();
+      if (!name) { newDbName.focus(); return; }
+      if (confirmDbBtn.disabled) return;
       setButtonLoading(confirmDbBtn, true);
       try {
         const res = await apiFetch("/api/databases", {
@@ -494,6 +546,9 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       if (data.success) {
         await applySchema(data.schema, { detect: true });
+        if (Array.isArray(data.warnings) && data.warnings.length) {
+          showError("Upload note: " + data.warnings.join(" "));
+        }
       } else {
         showError(data.error);
       }
@@ -616,7 +671,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   async function handleCleaningPreview(tableId, tableName) {
-    showLoading(true, "Profiling data quality locallyâ€¦");
+    showLoading(true, "Profiling data quality locally…");
     try {
       const response = await apiFetch(`/api/tables/${tableId}/clean/preview`, {
         method: "POST",
@@ -635,7 +690,7 @@ document.addEventListener("DOMContentLoaded", () => {
       let html = `
         <div class="mb-4">
           <p class="font-semibold text-slate-700">${escapeHtml(tableName)}</p>
-          <p class="text-[11px] text-slate-500 mt-1">${escapeHtml(report.total_rows)} source rows â€¢ ${escapeHtml(report.estimated_output_rows)} estimated cleaned rows</p>
+          <p class="text-[11px] text-slate-500 mt-1">${escapeHtml(report.total_rows)} source rows • ${escapeHtml(report.estimated_output_rows)} estimated cleaned rows</p>
         </div>
         <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-4">
           <div class="p-2 rounded-xl bg-slate-50"><p class="text-[10px] text-slate-400">Duplicates</p><p class="font-semibold text-slate-700">${escapeHtml(report.duplicate_rows)}</p></div>
@@ -649,7 +704,16 @@ document.addEventListener("DOMContentLoaded", () => {
       if (result.requires_cleaning) {
         html += '<p class="font-medium text-slate-700 mb-2">Recommended plan</p><div class="space-y-2">';
         report.actions.forEach((action) => {
-          html += `<div class="flex gap-2 p-2 rounded-xl border border-emerald-100 bg-emerald-50/50"><i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-emerald-500 mt-0.5 shrink-0"></i><div><p class="text-slate-700">${escapeHtml(action.description)}</p><p class="text-[10px] text-slate-400">${escapeHtml(action.affected)} affected</p></div></div>`;
+          let detail = "";
+          if (action.id === "parse_numbers") {
+            const examples = (report.numeric_columns || [])
+              .flatMap((item) => item.examples.slice(0, 2).map((value) => `${item.column}: ${value}`))
+              .slice(0, 4);
+            const unparsed = (report.numeric_columns || []).reduce((sum, item) => sum + (item.unparsed_cells || 0), 0);
+            if (examples.length) detail += `<p class="text-[10px] text-slate-500">e.g. ${escapeHtml(examples.join(" · "))}</p>`;
+            if (unparsed) detail += `<p class="text-[10px] text-amber-600">${escapeHtml(unparsed)} cell(s) are not numbers and will be left blank in the copy.</p>`;
+          }
+          html += `<div class="flex gap-2 p-2 rounded-xl border border-emerald-100 bg-emerald-50/50"><i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-emerald-500 mt-0.5 shrink-0"></i><div><p class="text-slate-700">${escapeHtml(action.description)}</p><p class="text-[10px] text-slate-400">${escapeHtml(action.affected)} affected</p>${detail}</div></div>`;
         });
         html += "</div>";
       } else {
@@ -765,7 +829,7 @@ document.addEventListener("DOMContentLoaded", () => {
               Rename
             </button>
             <button data-table-id="${escapeHtml(details.id)}" data-table-name="${escapeHtml(tableName)}"
-                    class="clean-btn text-[10px] bg-emerald-50 text-emerald-700 px-2 py-1 rounded-md hover:bg-emerald-100">
+                    class="clean-btn text-xs font-medium bg-emerald-50 text-emerald-700 px-2.5 py-1.5 rounded-md hover:bg-emerald-100">
               Auto clean
             </button>
             <button data-table-id="${escapeHtml(details.id)}"
@@ -854,7 +918,7 @@ document.addEventListener("DOMContentLoaded", () => {
         rel.from_table
       )}.${escapeHtml(
         rel.from_column
-      )}</span> â†’ <span class="font-semibold">${escapeHtml(
+      )}</span> → <span class="font-semibold">${escapeHtml(
         rel.to_table
       )}.${escapeHtml(rel.to_column)}</span>`;
       listHTML += `<div class="rounded-2xl border border-dashed border-emerald-200 bg-emerald-50/70 px-3 py-2.5 flex items-start gap-2"><i data-lucide="link-2" class="text-emerald-500 w-4 h-4 mt-[2px]"></i><div><p class="text-[11px] text-emerald-800 font-medium">Suggested relationship</p><p class="text-[11px] text-emerald-700">${relText}</p></div></div>`;
@@ -906,7 +970,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   function formatCount(value) {
-    if (value === null || value === undefined || value === "") return "â€”";
+    if (value === null || value === undefined || value === "") return "—";
     const number = Number(value);
     if (!Number.isFinite(number)) return escapeHtml(value);
     return escapeHtml(number.toLocaleString());
@@ -914,7 +978,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function formatDuration(ms) {
     const number = Number(ms);
-    if (!Number.isFinite(number) || ms === null || ms === undefined) return "â€”";
+    if (!Number.isFinite(number) || ms === null || ms === undefined) return "—";
     if (number < 1000) return `${Math.round(number)} ms`;
     if (number < 60000) return `${(number / 1000).toFixed(1)} s`;
     const minutes = Math.floor(number / 60000);
@@ -924,7 +988,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function formatBytes(bytes) {
     const number = Number(bytes);
-    if (!Number.isFinite(number) || bytes === null || bytes === undefined) return "â€”";
+    if (!Number.isFinite(number) || bytes === null || bytes === undefined) return "—";
     if (number < 1024) return `${number} B`;
     if (number < 1024 * 1024) return `${(number / 1024).toFixed(1)} KB`;
     return `${(number / (1024 * 1024)).toFixed(1)} MB`;
@@ -1067,7 +1131,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     const label = load.is_terminal
       ? escapeHtml(load.status === "succeeded" ? "all stages complete" : load.stage || "")
-      : `${escapeHtml(load.stage || "queued")}â€¦`;
+      : `${escapeHtml(load.stage || "queued")}…`;
     return `<div class="flex items-center gap-2"><div class="flex flex-1 gap-0.5">${segments.join(
       ""
     )}</div><span class="text-[10px] text-slate-400 shrink-0">${label}</span></div>`;
@@ -1090,7 +1154,7 @@ document.addEventListener("DOMContentLoaded", () => {
       : "";
     const rejected = Number(load.rows_rejected || 0);
     const meta = [
-      `${formatCount(load.rows_in)} in â†’ ${formatCount(load.rows_out)} out`,
+      `${formatCount(load.rows_in)} in → ${formatCount(load.rows_out)} out`,
       rejected > 0 ? `<span class="text-rose-600">${formatCount(rejected)} rejected</span>` : "",
       formatDuration(load.duration_ms),
       load.original_filename ? escapeHtml(load.original_filename) : "",
@@ -1154,7 +1218,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 : "text-rose-500"
             }"></i><span class="text-slate-600 break-words"><span class="font-medium">${escapeHtml(
               check.name
-            )}</span>${check.message ? ` â€” ${escapeHtml(check.message)}` : ""}</span></li>`
+            )}</span>${check.message ? ` — ${escapeHtml(check.message)}` : ""}</span></li>`
         )
         .join("")}</ul></div>`);
     }
@@ -1179,7 +1243,7 @@ document.addEventListener("DOMContentLoaded", () => {
           ([from, to]) =>
             `<li class="break-all"><span class="text-slate-400">${escapeHtml(
               from
-            )}</span> â†’ ${escapeHtml(to)}</li>`
+            )}</span> → ${escapeHtml(to)}</li>`
         )
         .join("")}</ul></div>`);
     }
@@ -1233,13 +1297,13 @@ document.addEventListener("DOMContentLoaded", () => {
       if ((load.key_columns || []).length) {
         sections.push(`<p class="text-[10px] text-slate-400">Key: ${load.key_columns
           .map(escapeHtml)
-          .join(", ")}${load.keep_history ? " â€¢ row history kept" : ""}</p>`);
+          .join(", ")}${load.keep_history ? " • row history kept" : ""}</p>`);
       }
     }
     sections.push(`<p class="text-[10px] text-slate-400 break-all">Load ${escapeHtml(
       load.load_id
-    )}${load.snapshot_id ? ` â€¢ snapshot ${shortId(load.snapshot_id)}` : ""}${
-      load.raw_bytes ? ` â€¢ ${formatBytes(load.raw_bytes)}` : ""
+    )}${load.snapshot_id ? ` • snapshot ${shortId(load.snapshot_id)}` : ""}${
+      load.raw_bytes ? ` • ${formatBytes(load.raw_bytes)}` : ""
     }</p>`);
 
     const busy = loadsState.busy.has(load.load_id);
@@ -1260,7 +1324,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }</button>`
     );
     let actions = `<div class="flex flex-wrap items-center gap-2">${buttons.join("")}${
-      busy ? '<span class="text-[10px] text-slate-400">Workingâ€¦</span>' : ""
+      busy ? '<span class="text-[10px] text-slate-400">Working…</span>' : ""
     }</div>`;
     if (loadsState.confirmRollback === load.load_id) {
       actions += `<div class="rounded-xl border border-amber-200 bg-amber-50 p-3 space-y-2"><p class="text-[11px] text-amber-800">Roll back <span class="font-medium">${escapeHtml(
@@ -1284,7 +1348,7 @@ document.addEventListener("DOMContentLoaded", () => {
       .map((snapshot) => {
         const time = snapshot.timestamp_ms
           ? escapeHtml(new Date(Number(snapshot.timestamp_ms)).toLocaleString())
-          : "â€”";
+          : "—";
         return `<li class="flex flex-wrap items-center gap-x-3 gap-y-0.5 px-2.5 py-1.5 text-[11px] ${
           snapshot.is_current ? "bg-emerald-50/60" : ""
         }"><span class="text-slate-600">${time}</span><span class="text-slate-500">${escapeHtml(
@@ -1417,7 +1481,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!pipelineHealthPanel) return;
     pipelineHealthToggle.disabled = true;
     pipelineHealthPanel.innerHTML =
-      '<p class="text-[11px] text-slate-400">Loading pipeline metricsâ€¦</p>';
+      '<p class="text-[11px] text-slate-400">Loading pipeline metrics…</p>';
     try {
       const response = await apiFetch("/api/pipeline/metrics");
       if (!response) return;
@@ -1440,7 +1504,7 @@ document.addEventListener("DOMContentLoaded", () => {
   async function runPipelineJob(job, button) {
     if (!["telemetry", "compaction"].includes(job) || button.disabled) return;
     button.disabled = true;
-    button.textContent = "Runningâ€¦";
+    button.textContent = "Running…";
     try {
       const response = await apiFetch(`/api/pipeline/jobs/${job}`, { method: "POST" });
       if (!response) return;
@@ -1473,7 +1537,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const byStatus = live.by_status || {};
     const duration = live.duration_ms || {};
     const percent = (value) =>
-      value === null || value === undefined ? "â€”" : `${(Number(value) * 100).toFixed(1)}%`;
+      value === null || value === undefined ? "—" : `${(Number(value) * 100).toFixed(1)}%`;
     const tiles = [
       statTileHtml("Loads", formatCount(live.loads_total), `${formatCount(live.loads_24h)} in 24h`),
       statTileHtml("Succeeded", formatCount(byStatus.succeeded)),
@@ -1484,7 +1548,7 @@ document.addEventListener("DOMContentLoaded", () => {
       statTileHtml(
         "Throughput",
         live.throughput_rows_per_second === null || live.throughput_rows_per_second === undefined
-          ? "â€”"
+          ? "—"
           : `${formatCount(Math.round(Number(live.throughput_rows_per_second)))} rows/s`,
         formatBytes(live.raw_bytes)
       ),
@@ -1499,14 +1563,14 @@ document.addEventListener("DOMContentLoaded", () => {
           )}</td><td class="p-1.5 text-right">${formatCount(item.loads)}</td><td class="p-1.5 text-right">${formatCount(
             item.rows_current
           )}</td><td class="p-1.5">${badgeHtml(
-            String(item.last_status || "â€”").replace("_", " "),
+            String(item.last_status || "—").replace("_", " "),
             LOAD_STATUS_CLASSES[item.last_status]
               ? LOAD_STATUS_CLASSES[item.last_status].replace(" animate-pulse", "")
               : LOAD_STATUS_CLASSES.rolled_back
-          )}</td><td class="p-1.5">${escapeHtml(item.last_mode || "â€”")}</td><td class="p-1.5">${
+          )}</td><td class="p-1.5">${escapeHtml(item.last_mode || "—")}</td><td class="p-1.5">${
             item.quality_status
               ? badgeHtml(item.quality_status, QUALITY_CLASSES[item.quality_status] || QUALITY_CLASSES.warn)
-              : "â€”"
+              : "—"
           }</td></tr>`
       )
       .join("");
@@ -1651,7 +1715,7 @@ document.addEventListener("DOMContentLoaded", () => {
     wrap.className = side === "user" ? "flex justify-end" : "flex justify-start";
     const bubble = document.createElement("div");
     bubble.className =
-      "max-w-[90%] px-3 py-2.5 text-xs rounded-2xl shadow-sm " +
+      "max-w-[90%] px-4 py-3 text-sm rounded-2xl shadow-sm " +
       (side === "user" ? "bg-sky-50" : "bg-white border border-slate-100");
     bubble.innerHTML = html;
     wrap.appendChild(bubble);
@@ -1686,14 +1750,14 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function formatEdaNumber(value) {
-    if (value === null || value === undefined) return "â€”";
+    if (value === null || value === undefined) return "—";
     const number = Number(value);
     if (!Number.isFinite(number)) return escapeHtml(value);
     return number.toLocaleString(undefined, { maximumFractionDigits: 4 });
   }
 
   function formatEdaLabel(value) {
-    if (!value) return "â€”";
+    if (!value) return "—";
     const text = String(value).replaceAll("_", " ");
     return text.charAt(0).toUpperCase() + text.slice(1);
   }
@@ -1705,7 +1769,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return `<ul class="space-y-1 text-[11px] text-slate-600">${items
       .map(
         (item) =>
-          `<li class="flex gap-2"><span class="text-sky-500">â€¢</span><span>${escapeHtml(
+          `<li class="flex gap-2"><span class="text-sky-500">•</span><span>${escapeHtml(
             item
           )}</span></li>`
       )
@@ -1746,18 +1810,38 @@ document.addEventListener("DOMContentLoaded", () => {
         ? `[SUPPRESSED: ${String(item.values_suppressed_reason).replaceAll("_", " ")}]`
         : (item.top_values || [])
             .map((entry) => `${entry.value} (${entry.count})`)
-            .join(", ") || "â€”",
+            .join(", ") || "—",
       Privacy: item.classification,
     }));
     const timeRows = (table.time_summary || []).map((item) => ({
       Column: item.column,
-      Earliest: item.min,
-      Latest: item.max,
+      Earliest: String(item.min).slice(0, 10),
+      Latest: String(item.max).slice(0, 10),
+      Span: item.span_days === undefined ? "—" : `${formatEdaNumber(item.span_days)} days`,
+      Busiest: item.busiest_period ? `${item.busiest_period.period} (${formatEdaNumber(item.busiest_period.rows)} rows)` : "—",
+      Quietest: item.quietest_period ? `${item.quietest_period.period} (${formatEdaNumber(item.quietest_period.rows)} rows)` : "—",
       Parsed: formatEdaNumber(item.parsed_count),
       Invalid: formatEdaNumber(item.invalid_date_count),
     }));
+    const timeSeriesHtml = (table.time_summary || [])
+      .filter((item) => Array.isArray(item.series) && item.series.length > 1)
+      .map((item) => {
+        const peak = Math.max(...item.series.map((point) => point.rows)) || 1;
+        // Height classes are listed in full: the CSP has no 'unsafe-inline'
+        // for styles, so a style attribute would be dropped by the browser,
+        // and Tailwind only compiles class names it can see in the source.
+        const heights = ["h-0.5", "h-1", "h-2", "h-3", "h-4", "h-5", "h-6", "h-7", "h-8", "h-9", "h-10", "h-11", "h-12", "h-14"];
+        const bars = item.series
+          .map((point) => {
+            const step = heights[Math.max(0, Math.min(heights.length - 1, Math.round((point.rows / peak) * (heights.length - 1))))];
+            return `<div class="flex-1 min-w-[3px] ${step} bg-sky-400 hover:bg-sky-600 rounded-t" title="${escapeHtml(point.period)}: ${formatEdaNumber(point.rows)} rows"></div>`;
+          })
+          .join("");
+        return `<div class="mt-3"><p class="text-xs text-slate-500 mb-1">Rows per ${escapeHtml(item.granularity)} — ${escapeHtml(item.column)} (${escapeHtml(item.series[0].period)} to ${escapeHtml(item.series[item.series.length - 1].period)})</p><div class="flex items-end gap-px h-14 border-b border-slate-200">${bars}</div></div>`;
+      })
+      .join("");
     const correlationRows = (table.correlations || []).map((item) => ({
-      Columns: `${item.left} â†” ${item.right}`,
+      Columns: `${item.left} ↔ ${item.right}`,
       "Pearson r": formatEdaNumber(item.pearson_r),
       Pairs: formatEdaNumber(item.pair_count),
     }));
@@ -1775,7 +1859,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="font-semibold text-sm text-slate-800">${escapeHtml(table.name)}</span>
         <span class="flex items-center gap-2 text-[10px]"><span class="${statusClass} px-2 py-1 rounded-full">${completeness}</span><span class="text-slate-400">${formatEdaNumber(
       table.rows_scanned
-    )} rows â€¢ ${formatEdaNumber(table.column_count)} columns â€¢ ${formatEdaNumber(
+    )} rows • ${formatEdaNumber(table.column_count)} columns • ${formatEdaNumber(
       table.duration_ms
     )} ms</span></span>
       </summary>
@@ -1812,7 +1896,7 @@ document.addEventListener("DOMContentLoaded", () => {
         )}</section>
         <section><h4 class="text-xs font-semibold text-slate-700 mb-2">Time coverage</h4>${renderTable(
           timeRows
-        )}</section>
+        )}${timeSeriesHtml}</section>
         <section><h4 class="text-xs font-semibold text-slate-700 mb-2">Strongest correlations</h4>${renderTable(
           correlationRows
         )}</section>
@@ -1835,15 +1919,15 @@ document.addEventListener("DOMContentLoaded", () => {
       : "bg-amber-50 text-amber-700";
     const relationships = (report.relationships || []).map((item) => {
       const coverage = item.status === "data_verified"
-        ? ` â€¢ ${(Number(item.from_match_rate || 0) * 100).toFixed(
+        ? ` • ${(Number(item.from_match_rate || 0) * 100).toFixed(
             1
           )}% of child rows reference a valid parent; ${(
             Number(item.to_match_rate || 0) * 100
           ).toFixed(1)}% of parent rows participate${
             item.scope_complete ? "" : " (bounded scope)"
           }`
-        : " â€¢ schema validated; data coverage unavailable";
-      return `${item.from_table}.${item.from_column} â†’ ${item.to_table}.${item.to_column}${coverage}`;
+        : " • schema validated; data coverage unavailable";
+      return `${item.from_table}.${item.from_column} → ${item.to_table}.${item.to_column}${coverage}`;
     });
     const sensitiveCount = ((report.privacy || {}).sensitive_columns || []).length;
     const traceRows = (report.trace || []).map((item) => ({
@@ -1858,7 +1942,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
           <div><p class="text-sm font-semibold text-slate-800">Database overview</p><p class="text-[11px] text-slate-400">Generated ${escapeHtml(
             new Date(report.generated_at).toLocaleString()
-          )} â€¢ ${formatEdaNumber(report.duration_ms)} ms</p></div>
+          )} • ${formatEdaNumber(report.duration_ms)} ms</p></div>
           <span class="${statusClass} px-2.5 py-1 rounded-full text-[10px] font-medium">${escapeHtml(
             report.status
           )}</span>
@@ -1921,7 +2005,7 @@ document.addEventListener("DOMContentLoaded", () => {
     edaReportModal.classList.remove("hidden");
     edaReportDownload.classList.add("hidden");
     edaReportContent.innerHTML =
-      '<div class="h-full flex items-center justify-center"><div class="text-center"><div class="spinner mx-auto mb-3"></div><p class="text-xs text-slate-600">Profiling tables locallyâ€¦</p><p class="text-[10px] text-slate-400 mt-1">Large datasets may use bounded samples.</p></div></div>';
+      '<div class="h-full flex items-center justify-center"><div class="text-center"><div class="spinner mx-auto mb-3"></div><p class="text-xs text-slate-600">Profiling tables locally…</p><p class="text-[10px] text-slate-400 mt-1">Large datasets may use bounded samples.</p></div></div>';
     setButtonLoading(edaReportButton, true);
     try {
       const response = await apiFetch("/api/eda-report", { method: "POST" });
@@ -1931,7 +2015,7 @@ document.addEventListener("DOMContentLoaded", () => {
         throw new Error(result.error || "The EDA report could not be completed.");
       }
       lastEdaReport = result.report;
-      edaReportSubtitle.textContent = `${lastEdaReport.status} â€¢ ${formatEdaNumber(
+      edaReportSubtitle.textContent = `${lastEdaReport.status} • ${formatEdaNumber(
         lastEdaReport.overview.scanned_rows
       )} rows scanned locally`;
       edaReportContent.innerHTML = renderEdaReport(lastEdaReport);
@@ -1958,7 +2042,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (agent) {
       html += `<p class="text-[10px] text-slate-400">${escapeHtml(
         agent.model
-      )} â€¢ ${escapeHtml(agent.routing_tier)} routing â€¢ ${Number(
+      )} • ${escapeHtml(agent.routing_tier)} routing • ${Number(
         agent.examples_used || 0
       )} learned examples</p>`;
     }
@@ -1969,7 +2053,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const verifyLabel = verification.passed
         ? "Deterministic checks passed"
         : "Result needs review";
-      html += `<p class="text-[10px] ${verifyColor} font-medium">${verifyLabel} â€¢ ${Math.round(
+      html += `<p class="text-[10px] ${verifyColor} font-medium">${verifyLabel} • ${Math.round(
         Number(verification.score || 0) * 100
       )}%</p>`;
       (verification.warnings || []).forEach(
@@ -1988,7 +2072,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const color = item.status === "ok" ? "text-emerald-600" : "text-red-600";
       html += `<div class="text-[10px]"><span class="${color} font-medium">${escapeHtml(
         item.tool
-      )}</span><span class="text-slate-400"> â€¢ ${item.duration_ms || 0}ms</span><p class="text-slate-500">${escapeHtml(
+      )}</span><span class="text-slate-400"> • ${item.duration_ms || 0}ms</span><p class="text-slate-500">${escapeHtml(
         item.summary
       )}</p></div>`;
     });
@@ -2000,7 +2084,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const budget = result.budget || {};
     agentBudget.textContent =
       budget.turns_used !== undefined
-        ? `${budget.turns_used} turns â€¢ ${budget.tool_calls_used} tool calls`
+        ? `${budget.turns_used} turns • ${budget.tool_calls_used} tool calls`
         : "Task completed";
     const plan = result.plan || [];
     const trace = result.trace || [];
@@ -2010,7 +2094,7 @@ document.addEventListener("DOMContentLoaded", () => {
         result.agent.model
       )}</p><p class="text-[9px] text-violet-500 mt-0.5">${escapeHtml(
         result.agent.routing_reason
-      )} â€¢ ${Number(result.agent.examples_used || 0)} learned examples</p></div>`;
+      )} • ${Number(result.agent.examples_used || 0)} learned examples</p></div>`;
     }
     if (result.verification) {
       const verified = result.verification.passed;
@@ -2018,7 +2102,7 @@ document.addEventListener("DOMContentLoaded", () => {
         verified ? "bg-emerald-50" : "bg-amber-50"
       } p-2 mb-3"><p class="text-[10px] font-medium ${
         verified ? "text-emerald-700" : "text-amber-700"
-      }">${verified ? "Result verified" : "Verification warning"} â€¢ ${Math.round(
+      }">${verified ? "Result verified" : "Verification warning"} • ${Math.round(
         Number(result.verification.score || 0) * 100
       )}%</p></div>`;
     }
@@ -2049,7 +2133,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const metrics = result.metrics || {};
       const percent = (value) =>
         value === null || value === undefined
-          ? "â€”"
+          ? "—"
           : `${Math.round(Number(value) * 100)}%`;
       agentMetrics.innerHTML = [
         ["Runs", metrics.total_runs || 0],
@@ -2081,7 +2165,7 @@ document.addEventListener("DOMContentLoaded", () => {
   async function loadAgentSuggestions() {
     if (!agentSuggestions) return;
     agentSuggestions.innerHTML =
-      '<span class="text-[10px] text-slate-400">Building suggestions from columnsâ€¦</span>';
+      '<span class="text-[10px] text-slate-400">Building suggestions from columns…</span>';
     try {
       const response = await apiFetch("/api/chat/suggestions");
       if (!response) return;
@@ -2091,9 +2175,9 @@ document.addEventListener("DOMContentLoaded", () => {
         const button = document.createElement("button");
         button.type = "button";
         button.className =
-          "px-2.5 py-1.5 rounded-full border border-violet-100 bg-white text-[10px] text-violet-700 hover:bg-violet-50 transition";
+          "px-3 py-1.5 rounded-full border border-violet-200 bg-white text-xs text-violet-700 hover:bg-violet-50 transition";
         button.textContent = suggestion.label;
-        button.title = `${suggestion.question} â€” ${suggestion.reason}`;
+        button.title = `${suggestion.question} — ${suggestion.reason}`;
         button.addEventListener("click", () =>
           sendMessage({ query: suggestion.question })
         );
@@ -2121,14 +2205,14 @@ document.addEventListener("DOMContentLoaded", () => {
     activeController = new AbortController();
     if (agentActivity) {
       agentActivity.innerHTML =
-        '<div class="text-[11px] text-violet-600 animate-pulse">Planning and running local toolsâ€¦</div>';
+        '<div class="text-[11px] text-violet-600 animate-pulse">Planning and running local tools…</div>';
     }
     if (agentBudget) agentBudget.textContent = "Agent running";
 
     const typingEl = document.createElement("div");
     typingEl.className = "flex justify-start";
     typingEl.innerHTML =
-      '<div class="bg-white border border-slate-100 px-3 py-2.5 text-xs rounded-2xl shadow-sm text-violet-600">Agent is workingâ€¦</div>';
+      '<div class="bg-white border border-slate-100 px-3 py-2.5 text-xs rounded-2xl shadow-sm text-violet-600">Agent is working…</div>';
     chatThread.appendChild(typingEl);
     chatThread.scrollTop = chatThread.scrollHeight;
 

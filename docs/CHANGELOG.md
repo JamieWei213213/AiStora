@@ -1,5 +1,63 @@
 # Changelog
 
+## 26 September 2026 — real-world CSVs, onboarding, and bigger controls
+
+Found by uploading a set of realistic exports (a small coffee-shop business
+with three related tables, a spreadsheet export full of `$1,234.50`, `12%`,
+`N/A` and `Yes/No`, a semicolon-separated Latin-1 file, a ragged file and a
+header-only file) against the running app. Test suite: **277 tests**.
+
+### Fixed
+
+- Semicolon, tab and pipe separated files were read with a comma separator,
+  producing a one-column table whose rows were then all discarded as
+  malformed: the upload "succeeded" with zero rows. The parser now detects
+  the delimiter from the first lines (`engine/parser.py`).
+- Rows skipped for having the wrong number of cells were only written to the
+  server log. The upload response now carries `warnings` and the UI shows
+  them, including a note for header-only files and non-comma delimiters.
+- `static/js/scripts.js` was double-encoded: every bullet and dash in the UI
+  rendered as `â€¢` / `â€"` (visible in the EDA report and agent metrics).
+- Pressing Enter in the "Create New Database" dialog did nothing.
+
+### Auto clean does more of what a spreadsheet export needs
+
+Two new actions, both previewed and approved like the others: `parse_numbers`
+converts currency, percent, thousands-separated and accounting-negative text
+to plain numbers when at least 90% of a column's values parse (the rest are
+blanked and reported), and `normalize_booleans` standardizes yes/no, Y/N and
+TRUE/FALSE. Cleaning is delimiter-aware and can rewrite a `;` file with commas.
+
+### Questions over time
+
+The agent gained a `bucket_dates` tool (year / quarter / month / week / day)
+so "revenue per month" is a real two-step plan instead of a 700-group
+aggregate over raw dates. The EDA time summary now includes rows per period
+with the busiest and quietest period, rendered as a small bar strip.
+
+### Suggestions that make sense
+
+Suggested questions rank columns by name: `order_total by status` instead of
+`age by first_name`, averages for age-like columns, tables take turns.
+
+### Onboarding
+
+- **Try the sample dataset** (Databases screen, and the new empty state)
+  creates a database with 180 customers, 1,200 orders and 13 products
+  through the normal upload path. The files are downloadable from
+  `static/samples/`, along with a deliberately messy export.
+- `/guide` is a plain getting-started page: what works, limits (read from the
+  server config), cleaning actions, how to ask questions, privacy and
+  troubleshooting. Linked from the sign-in page, the databases screen, the
+  upload screen and the chat header.
+- The upload screen states the real limits (file size, tables, databases).
+
+### UI
+
+EDA report and Auto analyze are now full-size primary buttons; chat text,
+suggestion chips and the Auto clean button are larger; the chat header no
+longer wraps on phones.
+
 ## 25 September 2026 — the data platform
 
 Adds the data engineering layer described in `docs/DATA_PLATFORM.md`. Test

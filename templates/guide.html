@@ -1,0 +1,150 @@
+{% extends "base.html" %} {% block title %}Getting started | AIStora{% endblock %} {% block content %}
+<div class="h-full w-full overflow-y-auto bg-slate-50">
+  <div class="max-w-3xl mx-auto px-5 py-10 text-slate-700 leading-relaxed">
+    <a href="/app" class="text-sm text-sky-700 hover:text-sky-900 inline-flex items-center gap-1 mb-8">
+      <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to AIStora
+    </a>
+
+    <h1 class="text-3xl font-semibold text-slate-900 mb-2">Getting started with AIStora</h1>
+    <p class="text-base text-slate-600 mb-8">
+      AIStora turns CSV files into something you can question. Upload a spreadsheet export,
+      check its quality, get an automatic profile of every column, and ask questions in plain
+      English. All calculations run on AIStora's server; the AI model only ever sees your column
+      names, types and your question, never the rows themselves.
+    </p>
+
+    <div class="rounded-2xl border border-sky-200 bg-sky-50 p-5 mb-10">
+      <p class="font-semibold text-sky-900 mb-1">Fastest way to try it</p>
+      <p class="text-sm text-sky-900/80 mb-3">
+        On the Databases screen click <strong>Try the sample dataset</strong>. It loads a small
+        coffee-shop business (180 customers, 1,200 orders, 13 products) so you can explore every
+        feature in two minutes with realistic data. You can also
+        <a class="underline" href="{{ url_for('static', filename='samples/coffee_shop/orders.csv') }}" download>download the sample files</a>
+        (<a class="underline" href="{{ url_for('static', filename='samples/coffee_shop/customers.csv') }}" download>customers</a>,
+        <a class="underline" href="{{ url_for('static', filename='samples/coffee_shop/orders.csv') }}" download>orders</a>,
+        <a class="underline" href="{{ url_for('static', filename='samples/coffee_shop/products.csv') }}" download>products</a>)
+        and a deliberately
+        <a class="underline" href="{{ url_for('static', filename='samples/spreadsheet_export_messy.csv') }}" download>messy spreadsheet export</a>
+        to see what Auto clean does.
+      </p>
+    </div>
+
+    <h2 class="text-xl font-semibold text-slate-900 mt-10 mb-3">1. Create a database</h2>
+    <p class="mb-3">
+      A database is a folder for related CSV files, for example one per client, project or
+      month. Click <strong>New Database</strong>, give it a name and press Enter. You can rename
+      or delete it later from the card.
+    </p>
+
+    <h2 class="text-xl font-semibold text-slate-900 mt-10 mb-3">2. Upload CSV files</h2>
+    <p class="mb-3">
+      Drop one or more <code>.csv</code> files on the upload area. Each file becomes a table named
+      after the file; use <strong>Rename</strong> to give it a friendlier name. What works:
+    </p>
+    <ul class="list-disc pl-6 space-y-1 mb-4 text-sm">
+      <li>The first row must be the header (column names).</li>
+      <li>Comma, semicolon, tab and pipe separated files are all detected automatically.</li>
+      <li>UTF-8, Excel (Windows-1252) and Latin-1 encodings are handled, with or without a BOM.</li>
+      <li>Column types (whole number, decimal, text) are inferred from the first 1,000 rows.</li>
+      <li>Rows with a different number of cells than the header are skipped and you are told how many; Auto clean can repair them.</li>
+      <li>Excel workbooks (<code>.xlsx</code>) are not accepted yet: save each sheet as CSV first.</li>
+    </ul>
+    <p class="text-sm text-slate-600 mb-3">
+      Limits on this server: files up to <strong>{{ limits.max_upload_mb }} MB</strong>,
+      <strong>{{ limits.max_tables }}</strong> tables per database and
+      <strong>{{ limits.max_databases }}</strong> databases per account.
+    </p>
+
+    <h2 class="text-xl font-semibold text-slate-900 mt-10 mb-3">3. Auto clean (optional)</h2>
+    <p class="mb-3">
+      Click <strong>Auto clean</strong> next to a table to profile it. AIStora shows what it
+      found and what it would change, and only acts after you approve. It never edits your
+      original table: it creates a new <code>_cleaned</code> copy next to it. Fixes it can apply:
+    </p>
+    <ul class="list-disc pl-6 space-y-1 mb-4 text-sm">
+      <li>Tidy headers (<code>Customer Name </code> becomes <code>Customer_Name</code>) and name blank columns.</li>
+      <li>Trim stray spaces and turn <code>N/A</code>, <code>null</code>, <code>none</code> into empty cells.</li>
+      <li>Convert text that is really a number: <code>$1,234.50</code>, <code>USD 954</code>, <code>(20.00)</code>, <code>12%</code>, <code>1234,50</code>.</li>
+      <li>Standardize <code>Yes/No</code>, <code>Y/N</code>, <code>TRUE/FALSE</code> to <code>true</code>/<code>false</code>.</li>
+      <li>Remove exact duplicate rows and empty rows; pad or trim rows of the wrong width.</li>
+      <li>Rewrite semicolon or tab separated files with commas.</li>
+    </ul>
+    <p class="text-sm text-slate-600 mb-3">
+      Missing values are reported, never guessed or filled in.
+    </p>
+
+    <h2 class="text-xl font-semibold text-slate-900 mt-10 mb-3">4. Relationships between tables</h2>
+    <p class="mb-3">
+      When a database has two or more tables, AIStora asks the AI to propose how they connect
+      (for example <code>orders.customer_id</code> to <code>customers.customer_id</code>) from the
+      column names and types alone. Detected relationships let you ask questions that span tables,
+      such as revenue per customer segment. Use <strong>Re-detect relationships</strong> after
+      uploading more files.
+    </p>
+
+    <h2 class="text-xl font-semibold text-slate-900 mt-10 mb-3">5. EDA report</h2>
+    <p class="mb-3">
+      Open the chat screen and click <strong>EDA report</strong>. In about a second you get a
+      deterministic profile of every table: missing values, duplicates, numeric distributions
+      with outlier flags, category breakdowns, date ranges and correlations, plus plain-language
+      findings. It runs entirely on the server, uses no AI, and can be downloaded as JSON.
+    </p>
+
+    <h2 class="text-xl font-semibold text-slate-900 mt-10 mb-3">6. Ask questions</h2>
+    <p class="mb-3">
+      Type a question or click one of the suggested chips. The AI plans a sequence of safe
+      operations (filter, group, join, rank, bucket by month) and AIStora executes them locally,
+      then shows the result table and the steps it took in the <em>Agent activity</em> panel.
+      Questions that work well:
+    </p>
+    <ul class="list-disc pl-6 space-y-1 mb-4 text-sm">
+      <li>"What was total order_total by channel?"</li>
+      <li>"Show the 10 customers with the most orders."</li>
+      <li>"Average order_total per month of order_date."</li>
+      <li>"How many orders were returned, grouped by ship_state?"</li>
+      <li>"Join orders and products, then total quantity by category."</li>
+    </ul>
+    <p class="mb-3 text-sm">
+      Use the column names you see in the schema panel; the AI cannot guess a column that does not
+      exist. <strong>Auto analyze</strong> lets the AI choose one useful analysis for you, which is
+      a good first move on an unfamiliar file. Ask for a "chart" to get a bar or line chart; the
+      chart is rendered by an external service, so AIStora asks your permission before sending it
+      the aggregate numbers.
+    </p>
+    <p class="text-sm text-slate-600 mb-3">
+      AI questions are limited to <strong>{{ limits.ai_per_day }}</strong> per account per day during
+      the beta. EDA reports, cleaning and uploads are unlimited.
+    </p>
+
+    <h2 class="text-xl font-semibold text-slate-900 mt-10 mb-3">7. Memory, learning and feedback</h2>
+    <p class="mb-3 text-sm">
+      Within a database, the AI remembers the recent conversation so follow-up questions work
+      ("now only for 2025"). <strong>Clear memory</strong> forgets that conversation.
+      Thumbs up/down on an answer teaches AIStora which plans worked; <strong>Clear learning</strong>
+      deletes those saved evaluations for the database.
+    </p>
+
+    <h2 class="text-xl font-semibold text-slate-900 mt-10 mb-3">Privacy</h2>
+    <ul class="list-disc pl-6 space-y-1 mb-4 text-sm">
+      <li>Files are stored on AIStora's server and are visible only to your account.</li>
+      <li>The AI model receives table names, column names and types, row counts, detected relationships and your question. It never receives cell values.</li>
+      <li>The one exception is a chart you explicitly approve, which sends the aggregated numbers to the charting service.</li>
+      <li>Delete a table or database at any time from its trash icon.</li>
+    </ul>
+
+    <h2 class="text-xl font-semibold text-slate-900 mt-10 mb-3">Troubleshooting</h2>
+    <dl class="space-y-3 text-sm mb-10">
+      <div><dt class="font-medium text-slate-800">"A database may hold at most N tables."</dt><dd>Delete a table you no longer need (trash icon) or create another database.</dd></div>
+      <div><dt class="font-medium text-slate-800">A column I expected to be numeric shows as text.</dt><dd>Some values contain currency symbols, thousands separators or words. Run Auto clean; the copy will have plain numbers.</dd></div>
+      <div><dt class="font-medium text-slate-800">The AI says a column does not exist.</dt><dd>Check the exact name in the schema panel; names are case-sensitive after cleaning.</dd></div>
+      <div><dt class="font-medium text-slate-800">"Your session has expired."</dt><dd>Sessions end after a period of inactivity. Sign in again; your files are still there.</dd></div>
+      <div><dt class="font-medium text-slate-800">The daily AI limit is reached.</dt><dd>EDA report and Auto clean still work. The limit resets at midnight UTC.</dd></div>
+    </dl>
+
+    <p class="text-xs text-slate-400 border-t border-slate-200 pt-6">
+      AIStora is in public beta. Found a problem? Email
+      <a class="underline" href="mailto:{{ support_email }}">{{ support_email }}</a>.
+    </p>
+  </div>
+</div>
+{% endblock %}

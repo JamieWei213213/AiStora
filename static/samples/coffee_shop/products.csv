@@ -1,0 +1,14 @@
+product_id,product_name,category,unit_cost,unit_price,launched_on,is_active
+101,Espresso Blend 1lb,Coffee,29.86,48.52,2023-10-09,true
+102,Colombia Single Origin 12oz,Coffee,8.86,15.08,2025-01-28,true
+103,Decaf House Roast 1lb,Coffee,6.65,13.45,2023-01-31,false
+104,Cold Brew Concentrate 32oz,Coffee,12.77,28.12,2024-07-28,true
+105,Jasmine Green Tea 50ct,Tea,30.3,64.99,2023-08-14,true
+106,Earl Grey Loose Leaf 4oz,Tea,14.68,36.25,2025-02-16,true
+107,Chamomile Night 20ct,Tea,32.32,62.71,2023-06-09,true
+108,Pour-Over Kettle,Equipment,35.07,59.7,2024-01-25,false
+109,Burr Grinder Mini,Equipment,38.59,85.04,2025-04-06,false
+110,French Press 34oz,Equipment,22.3,38.46,2024-01-23,false
+111,Travel Tumbler 16oz,Equipment,15.31,34.12,2025-06-01,true
+112,Monthly Roaster's Pick,Subscriptions,11.08,18.5,2024-11-08,true
+113,Quarterly Sampler Box,Subscriptions,15.15,25.45,2023-08-27,true

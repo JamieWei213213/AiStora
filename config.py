@@ -132,6 +132,8 @@ class Config:
         os.environ.get("DATASET_CACHE_MAX_BYTES", str(2 * 1024 ** 3))
     )
     UPLOAD_MIN_FREE_BYTES = int(os.environ.get("UPLOAD_MIN_FREE_BYTES", "0"))
+    # Shown on the /guide page and in error copy. Public contact for the beta.
+    SUPPORT_EMAIL = os.environ.get("SUPPORT_EMAIL", "jamiejwei@gmail.com")
     MAX_CONTENT_LENGTH = int(
         os.environ.get("MAX_UPLOAD_BYTES", str(50 * 1024 * 1024))
     )

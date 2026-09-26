@@ -1,0 +1,181 @@
+customer_id,first_name,last_name,email,city,state,segment,signup_date,marketing_opt_in,age
+1,Priya,Rossi,priya.rossi1@example.com,Portland,OR,Small Business,2024-01-09,yes,42
+2,Sofia,Rossi,sofia.rossi2@example.com,Seattle,WA,Small Business,2023-06-25,yes,29
+3,Priya,Rossi,priya.rossi3@example.com,Phoenix,AZ,Consumer,2023-11-29,yes,33
+4,Zoë,Tanaka,zoe.tanaka4@example.com,Chicago,IL,Consumer,2025-07-24,no,32
+5,Priya,Dubois,priya.dubois5@example.com,Austin,TX,Consumer,2023-09-10,no,
+6,Chen,Novak,chen.novak6@example.com,Boston,MA,Consumer,2023-05-22,no,24
+7,Emma,Kim,emma.kim7@example.com,Austin,TX,Small Business,2024-03-08,yes,43
+8,Kai,Dubois,kai.dubois8@example.com,Phoenix,AZ,Consumer,2024-07-20,yes,62
+9,Owen,Rossi,owen.rossi9@example.com,Miami,FL,Consumer,2024-03-21,yes,48
+10,Mia,Lee,mia.lee10@example.com,Austin,TX,Consumer,2023-04-19,no,72
+11,Kai,Müller,kai.muller11@example.com,Austin,TX,Consumer,2023-06-15,yes,57
+12,José,Nguyen,jose.nguyen12@example.com,Seattle,WA,Enterprise,2025-06-18,no,34
+13,Lucas,Novak,lucas.novak13@example.com,Seattle,WA,Consumer,2024-05-12,yes,67
+14,Olivia,Kim,olivia.kim14@example.com,Portland,OR,Enterprise,2023-06-19,no,
+15,Chen,Müller,chen.muller15@example.com,Phoenix,AZ,Small Business,2024-12-07,yes,64
+16,Priya,Ivanova,priya.ivanova16@example.com,Portland,OR,Small Business,2024-04-07,yes,34
+17,Noah,Johnson,noah.johnson17@example.com,Los Angeles,CA,Consumer,2023-08-24,yes,19
+18,Liam,Brown,liam.brown18@example.com,Seattle,WA,Enterprise,2025-05-30,no,23
+19,Lucas,Rossi,lucas.rossi19@example.com,Portland,OR,Consumer,2023-05-16,no,34
+20,Chen,Müller,chen.muller20@example.com,Seattle,WA,Consumer,2024-03-17,no,46
+21,Fatima,Smith,fatima.smith21@example.com,Seattle,WA,Consumer,2025-01-15,no,70
+22,Lucas,Müller,lucas.muller22@example.com,Denver,CO,Consumer,2023-05-24,no,30
+23,Fatima,Brown,fatima.brown23@example.com,Seattle,WA,Consumer,2025-06-01,yes,22
+24,Ava,García,ava.garcia24@example.com,Denver,CO,Consumer,2024-05-12,no,32
+25,Liam,Okafor,liam.okafor25@example.com,Boston,MA,Consumer,2024-02-04,no,69
+26,Ethan,O'Brien,ethan.obrien26@example.com,Phoenix,AZ,Small Business,2024-05-13,yes,31
+27,Sofia,Smith,sofia.smith27@example.com,Atlanta,GA,Small Business,2023-03-04,no,22
+28,Isla,Haddad,isla.haddad28@example.com,Phoenix,AZ,Enterprise,2024-06-27,yes,22
+29,Noah,Okafor,noah.okafor29@example.com,Seattle,WA,Consumer,2024-11-22,yes,44
+30,Isla,Brown,isla.brown30@example.com,Atlanta,GA,Consumer,2024-09-26,yes,
+31,Isla,Lee,isla.lee31@example.com,Miami,FL,Enterprise,2023-07-29,no,34
+32,Priya,Kim,priya.kim32@example.com,Chicago,IL,Consumer,2025-08-09,yes,19
+33,Kai,Novak,kai.novak33@example.com,Seattle,WA,Consumer,2023-08-07,no,27
+34,Noah,Brown,noah.brown34@example.com,Miami,FL,Consumer,2024-03-24,no,58
+35,Ava,Cohen,ava.cohen35@example.com,Chicago,IL,Enterprise,2023-04-17,yes,35
+36,Emma,Cohen,emma.cohen36@example.com,Austin,TX,Consumer,2024-09-11,yes,64
+37,Sofia,Rossi,sofia.rossi37@example.com,Phoenix,AZ,Consumer,2025-07-16,yes,24
+38,Mia,Smith,mia.smith38@example.com,Los Angeles,CA,Consumer,2023-05-14,no,29
+39,Owen,O'Brien,owen.obrien39@example.com,Phoenix,AZ,Consumer,2023-03-19,yes,53
+40,Yusuf,Novak,yusuf.novak40@example.com,Phoenix,AZ,Consumer,2023-05-11,yes,38
+41,Liam,Ivanova,liam.ivanova41@example.com,Denver,CO,Small Business,2024-11-13,yes,41
+42,Chen,Adeyemi,chen.adeyemi42@example.com,Austin,TX,Enterprise,2023-08-31,yes,70
+43,Chen,Nguyen,chen.nguyen43@example.com,Austin,TX,Small Business,2023-12-07,no,70
+44,Mia,Okafor,mia.okafor44@example.com,Seattle,WA,Consumer,2023-02-09,no,33
+45,Fatima,Ivanova,fatima.ivanova45@example.com,Chicago,IL,Small Business,2025-06-11,yes,33
+46,Sofia,Tanaka,sofia.tanaka46@example.com,Miami,FL,Consumer,2023-03-13,no,41
+47,Priya,Cohen,priya.cohen47@example.com,Miami,FL,Enterprise,2023-04-29,no,
+48,Mia,Smith,mia.smith48@example.com,Seattle,WA,Consumer,2023-12-20,no,
+49,Hannah,Patel,hannah.patel49@example.com,Boston,MA,Small Business,2023-07-14,no,21
+50,Ava,Lee,ava.lee50@example.com,Phoenix,AZ,Small Business,2025-08-20,yes,42
+51,Noah,Johnson,noah.johnson51@example.com,Atlanta,GA,Consumer,2025-05-18,yes,65
+52,Hannah,Silva,hannah.silva52@example.com,Boston,MA,Consumer,2024-12-14,no,54
+53,Sofia,O'Brien,sofia.obrien53@example.com,Boston,MA,Small Business,2025-07-13,yes,
+54,Ethan,Tanaka,ethan.tanaka54@example.com,Phoenix,AZ,Small Business,2023-11-08,no,32
+55,Isla,Adeyemi,isla.adeyemi55@example.com,Miami,FL,Consumer,2024-03-28,yes,51
+56,Mateo,García,mateo.garcia56@example.com,Chicago,IL,Consumer,2024-10-10,no,24
+57,Ethan,Brown,ethan.brown57@example.com,Denver,CO,Consumer,2023-02-17,yes,
+58,Noah,Dubois,noah.dubois58@example.com,Boston,MA,Small Business,2024-08-12,yes,64
+59,José,Tanaka,jose.tanaka59@example.com,Denver,CO,Consumer,2024-12-05,yes,67
+60,Chen,Brown,chen.brown60@example.com,Austin,TX,Small Business,2024-12-13,no,22
+61,Lucas,Patel,lucas.patel61@example.com,Portland,OR,Consumer,2024-04-20,no,67
+62,Kai,Lee,kai.lee62@example.com,Boston,MA,Small Business,2024-07-15,no,29
+63,Fatima,Rossi,fatima.rossi63@example.com,Denver,CO,Small Business,2023-10-11,no,59
+64,Mia,Dubois,mia.dubois64@example.com,Seattle,WA,Small Business,2023-08-29,no,40
+65,Owen,García,owen.garcia65@example.com,Austin,TX,Consumer,2024-01-28,yes,64
+66,Noah,O'Brien,noah.obrien66@example.com,Boston,MA,Consumer,2024-04-22,no,22
+67,Chen,Tanaka,chen.tanaka67@example.com,Atlanta,GA,Enterprise,2023-01-21,no,49
+68,Yusuf,Silva,yusuf.silva68@example.com,Boston,MA,Small Business,2025-09-03,no,53
+69,Kai,Brown,kai.brown69@example.com,Portland,OR,Consumer,2024-03-22,no,20
+70,Zoë,Tanaka,zoe.tanaka70@example.com,Austin,TX,Small Business,2025-07-30,yes,58
+71,Ava,Tanaka,ava.tanaka71@example.com,Atlanta,GA,Consumer,2023-01-28,yes,60
+72,Olivia,Dubois,olivia.dubois72@example.com,Austin,TX,Consumer,2024-01-24,no,32
+73,Zoë,Johnson,zoe.johnson73@example.com,Boston,MA,Consumer,2025-09-01,no,35
+74,José,Nguyen,jose.nguyen74@example.com,Phoenix,AZ,Consumer,2025-09-01,no,33
+75,Liam,Nguyen,liam.nguyen75@example.com,Denver,CO,Consumer,2023-01-21,yes,34
+76,José,Patel,jose.patel76@example.com,Atlanta,GA,Enterprise,2024-04-21,no,68
+77,Mateo,Adeyemi,mateo.adeyemi77@example.com,Atlanta,GA,Enterprise,2025-01-05,yes,68
+78,Ethan,Patel,ethan.patel78@example.com,Atlanta,GA,Consumer,2023-11-16,no,44
+79,Noah,Novak,noah.novak79@example.com,Denver,CO,Consumer,2025-03-02,no,
+80,Emma,Novak,emma.novak80@example.com,Los Angeles,CA,Consumer,2024-03-14,no,23
+81,Zoë,Nguyen,zoe.nguyen81@example.com,Boston,MA,Small Business,2023-04-19,no,42
+82,Olivia,O'Brien,olivia.obrien82@example.com,Austin,TX,Small Business,2025-09-15,no,58
+83,José,Dubois,jose.dubois83@example.com,Boston,MA,Small Business,2024-08-29,no,39
+84,Noah,Rossi,noah.rossi84@example.com,Portland,OR,Consumer,2024-04-20,no,40
+85,José,Johnson,jose.johnson85@example.com,Austin,TX,Consumer,2023-12-30,no,40
+86,Kai,Rossi,kai.rossi86@example.com,Phoenix,AZ,Consumer,2025-08-28,yes,24
+87,Chen,Haddad,chen.haddad87@example.com,Phoenix,AZ,Small Business,2024-12-08,no,60
+88,Fatima,Nguyen,fatima.nguyen88@example.com,Seattle,WA,Consumer,2024-02-19,yes,
+89,Yusuf,Haddad,yusuf.haddad89@example.com,Phoenix,AZ,Consumer,2024-03-11,no,41
+90,Mia,Silva,mia.silva90@example.com,Chicago,IL,Consumer,2025-01-08,yes,39
+91,Owen,Okafor,owen.okafor91@example.com,Denver,CO,Consumer,2024-05-10,no,
+92,Hannah,Adeyemi,hannah.adeyemi92@example.com,Chicago,IL,Enterprise,2025-05-02,yes,37
+93,Yusuf,Okafor,yusuf.okafor93@example.com,Chicago,IL,Consumer,2024-06-30,yes,36
+94,Liam,Cohen,liam.cohen94@example.com,Chicago,IL,Small Business,2023-05-10,no,25
+95,Isla,Silva,isla.silva95@example.com,Portland,OR,Consumer,2023-12-15,yes,22
+96,José,Patel,jose.patel96@example.com,Seattle,WA,Consumer,2023-03-17,yes,28
+97,Isla,Silva,isla.silva97@example.com,Seattle,WA,Enterprise,2023-05-02,no,
+98,Kai,Brown,kai.brown98@example.com,Phoenix,AZ,Consumer,2025-07-19,no,
+99,Chen,Silva,chen.silva99@example.com,Atlanta,GA,Small Business,2024-09-16,yes,67
+100,Sofia,Rossi,sofia.rossi100@example.com,Seattle,WA,Consumer,2023-06-27,yes,29
+101,Chen,Dubois,chen.dubois101@example.com,Atlanta,GA,Consumer,2023-02-03,yes,37
+102,Fatima,García,fatima.garcia102@example.com,Denver,CO,Enterprise,2025-03-17,yes,46
+103,Owen,Brown,owen.brown103@example.com,Austin,TX,Enterprise,2025-04-26,yes,23
+104,Mateo,Silva,mateo.silva104@example.com,Atlanta,GA,Small Business,2024-08-05,no,47
+105,Fatima,Silva,fatima.silva105@example.com,Boston,MA,Enterprise,2024-05-27,no,47
+106,Kai,Smith,kai.smith106@example.com,Boston,MA,Small Business,2024-09-10,no,20
+107,Lucas,Novak,lucas.novak107@example.com,Atlanta,GA,Enterprise,2025-02-22,no,55
+108,Mateo,Haddad,mateo.haddad108@example.com,Phoenix,AZ,Small Business,2025-07-27,no,
+109,Chen,Haddad,chen.haddad109@example.com,Seattle,WA,Consumer,2024-02-23,no,39
+110,Mateo,Johnson,mateo.johnson110@example.com,Boston,MA,Small Business,2023-10-23,no,71
+111,Liam,Dubois,liam.dubois111@example.com,Seattle,WA,Consumer,2023-11-28,yes,68
+112,Hannah,Nguyen,hannah.nguyen112@example.com,Phoenix,AZ,Consumer,2023-02-25,yes,52
+113,Kai,Haddad,kai.haddad113@example.com,Portland,OR,Small Business,2023-07-28,no,54
+114,Ethan,Dubois,ethan.dubois114@example.com,Portland,OR,Consumer,2025-09-23,yes,64
+115,Ethan,Cohen,ethan.cohen115@example.com,Los Angeles,CA,Consumer,2023-04-06,yes,72
+116,Fatima,Patel,fatima.patel116@example.com,Austin,TX,Consumer,2025-01-03,no,51
+117,Chen,Haddad,chen.haddad117@example.com,Portland,OR,Consumer,2024-07-18,yes,43
+118,Kai,Lee,kai.lee118@example.com,Austin,TX,Small Business,2023-10-10,no,40
+119,Mia,Nguyen,mia.nguyen119@example.com,Chicago,IL,Small Business,2025-05-07,no,28
+120,Owen,Haddad,owen.haddad120@example.com,Miami,FL,Consumer,2025-02-20,no,48
+121,Sofia,Brown,sofia.brown121@example.com,Atlanta,GA,Consumer,2025-05-26,no,21
+122,José,Tanaka,jose.tanaka122@example.com,Boston,MA,Enterprise,2025-03-22,yes,50
+123,Olivia,Lee,olivia.lee123@example.com,Atlanta,GA,Consumer,2023-04-13,no,25
+124,Fatima,Nguyen,fatima.nguyen124@example.com,Austin,TX,Consumer,2024-11-01,yes,23
+125,Mia,Johnson,mia.johnson125@example.com,Atlanta,GA,Small Business,2024-10-27,yes,40
+126,Priya,Johnson,priya.johnson126@example.com,Portland,OR,Small Business,2023-02-06,yes,34
+127,Lucas,García,lucas.garcia127@example.com,Boston,MA,Enterprise,2025-02-17,yes,47
+128,Ethan,Nguyen,ethan.nguyen128@example.com,Los Angeles,CA,Consumer,2023-02-27,no,41
+129,Chen,Kim,chen.kim129@example.com,Denver,CO,Consumer,2024-08-02,yes,29
+130,Noah,Adeyemi,noah.adeyemi130@example.com,Boston,MA,Small Business,2023-09-04,no,56
+131,Lucas,Dubois,lucas.dubois131@example.com,Chicago,IL,Consumer,2024-11-13,yes,70
+132,Ethan,Cohen,ethan.cohen132@example.com,Austin,TX,Consumer,2025-08-25,no,56
+133,Chen,Rossi,chen.rossi133@example.com,Portland,OR,Small Business,2023-07-23,no,49
+134,Lucas,Tanaka,lucas.tanaka134@example.com,Atlanta,GA,Consumer,2023-10-30,no,20
+135,Mia,Nguyen,mia.nguyen135@example.com,Atlanta,GA,Small Business,2025-03-07,yes,57
+136,Ethan,Brown,ethan.brown136@example.com,Atlanta,GA,Small Business,2023-08-13,yes,58
+137,Olivia,Patel,olivia.patel137@example.com,Los Angeles,CA,Consumer,2024-03-27,yes,56
+138,Olivia,García,olivia.garcia138@example.com,Chicago,IL,Consumer,2024-03-01,yes,31
+139,Owen,Ivanova,owen.ivanova139@example.com,Phoenix,AZ,Consumer,2023-10-07,yes,35
+140,Ethan,Johnson,ethan.johnson140@example.com,Seattle,WA,Consumer,2023-03-19,yes,67
+141,Priya,Cohen,priya.cohen141@example.com,Miami,FL,Consumer,2024-02-09,yes,35
+142,Emma,Dubois,emma.dubois142@example.com,Miami,FL,Small Business,2024-11-19,no,56
+143,Yusuf,Patel,yusuf.patel143@example.com,Denver,CO,Consumer,2024-09-26,no,58
+144,Noah,Dubois,noah.dubois144@example.com,Chicago,IL,Small Business,2023-04-30,yes,21
+145,Ethan,Haddad,ethan.haddad145@example.com,Seattle,WA,Consumer,2025-06-27,yes,43
+146,Yusuf,Cohen,yusuf.cohen146@example.com,Boston,MA,Consumer,2025-01-14,yes,45
+147,José,Adeyemi,jose.adeyemi147@example.com,Boston,MA,Enterprise,2023-10-14,yes,63
+148,Sofia,Dubois,sofia.dubois148@example.com,Portland,OR,Enterprise,2025-05-25,no,25
+149,Owen,Ivanova,owen.ivanova149@example.com,Los Angeles,CA,Consumer,2023-07-14,yes,71
+150,Noah,Müller,noah.muller150@example.com,Atlanta,GA,Enterprise,2023-02-21,no,34
+151,Isla,Müller,isla.muller151@example.com,Seattle,WA,Small Business,2024-07-21,yes,56
+152,Lucas,Johnson,lucas.johnson152@example.com,Austin,TX,Small Business,2024-09-02,yes,36
+153,Olivia,Cohen,olivia.cohen153@example.com,Chicago,IL,Small Business,2023-04-23,yes,27
+154,Yusuf,Brown,yusuf.brown154@example.com,Atlanta,GA,Consumer,2023-06-28,no,22
+155,Chen,Lee,chen.lee155@example.com,Seattle,WA,Small Business,2024-05-02,no,68
+156,Hannah,Novak,hannah.novak156@example.com,Seattle,WA,Consumer,2023-08-15,yes,65
+157,Ethan,Dubois,ethan.dubois157@example.com,Los Angeles,CA,Consumer,2024-05-05,no,46
+158,José,Dubois,jose.dubois158@example.com,Seattle,WA,Small Business,2023-11-26,yes,23
+159,Mia,Adeyemi,mia.adeyemi159@example.com,Atlanta,GA,Consumer,2023-11-29,no,57
+160,Ethan,Dubois,ethan.dubois160@example.com,Phoenix,AZ,Small Business,2023-04-12,yes,60
+161,Sofia,O'Brien,sofia.obrien161@example.com,Portland,OR,Small Business,2024-02-28,no,71
+162,Priya,O'Brien,priya.obrien162@example.com,Seattle,WA,Consumer,2023-11-17,no,42
+163,José,García,jose.garcia163@example.com,Seattle,WA,Small Business,2023-04-06,no,25
+164,Olivia,Cohen,olivia.cohen164@example.com,Los Angeles,CA,Consumer,2024-07-29,no,61
+165,Chen,Ivanova,chen.ivanova165@example.com,Boston,MA,Small Business,2025-01-08,yes,
+166,Ethan,Ivanova,ethan.ivanova166@example.com,Seattle,WA,Consumer,2023-08-06,yes,61
+167,Lucas,Patel,lucas.patel167@example.com,Miami,FL,Small Business,2024-01-12,yes,67
+168,Isla,Brown,isla.brown168@example.com,Boston,MA,Small Business,2025-09-24,yes,57
+169,Ava,Okafor,ava.okafor169@example.com,Chicago,IL,Small Business,2023-11-13,no,41
+170,Mateo,Kim,mateo.kim170@example.com,Atlanta,GA,Small Business,2023-03-13,yes,66
+171,Noah,Lee,noah.lee171@example.com,Denver,CO,Consumer,2024-04-09,no,29
+172,Ethan,Johnson,ethan.johnson172@example.com,Atlanta,GA,Consumer,2025-06-23,yes,28
+173,Kai,Smith,kai.smith173@example.com,Seattle,WA,Consumer,2024-11-08,no,
+174,Fatima,O'Brien,fatima.obrien174@example.com,Chicago,IL,Consumer,2024-06-08,yes,41
+175,Emma,Silva,emma.silva175@example.com,Atlanta,GA,Consumer,2024-11-14,no,21
+176,Priya,Adeyemi,priya.adeyemi176@example.com,Los Angeles,CA,Consumer,2023-11-05,yes,68
+177,Mia,Silva,mia.silva177@example.com,Miami,FL,Consumer,2024-05-24,no,30
+178,Priya,Cohen,priya.cohen178@example.com,Denver,CO,Consumer,2025-05-03,no,23
+179,Liam,O'Brien,liam.obrien179@example.com,Los Angeles,CA,Consumer,2023-03-21,no,55
+180,Isla,Tanaka,isla.tanaka180@example.com,Boston,MA,Consumer,2024-02-19,yes,39

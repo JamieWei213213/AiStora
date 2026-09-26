@@ -8,28 +8,29 @@
     <div class="flex items-center gap-2">
       <i data-lucide="message-circle" class="text-sky-600 w-5 h-5"></i>
       <div>
-        <p class="text-sm font-semibold text-slate-800">Agentic Database Chat</p>
-        <p class="text-[11px] text-emerald-600 flex items-center gap-1">
+        <p class="text-base font-semibold text-slate-800 whitespace-nowrap">Ask your data</p>
+        <p class="text-xs text-emerald-600 hidden sm:flex items-center gap-1">
           <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-          Structured tools • local execution
+          Runs on the server • the AI never sees your rows
         </p>
       </div>
     </div>
     <div class="flex items-center gap-2 flex-wrap justify-end">
       <button
         id="eda-report"
-        class="text-xs text-sky-700 hover:text-sky-900 flex items-center gap-1 px-2 py-1 rounded-lg bg-sky-50"
-        title="Build a deterministic exploratory data analysis report locally"
+        class="text-sm font-medium text-white bg-sky-600 hover:bg-sky-700 flex items-center gap-2 px-4 py-2 rounded-xl shadow-sm transition"
+        title="Profile every table locally: missing values, distributions, outliers, dates, correlations. No AI involved."
       >
-        <i data-lucide="file-chart-column" class="w-3.5 h-3.5"></i>EDA report
+        <i data-lucide="file-chart-column" class="w-4 h-4"></i>EDA report
       </button>
       <button
         id="auto-analyze"
-        class="text-xs text-violet-600 hover:text-violet-800 flex items-center gap-1 px-2 py-1 rounded-lg bg-violet-50"
-        title="Let the schema agent choose and run a useful analysis"
+        class="text-sm font-medium text-white bg-violet-600 hover:bg-violet-700 flex items-center gap-2 px-4 py-2 rounded-xl shadow-sm transition"
+        title="Let the AI pick and run one useful analysis of this database"
       >
-        <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>Auto analyze
+        <i data-lucide="sparkles" class="w-4 h-4"></i>Auto analyze
       </button>
+      <span class="hidden sm:block w-px h-6 bg-slate-200 mx-1" aria-hidden="true"></span>
       <button
         id="schema-toggle"
         class="md:hidden text-xs text-slate-500 hover:text-slate-700 flex items-center gap-1"
@@ -50,6 +51,15 @@
       >
         <i data-lucide="history" class="w-3.5 h-3.5"></i>Clear learning
       </button>
+      <a
+        href="/guide"
+        target="_blank"
+        rel="noopener"
+        class="text-xs text-slate-500 hover:text-slate-700 flex items-center gap-1"
+        title="How to use AIStora"
+      >
+        <i data-lucide="circle-help" class="w-3.5 h-3.5"></i>Guide
+      </a>
       <button
         id="back-to-upload"
         class="text-xs text-slate-500 hover:text-slate-700 flex items-center gap-1"
@@ -83,9 +93,11 @@
       <div id="chat-thread" class="flex-1 overflow-y-auto px-4 py-4 space-y-3">
         <div class="flex justify-start">
           <div
-            class="bg-slate-50 px-3 py-2.5 text-xs rounded-2xl shadow-sm max-w-[80%]"
+            class="bg-white px-4 py-3 text-sm rounded-2xl shadow-sm max-w-[80%] text-slate-700"
           >
-            Hello! I'm ready to answer questions about your data.
+            Ask a question about your tables, pick a suggestion below, or click
+            <strong>Auto analyze</strong> to let the AI choose a first analysis.
+            <strong>EDA report</strong> profiles every column without using AI.
           </div>
         </div>
         <div
@@ -98,8 +110,8 @@
         <input
           id="chat-input"
           type="text"
-          placeholder="Ask your database..."
-          class="flex-1 p-3 border border-slate-200 rounded-2xl text-xs focus:ring-2 focus:ring-sky-500"
+          placeholder="Ask a question, e.g. total order_total by channel"
+          class="flex-1 p-3 border border-slate-200 rounded-2xl text-sm focus:ring-2 focus:ring-sky-500"
         />
         <button
           id="chat-cancel"
@@ -109,7 +121,7 @@
         </button>
         <button
           id="chat-send"
-          class="inline-flex items-center gap-2 px-4 py-2 rounded-2xl text-xs bg-sky-600 text-white hover:bg-sky-700 transition"
+          class="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl text-sm font-medium bg-sky-600 text-white hover:bg-sky-700 transition"
         >
           <i data-lucide="send" class="w-4 h-4"></i>Send
         </button>
