@@ -31,7 +31,7 @@ logger = get_logger(__name__)
 auth_rate_limiter = SharedRateLimiter('auth')
 
 LOGIN_ATTEMPTS_PER_MINUTE = 10
-REGISTRATIONS_PER_HOUR = 5
+REGISTRATIONS_PER_HOUR = 10  # per source IP; a shared campus or office NAT is one IP
 
 # Returned for both "no such user" and "wrong password" so the endpoint does
 # not disclose which email addresses have accounts.

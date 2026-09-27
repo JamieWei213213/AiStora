@@ -52,6 +52,11 @@ Suggested questions rank columns by name: `order_total by status` instead of
   upload screen and the chat header.
 - The upload screen states the real limits (file size, tables, databases).
 
+### Beta limits
+
+Budget profile: 3 databases (was 2; the sample dataset uses one slot) and 8
+tables per database (was 5). Registrations: 10 per IP per hour (was 5).
+
 ### UI
 
 EDA report and Auto analyze are now full-size primary buttons; chat text,

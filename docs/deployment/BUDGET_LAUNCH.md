@@ -45,7 +45,8 @@ Fargate resources. Do not apply it for this budget profile.
 
 ## Included safeguards and limits
 
-- 5 MiB per upload request; two workspaces and five tables per account.
+- 5 MiB per upload request; three databases and eight tables per account (the
+  sample dataset occupies one database slot).
 - 10 AI requests per account per UTC day; 50 shared across all accounts.
 - Standard model only; four turns, six tool calls, one retry, bounded output.
 - Shared Redis counters persist across container restarts. With the configured
