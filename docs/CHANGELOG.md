@@ -1,5 +1,31 @@
 # Changelog
 
+## 28 September 2026 — Auto analyze is a dashboard
+
+**Auto analyze** no longer asks the model to pick one grouped total (which on
+the sample data produced "sum of unit_price by category" — adding a price list
+together). It now runs a deterministic first look at the whole database and
+renders it as a dashboard (`services/insights_service.py`, `POST /api/insights`):
+columns are ranked by name and type into a measure, dimensions, a date column
+and name-like entities; one streaming pass per table computes totals by
+category with shares, the month-by-month trend with growth and best month, the
+top entities with concentration, the distribution of the main measure and
+missing-value flags; tables that link through an id (`orders.customer_id` →
+`customers`) get cross-table breakdowns such as revenue by customer segment.
+Per-unit and age-like measures are averaged, never summed; identical
+breakdowns (city vs state) are deduplicated; the three most important findings
+are summarised at the top. Charts are inline SVG drawn in the browser (single
+hue, hover tooltips, direct labels), so nothing leaves the server and no AI
+quota is used. Every card has the numbers behind it and an "Ask about this"
+button that hands the follow-up question to the chat.
+
+Grouped chat answers now carry a server-written headline and takeaway ("Total
+order_total by channel — web leads with 49.6% of the total") instead of the
+model echoing internal result names; the conversation memory no longer stores
+that phrasing either, which is what the model was copying.
+
+Test suite: **282 tests**.
+
 ## 26 September 2026 — real-world CSVs, onboarding, and bigger controls
 
 Found by uploading a set of realistic exports (a small coffee-shop business

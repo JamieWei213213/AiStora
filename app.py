@@ -22,6 +22,7 @@ from routes.chat import chat_bp
 from routes.databases import databases_bp
 from routes.tables import tables_bp
 from routes.eda import eda_bp
+from routes.insights import insights_bp
 from routes.loads import loads_bp
 from routes.connectors import connectors_bp
 
@@ -197,6 +198,7 @@ def create_app(config_object=Config):
     app.register_blueprint(databases_bp)
     app.register_blueprint(tables_bp)
     app.register_blueprint(eda_bp)
+    app.register_blueprint(insights_bp)
     app.register_blueprint(loads_bp)
     app.register_blueprint(connectors_bp)
 

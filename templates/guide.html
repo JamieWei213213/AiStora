@@ -90,7 +90,20 @@
       findings. It runs entirely on the server, uses no AI, and can be downloaded as JSON.
     </p>
 
-    <h2 class="text-xl font-semibold text-slate-900 mt-10 mb-3">6. Ask questions</h2>
+    <h2 class="text-xl font-semibold text-slate-900 mt-10 mb-3">6. Auto analyze</h2>
+    <p class="mb-3">
+      Click <strong>Auto analyze</strong> for an instant dashboard of what stands out. AIStora
+      ranks your columns by name and type (a measure such as <code>order_total</code>, dimensions
+      such as <code>status</code> or <code>channel</code>, a date column, name-like columns), then
+      computes totals by category with shares, the month-by-month trend with growth, the top
+      products or customers and how concentrated they are, the distribution of the main measure,
+      missing-value flags, and — when tables link through an id — breakdowns across tables such as
+      revenue by customer segment. Every card has a chart, the numbers behind it, and an
+      <em>Ask about this</em> button that sends the follow-up question to the chat. It uses no AI,
+      so it is free and instant.
+    </p>
+
+    <h2 class="text-xl font-semibold text-slate-900 mt-10 mb-3">7. Ask questions</h2>
     <p class="mb-3">
       Type a question or click one of the suggested chips. The AI plans a sequence of safe
       operations (filter, group, join, rank, bucket by month) and AIStora executes them locally,
@@ -106,17 +119,15 @@
     </ul>
     <p class="mb-3 text-sm">
       Use the column names you see in the schema panel; the AI cannot guess a column that does not
-      exist. <strong>Auto analyze</strong> lets the AI choose one useful analysis for you, which is
-      a good first move on an unfamiliar file. Ask for a "chart" to get a bar or line chart; the
-      chart is rendered by an external service, so AIStora asks your permission before sending it
-      the aggregate numbers.
+      exist. Ask for a "chart" to get a bar or line chart; the chart is rendered by an external
+      service, so AIStora asks your permission before sending it the aggregate numbers.
     </p>
     <p class="text-sm text-slate-600 mb-3">
       AI questions are limited to <strong>{{ limits.ai_per_day }}</strong> per account per day during
       the beta. EDA reports, cleaning and uploads are unlimited.
     </p>
 
-    <h2 class="text-xl font-semibold text-slate-900 mt-10 mb-3">7. Memory, learning and feedback</h2>
+    <h2 class="text-xl font-semibold text-slate-900 mt-10 mb-3">8. Memory, learning and feedback</h2>
     <p class="mb-3 text-sm">
       Within a database, the AI remembers the recent conversation so follow-up questions work
       ("now only for 2025"). <strong>Clear memory</strong> forgets that conversation.

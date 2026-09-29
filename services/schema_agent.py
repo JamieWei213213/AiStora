@@ -30,6 +30,9 @@ _MEASURE_HINTS = (
 )
 # Averages make sense for these; totals do not ("total age").
 _WEAK_MEASURE_HINTS = ("age", "year", "month", "day", "week", "pct", "percent", "rate", "ratio", "temperature", "height", "bmi")
+# Per-unit figures: summing a price list or unit cost is meaningless, so these
+# stay strong measures for ranking but are aggregated as averages.
+_PER_UNIT_HINTS = ("unit_", "price", "_per_", "per_unit", "rating", "score")
 _NOT_MEASURE_HINTS = ("code", "number", "phone", "zip", "postal", "lat", "lon", "longitude", "latitude", "ssn")
 _DIMENSION_HINTS = (
     "status", "category", "type", "segment", "channel", "region", "state",
@@ -69,6 +72,48 @@ def _dimension_score(column):
 def _is_temporal(column):
     name = column.casefold()
     return any(token in name for token in _TEMPORAL_HINTS)
+
+
+def rank_columns(types):
+    """Public ranking used by suggestions and the insights dashboard.
+
+    Returns a dict with ``measures`` (best first, identifiers excluded),
+    ``dimensions`` (best first, names/emails/free text excluded), ``temporal``
+    and ``entities`` (name-like columns worth ranking rows by, e.g.
+    product_name, customer, city).
+    """
+    measures, dimensions, temporal, entities = [], [], [], []
+    for column, column_type in (types or {}).items():
+        kind = str(column_type).casefold()
+        name = column.casefold()
+        if _is_temporal(column) and kind not in NUMERIC_TYPES:
+            temporal.append(column)
+            continue
+        if kind in NUMERIC_TYPES:
+            score = _measure_score(column)
+            if score is not None:
+                measures.append((score, column))
+            continue
+        if _is_identifier(column):
+            continue
+        if (
+            any(token in name for token in ("name", "title", "product", "customer", "vendor", "supplier", "employee", "item", "sku", "company", "merchant"))
+            and not any(token in name for token in ("first", "last", "surname", "given", "middle", "nick"))
+        ):
+            entities.append(column)
+        score = _dimension_score(column)
+        if score is not None:
+            dimensions.append((score, column))
+    return {
+        "measures": [c for _, c in sorted(measures, key=lambda item: -item[0])],
+        "dimensions": [c for _, c in sorted(dimensions, key=lambda item: -item[0])],
+        "temporal": temporal,
+        "entities": entities,
+        "average_only": [
+            c for score, c in measures
+            if score == 1 or any(token in c.casefold() for token in _PER_UNIT_HINTS)
+        ],
+    }
 
 
 def _column_groups(details):

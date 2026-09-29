@@ -2233,7 +2233,12 @@ document.addEventListener("DOMContentLoaded", () => {
       renderAgentActivity(result);
 
       let htmlResponse = "";
-      if (result.message && result.type !== "text") {
+      if (result.headline && result.type !== "text") {
+        htmlResponse += `<p class="font-semibold text-slate-800">${escapeHtml(result.headline)}</p>`;
+        if (result.takeaway) htmlResponse += `<p class="text-slate-600 mb-2">${escapeHtml(result.takeaway)}</p>`;
+      }
+      if (result.message && result.type !== "text" && !(result.headline && /^here (is|are)\b/i.test(result.message))) {
+        // The model's own sentence, unless it merely restates the headline.
         htmlResponse += `<p class="text-slate-600 mb-2">${escapeHtml(
           result.message
         )}</p>`;
@@ -2344,13 +2349,213 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   }
+  // === Auto analyze: the insights dashboard ===
+  // Deterministic findings from /api/insights, drawn as inline SVG in the
+  // browser. No inline style attributes anywhere (the CSP forbids them):
+  // geometry lives in SVG attributes and colours in fill/stroke attributes.
+  const insightsModal = document.getElementById("insights-modal");
+  const insightsContent = document.getElementById("insights-content");
+  const insightsSubtitle = document.getElementById("insights-subtitle");
+  const insightsDownload = document.getElementById("insights-download");
+  const insightsClose = document.getElementById("insights-close");
+  let lastInsights = null;
+
+  const INK = "#334155", MUTED = "#64748b", GRID = "#e2e8f0", SERIES = "#0284c7", SERIES_SOFT = "#bae6fd";
+
+  function compact(value) {
+    const number = Number(value);
+    if (!Number.isFinite(number)) return escapeHtml(String(value));
+    const abs = Math.abs(number);
+    if (abs >= 1e6) return (number / 1e6).toLocaleString(undefined, { maximumFractionDigits: 2 }) + "M";
+    if (abs >= 1e4) return number.toLocaleString(undefined, { maximumFractionDigits: 0 });
+    if (abs >= 100) return number.toLocaleString(undefined, { maximumFractionDigits: 1 });
+    return number.toLocaleString(undefined, { maximumFractionDigits: 2 });
+  }
+  function truncateLabel(text, max = 22) {
+    const value = String(text);
+    return value.length > max ? value.slice(0, max - 1) + "…" : value;
+  }
+
+  function svgBars(labels, values, metric) {
+    const width = 600, rowH = 28, labelW = 190, pad = 8, valueW = 70;
+    const height = rowH * labels.length + pad * 2;
+    const max = Math.max(...values.map(Number), 0) || 1;
+    const barMax = width - labelW - valueW - pad * 2;
+    let out = `<svg viewBox="0 0 ${width} ${height}" width="100%" role="img" aria-label="${escapeHtml(metric)} by category" class="block">`;
+    labels.forEach((label, i) => {
+      const value = Number(values[i]) || 0;
+      const w = Math.max(2, Math.round((value / max) * barMax));
+      const y = pad + i * rowH;
+      const isOther = /^Other \(/.test(String(label));
+      out += `<g><title>${escapeHtml(label)}: ${escapeHtml(compact(value))} ${escapeHtml(metric)}</title>`;
+      out += `<text x="${labelW - 10}" y="${y + rowH / 2 + 4}" text-anchor="end" font-size="12" fill="${INK}">${escapeHtml(truncateLabel(label))}</text>`;
+      out += `<rect x="${labelW}" y="${y + 5}" width="${w}" height="${rowH - 10}" rx="4" fill="${isOther ? SERIES_SOFT : SERIES}"></rect>`;
+      out += `<text x="${labelW + w + 8}" y="${y + rowH / 2 + 4}" font-size="12" fill="${MUTED}">${escapeHtml(compact(value))}</text></g>`;
+    });
+    return out + "</svg>";
+  }
+
+  function svgHistogram(labels, values) {
+    const width = 600, height = 200, padL = 40, padB = 34, padT = 12, gap = 2;
+    const max = Math.max(...values.map(Number), 0) || 1;
+    const n = values.length;
+    const plotW = width - padL - 8, plotH = height - padT - padB;
+    const barW = plotW / n;
+    let out = `<svg viewBox="0 0 ${width} ${height}" width="100%" role="img" aria-label="Histogram" class="block">`;
+    [0, 0.5, 1].forEach((f) => {
+      const y = padT + plotH - f * plotH;
+      out += `<line x1="${padL}" x2="${width - 8}" y1="${y}" y2="${y}" stroke="${GRID}" stroke-width="1"></line>`;
+      out += `<text x="${padL - 6}" y="${y + 4}" text-anchor="end" font-size="11" fill="${MUTED}">${escapeHtml(compact(max * f))}</text>`;
+    });
+    values.forEach((value, i) => {
+      const h = Math.max(2, Math.round((Number(value) / max) * plotH));
+      const x = padL + i * barW + gap / 2;
+      const y = padT + plotH - h;
+      out += `<g><title>${escapeHtml(labels[i])}: ${escapeHtml(compact(value))} rows</title><rect x="${x}" y="${y}" width="${barW - gap}" height="${h}" rx="3" fill="${SERIES}"></rect></g>`;
+    });
+    [0, Math.floor(n / 2), n - 1].forEach((i) => {
+      const x = padL + i * barW + barW / 2;
+      out += `<text x="${x}" y="${height - 14}" text-anchor="middle" font-size="10" fill="${MUTED}">${escapeHtml(truncateLabel(labels[i], 18))}</text>`;
+    });
+    return out + "</svg>";
+  }
+
+  function svgLine(labels, values, metric) {
+    const width = 600, height = 230, padL = 48, padR = 16, padT = 26, padB = 34;
+    const nums = values.map(Number);
+    const max = Math.max(...nums, 0) || 1;
+    const n = nums.length;
+    const plotW = width - padL - padR, plotH = height - padT - padB;
+    const x = (i) => padL + (n === 1 ? plotW / 2 : (i / (n - 1)) * plotW);
+    const y = (v) => padT + plotH - (v / max) * plotH;
+    let out = `<svg viewBox="0 0 ${width} ${height}" width="100%" role="img" aria-label="${escapeHtml(metric)} over time" class="block">`;
+    [0, 0.5, 1].forEach((f) => {
+      const gy = padT + plotH - f * plotH;
+      out += `<line x1="${padL}" x2="${width - padR}" y1="${gy}" y2="${gy}" stroke="${GRID}" stroke-width="1"></line>`;
+      out += `<text x="${padL - 6}" y="${gy + 4}" text-anchor="end" font-size="11" fill="${MUTED}">${escapeHtml(compact(max * f))}</text>`;
+    });
+    const points = nums.map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`);
+    out += `<path d="M${points.join(" L")} L${x(n - 1).toFixed(1)},${(padT + plotH).toFixed(1)} L${x(0).toFixed(1)},${(padT + plotH).toFixed(1)} Z" fill="${SERIES_SOFT}" fill-opacity="0.35"></path>`;
+    out += `<path d="M${points.join(" L")}" fill="none" stroke="${SERIES}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"></path>`;
+    const peak = nums.indexOf(Math.max(...nums));
+    nums.forEach((v, i) => {
+      out += `<g><title>${escapeHtml(labels[i])}: ${escapeHtml(compact(v))} ${escapeHtml(metric)}</title><circle cx="${x(i).toFixed(1)}" cy="${y(v).toFixed(1)}" r="${i === peak ? 4.5 : 3}" fill="${i === peak ? SERIES : "#ffffff"}" stroke="${SERIES}" stroke-width="2"></circle><circle cx="${x(i).toFixed(1)}" cy="${y(v).toFixed(1)}" r="9" fill="transparent"></circle></g>`;
+    });
+    out += `<text x="${x(peak).toFixed(1)}" y="${(y(nums[peak]) - 10).toFixed(1)}" text-anchor="middle" font-size="11" fill="${INK}">${escapeHtml(compact(nums[peak]))}</text>`;
+    const ticks = n <= 6 ? labels.map((_, i) => i) : [0, Math.floor(n / 3), Math.floor((2 * n) / 3), n - 1];
+    ticks.forEach((i) => {
+      out += `<text x="${x(i).toFixed(1)}" y="${height - 12}" text-anchor="${i === 0 ? "start" : i === n - 1 ? "end" : "middle"}" font-size="10" fill="${MUTED}">${escapeHtml(labels[i])}</text>`;
+    });
+    return out + "</svg>";
+  }
+
+  function insightChart(finding) {
+    const { labels = [], values = [], metric = "" } = finding.chart || {};
+    if (!labels.length) return "";
+    if (finding.kind === "line") return svgLine(labels, values, metric);
+    if (finding.kind === "histogram") return svgHistogram(labels, values);
+    return svgBars(labels, values, metric);
+  }
+
+  function insightTable(rows) {
+    if (!rows || !rows.length) return "";
+    const columns = Object.keys(rows[0]);
+    let html = '<div class="overflow-x-auto mt-3"><table class="min-w-full text-xs"><thead><tr class="bg-slate-50">';
+    columns.forEach((c) => { html += `<th class="text-left px-3 py-2 font-semibold text-slate-600">${escapeHtml(String(c).replace(/_/g, " "))}</th>`; });
+    html += "</tr></thead><tbody>";
+    rows.forEach((row) => {
+      html += '<tr class="border-t border-slate-100">';
+      columns.forEach((c) => { const v = row[c]; html += `<td class="px-3 py-1.5 text-slate-700">${typeof v === "number" ? formatEdaNumber(v) : escapeHtml(String(v ?? "—"))}</td>`; });
+      html += "</tr>";
+    });
+    return html + "</tbody></table></div>";
+  }
+
+  function renderInsights(report) {
+    const kindLabel = { bar: "Breakdown", line: "Trend", histogram: "Distribution" };
+    let html = "";
+    if (report.headline && report.headline.length) {
+      html += '<section class="rounded-2xl border border-violet-200 bg-violet-50 p-5 mb-5"><h3 class="text-sm font-semibold text-violet-900 mb-2">What stands out</h3><ol class="list-decimal pl-5 space-y-1.5 text-sm text-violet-900/90">';
+      report.headline.forEach((line) => { html += `<li>${escapeHtml(line)}</li>`; });
+      html += "</ol></section>";
+    }
+    (report.tables || []).forEach((table) => {
+      html += `<section class="mb-5"><div class="flex items-center gap-2 mb-2"><h3 class="text-sm font-semibold text-slate-800">${escapeHtml(table.table)}</h3><span class="text-xs text-slate-400">${formatEdaNumber(table.rows_scanned)} rows${table.truncated ? " (sample)" : ""}</span></div><div class="grid grid-cols-2 md:grid-cols-4 gap-2">`;
+      (table.kpis || []).forEach((kpi) => {
+        const value = kpi.format === "text" ? escapeHtml(String(kpi.value)) : kpi.format === "int" ? formatEdaNumber(kpi.value) : escapeHtml(compact(kpi.value));
+        html += `<div class="rounded-xl bg-white border border-slate-200 p-3"><p class="text-[11px] uppercase tracking-wide text-slate-400">${escapeHtml(kpi.label)}</p><p class="text-lg font-semibold text-slate-800 mt-0.5 break-words">${value}</p></div>`;
+      });
+      html += "</div></section>";
+    });
+    if (!(report.findings || []).length) {
+      html += '<div class="rounded-xl bg-white border border-slate-200 p-5 text-sm text-slate-600">Nothing stood out automatically: this database has no numeric measures, categories or dates the analysis recognises by name. Try the EDA report, or ask a question directly.</div>';
+    } else {
+      html += '<h3 class="text-sm font-semibold text-slate-800 mb-3">Findings</h3><div class="grid grid-cols-1 xl:grid-cols-2 gap-4">';
+      report.findings.forEach((finding, index) => {
+        html += `<article class="rounded-2xl bg-white border border-slate-200 p-4 flex flex-col">
+          <div class="flex items-start justify-between gap-3 mb-1">
+            <h4 class="text-sm font-semibold text-slate-800">${escapeHtml(finding.title)}</h4>
+            <span class="shrink-0 text-[10px] uppercase tracking-wide px-2 py-0.5 rounded-full bg-slate-100 text-slate-500">${escapeHtml(finding.cross_table ? "Across tables" : kindLabel[finding.kind] || finding.kind)}</span>
+          </div>
+          <p class="text-sm text-slate-600 mb-3">${escapeHtml(finding.takeaway)}</p>
+          <div>${insightChart(finding)}</div>
+          <details class="mt-2"><summary class="text-xs text-slate-500 cursor-pointer">Show the numbers</summary>${insightTable(finding.rows)}</details>
+          ${finding.follow_up ? `<div class="mt-auto pt-3 border-t border-slate-100 flex items-center justify-between gap-2"><span class="text-[11px] text-slate-400">${escapeHtml(finding.table)}</span><button type="button" data-insight-question="${escapeHtml(finding.follow_up)}" class="text-xs font-medium text-violet-700 hover:text-violet-900 px-3 py-1.5 rounded-lg bg-violet-50 hover:bg-violet-100">Ask about this</button></div>` : ""}
+        </article>`;
+      });
+      html += "</div>";
+    }
+    if (report.skipped && report.skipped.length) {
+      html += '<div class="mt-4 rounded-xl bg-amber-50 border border-amber-100 p-3 text-xs text-amber-800">Skipped: ' + report.skipped.map((s) => `${escapeHtml(s.table)} (${escapeHtml(s.reason)})`).join(", ") + "</div>";
+    }
+    html += `<p class="mt-5 text-xs text-slate-400">${escapeHtml(report.method || "")}</p>`;
+    return html;
+  }
+
+  async function runInsights() {
+    if (!insightsModal || !insightsContent) return;
+    insightsModal.classList.remove("hidden");
+    insightsDownload.classList.add("hidden");
+    insightsContent.innerHTML =
+      '<div class="h-full flex items-center justify-center"><div class="text-center"><div class="spinner mx-auto mb-3"></div><p class="text-sm text-slate-600">Looking through every table…</p><p class="text-xs text-slate-400 mt-1">Ranking columns, totals by category, trends, top entities, distributions.</p></div></div>';
+    setButtonLoading(autoAnalyze, true);
+    try {
+      const response = await apiFetch("/api/insights", { method: "POST" });
+      if (!response) return;
+      const result = await response.json();
+      if (!response.ok || !result.success) throw new Error(result.error || "The analysis could not be completed.");
+      lastInsights = result.report;
+      insightsSubtitle.textContent = `${lastInsights.findings.length} findings across ${lastInsights.tables.length} table${lastInsights.tables.length === 1 ? "" : "s"} • computed locally in ${formatEdaNumber(lastInsights.duration_ms)} ms • no AI used`;
+      insightsContent.innerHTML = renderInsights(lastInsights);
+      insightsDownload.classList.remove("hidden");
+      insightsContent.querySelectorAll("[data-insight-question]").forEach((button) => {
+        button.addEventListener("click", () => {
+          insightsModal.classList.add("hidden");
+          sendMessage({ query: button.dataset.insightQuestion });
+        });
+      });
+    } catch (error) {
+      lastInsights = null;
+      insightsSubtitle.textContent = "The analysis was not generated";
+      insightsContent.innerHTML = `<div class="rounded-xl border border-red-100 bg-red-50 p-4"><p class="text-sm font-semibold text-red-700">Auto analyze error</p><p class="text-xs text-red-600 mt-1">${escapeHtml(error.message)}</p></div>`;
+    } finally {
+      setButtonLoading(autoAnalyze, false);
+    }
+  }
+  if (insightsClose) insightsClose.addEventListener("click", () => insightsModal.classList.add("hidden"));
+  if (insightsDownload) {
+    insightsDownload.addEventListener("click", () => {
+      if (!lastInsights) return;
+      const blob = new Blob([JSON.stringify(lastInsights, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url; link.download = "aistora-insights.json"; link.click();
+      URL.revokeObjectURL(url);
+    });
+  }
+
   if (autoAnalyze) {
-    autoAnalyze.addEventListener("click", () =>
-      sendMessage({
-        query: "Auto-analyze this database",
-        autoAnalyze: true,
-      })
-    );
+    autoAnalyze.addEventListener("click", runInsights);
   }
   if (edaReportButton) {
     edaReportButton.addEventListener("click", runEdaReport);

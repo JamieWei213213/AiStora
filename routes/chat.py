@@ -1,4 +1,5 @@
 import json
+import re
 import math
 import time
 import uuid
@@ -118,7 +119,7 @@ def _base_payload(
 ):
     payload = {
         "request_id": request_id,
-        "message": outcome.message,
+        "message": _clean_message(outcome.message),
         "trace": outcome.trace,
         "plan": outcome.plan,
         "budget": {
@@ -132,6 +133,55 @@ def _base_payload(
     if verification:
         payload["verification"] = verification
     return payload
+
+
+_ROBOTIC_PREFIX = re.compile(
+    r"^\s*(completed with (the )?named \w+ result '[^']*'\.?|the (named )?result '[^']*' (is|has been) (ready|saved|created)\.?)\s*",
+    re.I,
+)
+
+
+def _clean_message(message):
+    """Strip internal bookkeeping the model sometimes echoes back to the user."""
+    text = _ROBOTIC_PREFIX.sub("", str(message or "")).strip()
+    return text[:1].upper() + text[1:] if text else text
+
+
+def _aggregate_headline(result):
+    """A plain title and a one-line takeaway for a grouped aggregate.
+
+    Written from the numbers, not by the model, so every grouped answer reads
+    "Total order_total by channel — web leads with 49.6% of the total" rather
+    than an internal result name.
+    """
+    group_by = result.metadata.get("group_by", "group")
+    metric = result.metadata.get("metric", "")
+    operation = result.metadata.get("operation", "")
+    value_column = metric[len(operation) + 1:] if metric.startswith(f"{operation}_") else metric
+    words = {"sum": "Total", "avg": "Average", "count": "Count of rows", "min": "Minimum", "max": "Maximum"}
+    label = words.get(operation, operation.capitalize())
+    headline = f"{label} {value_column} by {group_by}".replace("Count of rows  by", "Count of rows by").strip()
+    numeric = []
+    for group, metrics in (result.value or {}).items():
+        value = metrics.get(metric)
+        if isinstance(value, (int, float)) and not isinstance(value, bool):
+            numeric.append((group, float(value)))
+    takeaway = ""
+    if len(numeric) >= 2:
+        ordered = sorted(numeric, key=lambda item: -item[1])
+        leader, runner = ordered[0], ordered[1]
+        if operation in {"sum", "count"} and all(v >= 0 for _, v in numeric):
+            total = sum(v for _, v in numeric) or 1.0
+            share = round(100 * leader[1] / total, 1)
+            takeaway = (
+                f"{leader[0]} leads with {share}% of the total"
+                + (" — more than everything else combined." if share >= 50 else f"; {runner[0]} is next at {round(100 * runner[1] / total, 1)}%.")
+            )
+        else:
+            takeaway = f"Highest: {leader[0]} ({leader[1]:,.2f}); lowest: {ordered[-1][0]} ({ordered[-1][1]:,.2f}) across {len(numeric)} groups."
+    elif len(numeric) == 1:
+        takeaway = f"Only one group: {numeric[0][0]} ({numeric[0][1]:,.2f})."
+    return {"headline": headline, "takeaway": takeaway}
 
 
 def _format_finished(
@@ -179,6 +229,7 @@ def _format_finished(
         payload.update({"type": "table", "data": protect_result_rows(rows, policy)})
     elif result.kind == "aggregate":
         group_by = result.metadata.get("group_by", "group")
+        payload.update(_aggregate_headline(result))
         rows = []
         for group, metrics in result.value.items():
             row = {group_by: _display_value(group)}
@@ -517,7 +568,7 @@ def chat():
             session,
             project_id,
             memory_user_text,
-            f"Completed with named {result_kind} result '{result_name}'. {outcome.message}",
+            payload.get("headline") or outcome.message or f"Returned the {result_kind} '{result_name}'.",
         )
         return jsonify(payload)
     except AgentCancelled as exc:
