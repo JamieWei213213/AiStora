@@ -1,8 +1,9 @@
 # Small public beta: target at most $20/month
 
-Prepared September 25, 2026. This is a launch candidate, not a deployed or
-load-tested service. Existing uploads, credentials, and databases were not
-migrated. Use the latest working copy in Desktop/aistora holder/AiStora-main.
+Prepared September 25, 2026; **live at https://ai-stora.com since September 25,
+2026** on a 2 GB AWS Lightsail instance (static IP, Caddy TLS, Docker Compose,
+releases under `/opt/aistora/releases/<date>`, Resend SMTP, Gemini key on a
+capped billing project). Status of the release gates is tracked below.
 
 ## Product and scope
 
@@ -106,15 +107,15 @@ beta with maintenance downtime, not a highly available deployment.
 
 ## Remaining release gates
 
-- Choose/control a domain and configure real mail delivery.
-- Verify the supported model and account-level spend controls.
-- Implement or choose email verification/bot protection for public signup.
-- Decide data retention, account deletion, and clear privacy/support information.
-- Measure the target machine under realistic concurrent workloads.
-- Verify deployed backup restoration, monitoring, TLS, and error behaviour.
+- [x] Domain (ai-stora.com via Porkbun) and mail delivery (Resend, domain verified).
+- [x] Supported model and account-level spend cap (AI Studio project cap).
+- [ ] Email verification / bot protection for public signup (per-IP throttle only).
+- [ ] Data retention, account deletion, and a privacy/support page beyond `/guide`.
+- [ ] Measure the server under realistic concurrent workloads.
+- [ ] Verify backup restoration (Lightsail snapshots) and monitoring.
 
-Do not describe the project as live, fully production-ready, or guaranteed
-under $20 until these gates and the actual costs are verified.
+The beta is live; it is not yet load-tested or backup-tested, and the ~$20/month
+figure is a target to be confirmed against the first full bill.
 
 ## Verification completed locally
 

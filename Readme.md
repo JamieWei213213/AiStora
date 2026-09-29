@@ -4,20 +4,22 @@ A CSV analysis workspace for sales, operations, research, and everyday data ques
 
 ---
 
-## Demo
+## Try it
+
+**Live at [ai-stora.com](https://ai-stora.com)** — free public beta. Create an
+account, click **Try the sample dataset** (a small coffee-shop business:
+customers, orders, products) and you are looking at a dashboard in under a
+minute. The [getting-started guide](https://ai-stora.com/guide) covers what
+works, the limits, and how to ask good questions.
 
 <p>
-  <img src="./demo/demo.gif" width="800" height="800"/>
+  <img src="./docs/screenshots/auto-analyze.png" width="800" alt="Auto analyze dashboard: headline findings and KPI tiles"/>
+</p>
+<p>
+  <img src="./docs/screenshots/auto-analyze-findings.png" width="800" alt="Auto analyze findings: revenue trend, breakdowns by product category, customer segment and state"/>
 </p>
 
----
-
-## Want to use it?
-
-AIStora is not hosted publicly — the demo above is a recording of the app
-running locally. If you'd like to try it with your own data, get a walkthrough,
-or use it for your team, email me at **[jamiejwei@gmail.com](mailto:jamiejwei@gmail.com)**
-and I'll set you up.
+Questions or want it for your team: **[jamiejwei@gmail.com](mailto:jamiejwei@gmail.com)**.
 
 ---
 
@@ -28,13 +30,34 @@ files into a workspace, profiles their quality, and helps answer questions
 without requiring SQL. Start with small datasets and inspect results before
 using them to make decisions.
 
-## Small public beta
+## What you get
 
-The optional [budget deployment](docs/deployment/BUDGET_LAUNCH.md) prepares a
-single-server setup for small CSVs with public registration, persistent sessions,
-password recovery through configured SMTP, and shared AI usage limits. It has
-not been deployed or load-tested on a cloud server. The full data-pipeline setup
-remains available separately.
+- **Upload** comma, semicolon, tab or pipe separated CSVs (UTF-8, Excel or
+  Latin-1); malformed rows are reported, not silently dropped.
+- **Auto clean** previews and, only after approval, writes a cleaned copy:
+  tidy headers, trimmed cells, `N/A` → empty, `$1,234.50` / `12%` → numbers,
+  `Yes/No` → `true/false`, duplicates removed. The original is never touched.
+- **Auto analyze** — a deterministic dashboard of what stands out: totals by
+  category with shares, month-by-month trend, top entities and concentration,
+  distributions, missing-value flags, and cross-table breakdowns (revenue by
+  customer segment through `orders.customer_id → customers`). No AI involved;
+  every card links to a follow-up question.
+- **EDA report** — column-by-column profile: missingness, duplicates, numeric
+  distributions with outlier flags, category breakdowns, time coverage and
+  correlations, all computed locally.
+- **Ask questions** in plain English. The AI plans safe, structured steps
+  (filter, group, join, rank, bucket by month); AIStora executes them on the
+  server and shows the result with the steps it took.
+
+## How it is hosted
+
+The public beta runs the [budget profile](docs/deployment/BUDGET_LAUNCH.md):
+one small AWS Lightsail server with Caddy (automatic HTTPS), the Flask app,
+PostgreSQL and Redis in Docker Compose, Resend for password-reset email, and a
+Gemini key behind a hard monthly spend cap. Per-account limits (file size,
+tables, databases, AI questions per day) keep it inside a ~$20/month budget;
+they are shown on the guide page. The full Terraform/ECS/Fargate stack and the
+serverless data platform remain in the repo for larger deployments.
 
 ## What makes it different from ChatGPT
 
@@ -46,15 +69,21 @@ Your data is stored on your own server. When you ask a question, the LLM only se
 
 - Custom DataFrame engine — no Pandas, built from scratch; ~250K rows/second
   including CSV parse ([benchmarks](./benchmarks/README.md))
-- Streaming CSV parser: counts, minimums, maximums and top-K run in constant
-  memory; filters and joins bound their materialised output
+- Streaming CSV parser with delimiter and encoding detection: counts, minimums,
+  maximums and top-K run in constant memory; filters and joins bound their
+  materialised output
 - PostgreSQL for persistence and auth, Redis for server-side session state,
   engine handles compute
 - Gemini plans and selects native structured tools
 - Named intermediate results support multi-step analysis
-- Schema exploration suggests and automatically runs analyses from column types
+- Auto analyze ranks columns by name and type and builds a chart dashboard in one
+  streaming pass per table — no model call, nothing leaves the server
+- Suggested questions are ranked by column semantics (measures vs dimensions),
+  and a `bucket_dates` tool turns "per month" questions into real time series
 - One-click deterministic EDA reports profile quality, distributions, time coverage, correlations, privacy, and limits locally
-- Approval-gated Auto clean creates a new normalized table without overwriting source data
+- Approval-gated Auto clean creates a new normalized table without overwriting
+  source data; it parses currency/percent/thousands text to numbers and
+  standardizes booleans
 - Local execution with limits, cancellation, audit logs, and approval gates
 - Deterministic result verification can return failed results to the agent for repair
 - Cost-aware model routing sends simple work to a standard model and complex work to an advanced model
@@ -118,7 +147,9 @@ All project guides are indexed in [docs/README.md](./docs/README.md).
 
 ---
 
-## Run it locally
+## Development
+
+### Run it locally
 
 ```bash
 git clone https://github.com/JamieWei213213/AiStora.git
@@ -150,7 +181,7 @@ which is fine for a single process.
 
 ```bash
 pip install -r requirements-dev.txt
-pytest -q                                    # 230+ tests, including tests/pipeline
+pytest -q                                    # 280+ tests, including tests/pipeline
 pytest --cov=. --cov-report=term
 ```
 
@@ -164,4 +195,4 @@ library is vendored. Node is only needed when you change templates or scripts
 
 ---
 
-MIT License · DSCI 551 · Fall 2025 · USC
+MIT License · Started as a DSCI 551 project (USC, Fall 2025), now a live public beta
